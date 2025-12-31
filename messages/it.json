@@ -15,7 +15,18 @@
     "delete": "Elimina",
     "edit": "Modifica",
     "create": "Crea",
-    "loading": "Caricamento..."
+    "loading": "Caricamento...",
+    "register": "Registrati",
+    "email": "Email",
+    "password": "Password",
+    "name": "Nome",
+    "lastName": "Cognome",
+    "loginWithGoogle": "Continua con Google",
+    "loginWithEmail": "Accedi con Email",
+    "registerWithEmail": "Registrati con Email",
+    "alreadyHaveAccount": "Hai già un account?",
+    "dontHaveAccount": "Non hai un account?",
+    "registerHere": "Registrati qui"
   },
   "home": {
     "title": "Trova strumenti per musicisti viaggiatori",

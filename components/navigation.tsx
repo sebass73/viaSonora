@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { usePathname } from '@/i18n/routing';
+import { usePathname, useRouter } from '@/i18n/routing';
 import {
   Sheet,
   SheetContent,
@@ -19,6 +19,7 @@ export function Navigation() {
   const t = useTranslations('common');
   const { data: session, status } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -65,12 +66,15 @@ export function Navigation() {
             {status === 'loading' ? (
               <span className="text-sm text-muted-foreground">{t('loading')}</span>
             ) : session ? (
-              <Button variant="outline" onClick={() => signOut()}>
+              <Button variant="outline" onClick={async () => {
+                await signOut({ callbackUrl: '/' });
+                router.push('/');
+              }}>
                 {t('logout')}
               </Button>
             ) : (
-              <Button onClick={() => signIn('google')}>
-                {t('login')}
+              <Button asChild>
+                <Link href="/login">{t('login')}</Link>
               </Button>
             )}
           </div>
@@ -109,23 +113,20 @@ export function Navigation() {
                     <Button
                       variant="outline"
                       className="w-full"
-                      onClick={() => {
+                      onClick={async () => {
                         setMobileMenuOpen(false);
-                        signOut();
+                        await signOut({ callbackUrl: '/' });
+                        router.push('/');
                       }}
                     >
                       {t('logout')}
                     </Button>
                   ) : (
-                    <Button
-                      className="w-full"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        signIn('google');
-                      }}
-                    >
-                      {t('login')}
-                    </Button>
+                    <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                      <Button className="w-full">
+                        {t('login')}
+                      </Button>
+                    </Link>
                   )}
                 </div>
               </div>

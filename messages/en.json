@@ -15,7 +15,18 @@
     "delete": "Delete",
     "edit": "Edit",
     "create": "Create",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "register": "Sign up",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "lastName": "Last name",
+    "loginWithGoogle": "Continue with Google",
+    "loginWithEmail": "Sign in with Email",
+    "registerWithEmail": "Sign up with Email",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "registerHere": "Sign up here"
   },
   "home": {
     "title": "Find instruments for traveling musicians",

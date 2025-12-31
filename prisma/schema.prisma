@@ -42,6 +42,7 @@ model User {
   lastName  String?
   email     String   @unique
   emailVerified DateTime?
+  password  String?  // Para autenticación con email/contraseña (hasheada)
   image     String?
   phone     String?
   whatsappUrl String?

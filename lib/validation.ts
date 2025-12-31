@@ -13,6 +13,19 @@ export const updateProfileSchema = z.object({
   termsAccepted: z.boolean().optional(),
 });
 
+// Auth validation
+export const registerSchema = z.object({
+  name: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100).optional(),
+  email: z.string().email(),
+  password: z.string().min(6).max(100),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
 // Instrument validation
 export const createInstrumentSchema = z.object({
   title: z.string().min(1).max(200),
