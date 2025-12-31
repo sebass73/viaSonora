@@ -295,7 +295,7 @@ export function ProfileForm() {
                 <section>
                   <h3 className="font-semibold mb-2">10. Limitación de Responsabilidad</h3>
                   <p className="text-muted-foreground">
-                    ViaSonora se proporciona "tal cual" sin garantías de ningún tipo. No garantizamos que el servicio 
+                    ViaSonora se proporciona &quot;tal cual&quot; sin garantías de ningún tipo. No garantizamos que el servicio 
                     esté libre de errores, interrupciones o que cumpla con tus expectativas específicas. 
                     En la medida máxima permitida por la ley, no seremos responsables de daños indirectos, incidentales o consecuentes.
                   </p>

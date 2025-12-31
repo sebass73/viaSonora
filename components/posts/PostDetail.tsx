@@ -63,6 +63,7 @@ export function PostDetail() {
     if (params.id) {
       fetchPost();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
   const fetchPost = async () => {
