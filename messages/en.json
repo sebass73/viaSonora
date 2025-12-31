@@ -1,0 +1,25 @@
+{
+  "common": {
+    "welcome": "Welcome to ViaSonora",
+    "login": "Sign in",
+    "logout": "Sign out",
+    "profile": "Profile",
+    "explore": "Explore",
+    "myInstruments": "My instruments",
+    "myPosts": "My posts",
+    "search": "Search",
+    "city": "City",
+    "instrument": "Instrument",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "loading": "Loading..."
+  },
+  "home": {
+    "title": "Find instruments for traveling musicians",
+    "subtitle": "Connect with musicians around the world"
+  }
+}
+
