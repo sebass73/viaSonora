@@ -4,6 +4,7 @@ import { z } from 'zod';
 export const updateProfileSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   lastName: z.string().min(1).max(100).optional(),
+  image: z.string().url().optional().or(z.literal('')),
   phone: z.string().max(20).optional(),
   whatsappUrl: z.string().url().optional().or(z.literal('')),
   addressText: z.string().max(200).optional(),

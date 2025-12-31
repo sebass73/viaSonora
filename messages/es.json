@@ -26,7 +26,21 @@
     "registerWithEmail": "Registrarse con Email",
     "alreadyHaveAccount": "¿Ya tienes cuenta?",
     "dontHaveAccount": "¿No tienes cuenta?",
-    "registerHere": "Regístrate aquí"
+    "registerHere": "Regístrate aquí",
+    "admin": "Admin",
+    "moderation": "Moderación",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "ban": "Banear",
+    "unban": "Desbanear",
+    "viewPost": "Ver Post",
+    "filterByStatus": "Filtrar por estado",
+    "pending": "Pendientes",
+    "approved": "Aprobados",
+    "rejected": "Rechazados",
+    "banned": "Baneados",
+    "expired": "Expirados",
+    "all": "Todos"
   },
   "home": {
     "title": "Encuentra instrumentos para músicos viajeros",

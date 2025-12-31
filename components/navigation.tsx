@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import Link from 'next/link';
@@ -22,6 +22,25 @@ export function Navigation() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const res = await fetch('/api/me');
+        if (res.ok) {
+          const user = await res.json();
+          setIsAdmin(user.staffRole === 'ADMIN' || user.staffRole === 'OPERATOR');
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+      }
+    };
+    if (session) {
+      checkAdmin();
+    }
+  }, [session]);
+
   const navLinks = [
     { href: '/explore', label: t('explore') },
     ...(session
@@ -29,6 +48,7 @@ export function Navigation() {
           { href: '/instruments', label: t('myInstruments') },
           { href: '/posts', label: t('myPosts') },
           { href: '/profile', label: t('profile') },
+          ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
         ]
       : []),
   ];
@@ -66,12 +86,17 @@ export function Navigation() {
             {status === 'loading' ? (
               <span className="text-sm text-muted-foreground">{t('loading')}</span>
             ) : session ? (
-              <Button variant="outline" onClick={async () => {
-                await signOut({ callbackUrl: '/' });
-                router.push('/');
-              }}>
-                {t('logout')}
-              </Button>
+              <>
+                <span className="text-sm text-muted-foreground hidden md:inline-block">
+                  {session.user?.name || session.user?.email}
+                </span>
+                <Button variant="outline" onClick={async () => {
+                  await signOut({ callbackUrl: '/' });
+                  router.push('/');
+                }}>
+                  {t('logout')}
+                </Button>
+              </>
             ) : (
               <Button asChild>
                 <Link href="/login">{t('login')}</Link>
@@ -106,29 +131,36 @@ export function Navigation() {
                     {link.label}
                   </Link>
                 ))}
-                <div className="pt-4 border-t">
-                  {status === 'loading' ? (
-                    <span className="text-sm text-muted-foreground">{t('loading')}</span>
-                  ) : session ? (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={async () => {
-                        setMobileMenuOpen(false);
-                        await signOut({ callbackUrl: '/' });
-                        router.push('/');
-                      }}
-                    >
-                      {t('logout')}
-                    </Button>
-                  ) : (
-                    <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                      <Button className="w-full">
-                        {t('login')}
-                      </Button>
-                    </Link>
-                  )}
-                </div>
+                      <div className="pt-4 border-t">
+                        {status === 'loading' ? (
+                          <span className="text-sm text-muted-foreground">{t('loading')}</span>
+                        ) : session ? (
+                          <>
+                            <div className="mb-3 px-2">
+                              <span className="text-sm font-medium text-foreground">
+                                {session.user?.name || session.user?.email}
+                              </span>
+                            </div>
+                            <Button
+                              variant="outline"
+                              className="w-full"
+                              onClick={async () => {
+                                setMobileMenuOpen(false);
+                                await signOut({ callbackUrl: '/' });
+                                router.push('/');
+                              }}
+                            >
+                              {t('logout')}
+                            </Button>
+                          </>
+                        ) : (
+                          <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                            <Button className="w-full">
+                              {t('login')}
+                            </Button>
+                          </Link>
+                        )}
+                      </div>
               </div>
             </SheetContent>
           </Sheet>

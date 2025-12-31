@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import bcrypt from 'bcryptjs';
 
 async function main() {
   console.log('🌱 Seeding database...');
@@ -89,6 +90,27 @@ async function main() {
   });
 
   console.log('✅ Demo user created');
+
+  // Create admin user
+  const adminPassword = await bcrypt.hash('admin123', 10);
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@viasonora.com' },
+    update: {
+      password: adminPassword, // Update password if user already exists
+    },
+    create: {
+      email: 'admin@viasonora.com',
+      name: 'Admin',
+      lastName: 'ViaSonora',
+      password: adminPassword,
+      roles: ['OWNER', 'CLIENT'],
+      staffRole: 'ADMIN',
+      onboardingCompleted: true,
+      termsAcceptedAt: new Date(),
+    },
+  });
+
+  console.log('✅ Admin user created');
 
   // Create instruments with photos and locations
   // Note: Using placeholder images. In production, these would be uploaded to Vercel Blob
@@ -235,36 +257,44 @@ async function main() {
 
   console.log('✅ Instruments created');
 
+  // Limpiar posts existentes del demo user antes de crear nuevos
+  await prisma.post.deleteMany({
+    where: {
+      ownerId: demoUser.id,
+    },
+  });
+
   // Create posts with different statuses
   const now = new Date();
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 30); // 30 days from now
 
-  // Post 1: APPROVED (will appear in map)
+  const expiredAt = new Date();
+  expiredAt.setDate(expiredAt.getDate() - 5); // 5 days ago (expired)
+
+  // 3 Posts con PENDING_APPROVAL
   await prisma.post.create({
     data: {
       instrumentId: guitar1.id,
       ownerId: demoUser.id,
       city: 'Buenos Aires',
       areaText: 'Palermo',
-      status: 'APPROVED',
+      status: 'PENDING_APPROVAL',
       expiresAt,
     },
   });
 
-  // Post 2: APPROVED (will appear in map)
   await prisma.post.create({
     data: {
       instrumentId: piano1.id,
       ownerId: demoUser.id,
       city: 'Córdoba',
       areaText: 'Centro',
-      status: 'APPROVED',
+      status: 'PENDING_APPROVAL',
       expiresAt,
     },
   });
 
-  // Post 3: PENDING_APPROVAL (won't appear in map)
   await prisma.post.create({
     data: {
       instrumentId: drums1.id,
@@ -276,7 +306,7 @@ async function main() {
     },
   });
 
-  // Post 4: APPROVED (will appear in map)
+  // 1 Post con APPROVED
   await prisma.post.create({
     data: {
       instrumentId: violin1.id,
@@ -288,17 +318,156 @@ async function main() {
     },
   });
 
+  // Crear instrumentos adicionales para los demás estados
+  // Instrumento adicional para REJECTED
+  const guitar2 = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Guitarra Eléctrica Fender Stratocaster',
+      description: 'Guitarra eléctrica en buen estado. Ideal para conciertos y grabaciones.',
+      categoryId: guitarCategory.id,
+      brand: 'Fender',
+      model: 'Stratocaster',
+      condition: 'GOOD',
+      extras: 'Cable incluido, estuche blando',
+      photos: {
+        create: [
+          { url: placeholderImages[0], order: 0 },
+          { url: placeholderImages[1], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Buenos Aires',
+            areaText: 'San Telmo',
+            lat: -34.6211,
+            lng: -58.3731,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  // 1 Post con REJECTED
+  await prisma.post.create({
+    data: {
+      instrumentId: guitar2.id,
+      ownerId: demoUser.id,
+      city: 'Buenos Aires',
+      areaText: 'San Telmo',
+      status: 'REJECTED',
+      expiresAt,
+    },
+  });
+
+  // Instrumento adicional para BANNED
+  const piano2 = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Piano Acústico Yamaha',
+      description: 'Piano acústico de cola en excelente estado. Perfecto para estudios profesionales.',
+      categoryId: pianoCategory.id,
+      brand: 'Yamaha',
+      model: 'C3',
+      condition: 'EXCELLENT',
+      extras: 'Banco incluido, pedales funcionando perfectamente',
+      photos: {
+        create: [
+          { url: placeholderImages[1], order: 0 },
+          { url: placeholderImages[2], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Córdoba',
+            areaText: 'Nueva Córdoba',
+            lat: -31.4201,
+            lng: -64.1888,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  // 1 Post con BANNED
+  await prisma.post.create({
+    data: {
+      instrumentId: piano2.id,
+      ownerId: demoUser.id,
+      city: 'Córdoba',
+      areaText: 'Nueva Córdoba',
+      status: 'BANNED',
+      expiresAt,
+    },
+  });
+
+  // Instrumento adicional para EXPIRED
+  const drums2 = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Batería Acústica Tama',
+      description: 'Batería completa con todos los platillos. En muy buen estado.',
+      categoryId: drumsCategory.id,
+      brand: 'Tama',
+      model: 'Superstar',
+      condition: 'GOOD',
+      extras: 'Platillos incluidos, baquetas, fundas',
+      photos: {
+        create: [
+          { url: placeholderImages[2], order: 0 },
+          { url: placeholderImages[0], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Rosario',
+            areaText: 'Norte',
+            lat: -32.9442,
+            lng: -60.6505,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  // 1 Post con EXPIRED
+  await prisma.post.create({
+    data: {
+      instrumentId: drums2.id,
+      ownerId: demoUser.id,
+      city: 'Rosario',
+      areaText: 'Norte',
+      status: 'EXPIRED',
+      expiresAt: expiredAt, // Fecha pasada para que esté expirado
+    },
+  });
+
   console.log('✅ Posts created');
 
   console.log('\n🎉 Seed completed successfully!');
   console.log('\n📝 Demo user credentials:');
   console.log('   Email: demo@viasonora.com');
   console.log('   (Login with Google OAuth - you may need to create this email in Google)');
+  console.log('\n🔐 Admin user credentials:');
+  console.log('   Email: admin@viasonora.com');
+  console.log('   Password: admin123');
   console.log('\n📊 Created:');
   console.log(`   - ${categories.length} categories`);
   console.log('   - 1 demo user (OWNER + CLIENT)');
-  console.log('   - 4 instruments with photos and locations');
-  console.log('   - 4 posts (3 APPROVED, 1 PENDING_APPROVAL)');
+  console.log('   - 1 admin user (ADMIN)');
+  console.log('   - 7 instruments with photos and locations');
+  console.log('   - 7 posts:');
+  console.log('     • 3 PENDING_APPROVAL');
+  console.log('     • 1 APPROVED');
+  console.log('     • 1 REJECTED');
+  console.log('     • 1 BANNED');
+  console.log('     • 1 EXPIRED');
   console.log('\n🗺️  Posts APPROVED will appear in the map!');
 }
 
