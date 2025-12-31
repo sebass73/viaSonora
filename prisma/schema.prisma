@@ -21,6 +21,21 @@ enum StaffRole {
   ADMIN
 }
 
+enum PostStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  BANNED
+  EXPIRED
+}
+
+enum InstrumentCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String?
@@ -49,9 +64,9 @@ model User {
   accounts Account[]
   sessions Session[]
   
-  // Relations (se agregarán en Etapa 1)
-  // instruments Instrument[]
-  // posts       Post[]
+  // Relations
+  instruments Instrument[]
+  posts       Post[]
   
   @@index([email])
 }
@@ -108,9 +123,85 @@ model Category {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
-  // Relations (se agregarán en Etapa 1)
-  // instruments Instrument[]
+  instruments Instrument[]
   
   @@index([slug])
+}
+
+model Instrument {
+  id          String   @id @default(cuid())
+  ownerId    String
+  title       String
+  description String   @db.Text
+  categoryId  String
+  brand       String?
+  model       String?
+  condition   InstrumentCondition
+  extras      String?  @db.Text
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  owner    User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  category Category          @relation(fields: [categoryId], references: [id])
+  photos   InstrumentPhoto[]
+  locations InstrumentLocation[]
+  posts    Post[]
+  
+  @@index([ownerId])
+  @@index([categoryId])
+}
+
+model InstrumentPhoto {
+  id           String   @id @default(cuid())
+  instrumentId String
+  url          String
+  order        Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  
+  instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+  
+  @@index([instrumentId])
+}
+
+model InstrumentLocation {
+  id          String   @id @default(cuid())
+  instrumentId String
+  city        String
+  areaText    String?  // zona/barrio
+  lat         Float
+  lng         Float
+  isPrimary   Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+  
+  @@index([instrumentId])
+  @@index([city])
+}
+
+model Post {
+  id          String    @id @default(cuid())
+  instrumentId String
+  ownerId     String
+  city        String
+  areaText    String?   // zona/barrio para búsqueda
+  status      PostStatus @default(PENDING_APPROVAL)
+  expiresAt   DateTime
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+  owner      User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  @@index([instrumentId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([city])
+  @@index([expiresAt])
 }
 

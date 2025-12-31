@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { Inter } from "next/font/google";
 import "../globals.css";
+import "../leaflet.css";
 import { Providers } from './providers';
 import { Navigation } from '@/components/navigation';
 
