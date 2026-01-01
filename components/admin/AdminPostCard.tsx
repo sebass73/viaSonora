@@ -178,8 +178,9 @@ export function AdminPostCard({ post, onStatusChange }: AdminPostCardProps) {
                   size="sm"
                   variant="outline"
                   asChild
+                  className="flex items-center"
                 >
-                  <Link href={`/posts/${post.id}`}>
+                  <Link href={`/posts/${post.id}`} className="flex items-center">
                     <Eye className="mr-2 h-4 w-4" />
                     Ver Post
                   </Link>
@@ -192,4 +193,5 @@ export function AdminPostCard({ post, onStatusChange }: AdminPostCardProps) {
     </Card>
   );
 }
+
 

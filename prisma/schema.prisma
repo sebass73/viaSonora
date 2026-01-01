@@ -36,6 +36,14 @@ enum InstrumentCondition {
   POOR
 }
 
+enum RequestStatus {
+  REQUESTED
+  ACCEPTED
+  DECLINED
+  CANCELLED
+  COMPLETED
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String?
@@ -68,6 +76,8 @@ model User {
   // Relations
   instruments Instrument[]
   posts       Post[]
+  ownerRequests  Request[] @relation("OwnerRequests")
+  clientRequests Request[] @relation("ClientRequests")
   
   @@index([email])
 }
@@ -148,6 +158,7 @@ model Instrument {
   photos   InstrumentPhoto[]
   locations InstrumentLocation[]
   posts    Post[]
+  requests Request[]
   
   @@index([ownerId])
   @@index([categoryId])
@@ -198,11 +209,39 @@ model Post {
   
   instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
   owner      User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  requests   Request[]
   
   @@index([instrumentId])
   @@index([ownerId])
   @@index([status])
   @@index([city])
   @@index([expiresAt])
+}
+
+model Request {
+  id          String        @id @default(cuid())
+  postId      String
+  instrumentId String
+  ownerId     String
+  clientId    String
+  status      RequestStatus @default(REQUESTED)
+  fromDate    DateTime
+  toDate      DateTime
+  message     String        @db.Text
+  accessories String?       @db.Text
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+  owner      User     @relation("OwnerRequests", fields: [ownerId], references: [id], onDelete: Cascade)
+  client     User     @relation("ClientRequests", fields: [clientId], references: [id], onDelete: Cascade)
+  
+  @@index([postId])
+  @@index([instrumentId])
+  @@index([ownerId])
+  @@index([clientId])
+  @@index([status])
 }
 

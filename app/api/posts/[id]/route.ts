@@ -42,7 +42,12 @@ export async function GET(
             lastName: true,
             image: true,
             locationText: true,
-            // NO incluir contacto
+            email: true,
+            phone: true,
+            whatsappUrl: true,
+            addressText: true,
+            lat: true,
+            lng: true,
           },
         },
       },
@@ -69,7 +74,45 @@ export async function GET(
       }
     }
 
-    // Aplicar jitter a las coordenadas
+    // Verificar si hay una request ACCEPTED del usuario logueado para este post
+    let acceptedRequest = null;
+    let showContact = isOwner; // El owner siempre ve su propio contacto
+
+    if (session?.user?.id && !isOwner) {
+      acceptedRequest = await prisma.request.findFirst({
+        where: {
+          postId: post.id,
+          clientId: session.user.id,
+          status: 'ACCEPTED',
+        },
+      });
+      showContact = !!acceptedRequest;
+    }
+
+    // Preparar datos del owner (con o sin contacto según corresponda)
+    const ownerData: any = {
+      id: post.owner.id,
+      name: post.owner.name,
+      lastName: post.owner.lastName,
+      image: post.owner.image,
+      locationText: post.owner.locationText,
+    };
+
+    // Si hay request aceptada o es el owner, incluir contacto
+    if (showContact) {
+      ownerData.email = post.owner.email;
+      ownerData.phone = post.owner.phone;
+      ownerData.whatsappUrl = post.owner.whatsappUrl;
+      ownerData.addressText = post.owner.addressText;
+      // Incluir ubicación aproximada (con jitter) si existe
+      if (post.owner.lat && post.owner.lng) {
+        const jittered = getPublicLatLng(post.owner.lat, post.owner.lng);
+        ownerData.lat = jittered.lat;
+        ownerData.lng = jittered.lng;
+      }
+    }
+
+    // Aplicar jitter a las coordenadas del instrumento
     const postWithJitter = {
       ...post,
       instrument: {
@@ -83,6 +126,12 @@ export async function GET(
           };
         }),
       },
+      owner: ownerData,
+      // Incluir información sobre la request aceptada
+      acceptedRequest: acceptedRequest ? {
+        id: acceptedRequest.id,
+        status: acceptedRequest.status,
+      } : null,
     };
 
     return NextResponse.json(postWithJitter);

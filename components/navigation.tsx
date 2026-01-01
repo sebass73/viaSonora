@@ -47,6 +47,7 @@ export function Navigation() {
       ? [
           { href: '/instruments', label: t('myInstruments') },
           { href: '/posts', label: t('myPosts') },
+          { href: '/requests', label: t('myRequests') },
           { href: '/profile', label: t('profile') },
           ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
         ]

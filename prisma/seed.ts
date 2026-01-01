@@ -450,6 +450,62 @@ async function main() {
 
   console.log('✅ Posts created');
 
+  // Create client user for requests
+  const clientUser = await prisma.user.upsert({
+    where: { email: 'client@viasonora.com' },
+    update: {},
+    create: {
+      email: 'client@viasonora.com',
+      name: 'María',
+      lastName: 'Viajera',
+      phone: '+54 9 11 9876-5432',
+      whatsappUrl: 'https://wa.me/5491198765432',
+      addressText: 'Av. Libertador 5678',
+      locationText: 'Belgrano',
+      lat: -34.5639,
+      lng: -58.4558,
+      roles: ['CLIENT'],
+      staffRole: 'NONE',
+      onboardingCompleted: true,
+      termsAcceptedAt: new Date(),
+    },
+  });
+
+  console.log('✅ Client user created');
+
+  // Get the APPROVED post (violin1)
+  const approvedPost = await prisma.post.findFirst({
+    where: {
+      instrumentId: violin1.id,
+      status: 'APPROVED',
+    },
+  });
+
+  if (approvedPost) {
+    // Create a REQUESTED request
+    const now = new Date();
+    const fromDate = new Date(now);
+    fromDate.setDate(fromDate.getDate() + 5); // 5 days from now
+    const toDate = new Date(fromDate);
+    toDate.setDate(toDate.getDate() + 7); // 7 days later
+
+    await prisma.request.create({
+      data: {
+        postId: approvedPost.id,
+        instrumentId: violin1.id,
+        ownerId: demoUser.id,
+        clientId: clientUser.id,
+        fromDate,
+        toDate,
+        message: 'Necesito el violín para un concierto en Mendoza. ¿Está disponible para esas fechas?',
+        accessories: 'Necesitaría también el arco y la resina si es posible.',
+        status: 'REQUESTED',
+      },
+    });
+
+    console.log('✅ Request created (REQUESTED)');
+  }
+
   console.log('\n🎉 Seed completed successfully!');
   console.log('\n📝 Demo user credentials:');
   console.log('   Email: demo@viasonora.com');
@@ -460,6 +516,7 @@ async function main() {
   console.log('\n📊 Created:');
   console.log(`   - ${categories.length} categories`);
   console.log('   - 1 demo user (OWNER + CLIENT)');
+  console.log('   - 1 client user (CLIENT)');
   console.log('   - 1 admin user (ADMIN)');
   console.log('   - 7 instruments with photos and locations');
   console.log('   - 7 posts:');
@@ -468,7 +525,11 @@ async function main() {
   console.log('     • 1 REJECTED');
   console.log('     • 1 BANNED');
   console.log('     • 1 EXPIRED');
+  console.log('   - 1 request (REQUESTED)');
   console.log('\n🗺️  Posts APPROVED will appear in the map!');
+  console.log('\n👤 Client user credentials:');
+  console.log('   Email: client@viasonora.com');
+  console.log('   (Puedes crear este usuario con Google OAuth o email/password)');
 }
 
 main()

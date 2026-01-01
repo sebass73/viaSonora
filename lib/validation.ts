@@ -71,3 +71,23 @@ export const searchPostsSchema = z.object({
   radius: z.number().min(0).max(100).optional(), // km
 });
 
+// Request validation
+export const createRequestSchema = z.object({
+  postId: z.string().min(1),
+  fromDate: z.string().datetime(),
+  toDate: z.string().datetime(),
+  message: z.string().min(10, 'El mensaje debe tener al menos 10 caracteres').max(2000),
+  accessories: z.string().max(500).optional(),
+}).refine((data) => {
+  const from = new Date(data.fromDate);
+  const to = new Date(data.toDate);
+  return to > from;
+}, {
+  message: 'La fecha de fin debe ser posterior a la fecha de inicio',
+  path: ['toDate'],
+});
+
+export const updateRequestStatusSchema = z.object({
+  status: z.enum(['ACCEPTED', 'DECLINED', 'CANCELLED', 'COMPLETED']),
+});
+

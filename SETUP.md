@@ -114,3 +114,4 @@ Verifica que el archivo `.env` exista y tenga `DATABASE_URL` configurado.
 
 Una vez que todo funcione, podemos proceder con la **Etapa 1: Core "WOW"** (ABM Instrumentos + Posts + Mapa).
 
+

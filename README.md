@@ -87,8 +87,8 @@ La app estará disponible en http://localhost:3000
 ## Etapas de desarrollo
 
 - ✅ **Etapa 0**: Setup & Fundaciones
-- 🔄 **Etapa 1**: Core "WOW" (ABM Instrumentos + Posts + Mapa)
-- ⏳ **Etapa 2**: Requests + Contacto bloqueado
+- ✅ **Etapa 1**: Core "WOW" (ABM Instrumentos + Posts + Mapa)
+- ✅ **Etapa 2**: Requests + Contacto bloqueado
 - ⏳ **Etapa 3**: Admin/Operador (moderación)
 - ⏳ **Etapa 4**: Stubs monetización
 

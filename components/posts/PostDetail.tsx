@@ -3,9 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/routing';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
+import { RequestForm } from '@/components/requests/RequestForm';
+import Link from 'next/link';
 
 interface Post {
   id: string;
@@ -43,7 +46,18 @@ interface Post {
     name: string | null;
     lastName: string | null;
     image: string | null;
+    email?: string;
+    phone?: string;
+    whatsappUrl?: string;
+    addressText?: string;
+    locationText?: string | null;
+    lat?: number;
+    lng?: number;
   };
+  acceptedRequest?: {
+    id: string;
+    status: string;
+  } | null;
 }
 
 const conditionLabels: Record<string, string> = {
@@ -56,8 +70,10 @@ const conditionLabels: Record<string, string> = {
 export function PostDetail() {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showRequestForm, setShowRequestForm] = useState(false);
 
   useEffect(() => {
     if (params.id) {
@@ -83,6 +99,15 @@ export function PostDetail() {
       setLoading(false);
     }
   };
+
+  const handleRequestSuccess = () => {
+    setShowRequestForm(false);
+    fetchPost(); // Recargar el post para mostrar el estado actualizado
+  };
+
+  const isOwner = post && session?.user?.id === post.ownerId;
+  const hasAcceptedRequest = post?.acceptedRequest?.status === 'ACCEPTED';
+  const showContact = isOwner || hasAcceptedRequest;
 
   if (loading) {
     return <div className="container py-8">Cargando...</div>;
@@ -162,7 +187,7 @@ export function PostDetail() {
           </Card>
         </div>
 
-        <div>
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Propietario</CardTitle>
@@ -186,15 +211,77 @@ export function PostDetail() {
                 </div>
               </div>
 
-              <div className="bg-muted p-4 rounded-lg">
-                <p className="text-sm text-muted-foreground">
-                  Para contactar al propietario, debes enviar una solicitud y esperar su aprobación.
-                </p>
-              </div>
-
-              <Button className="w-full mt-4" disabled>
-                Enviar Solicitud (Próximamente)
-              </Button>
+              {showContact ? (
+                <div className="space-y-3">
+                  {post.owner.email && (
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">Email</h4>
+                      <a href={`mailto:${post.owner.email}`} className="text-primary hover:underline">
+                        {post.owner.email}
+                      </a>
+                    </div>
+                  )}
+                  {post.owner.phone && (
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">Teléfono</h4>
+                      <a href={`tel:${post.owner.phone}`} className="text-primary hover:underline">
+                        {post.owner.phone}
+                      </a>
+                    </div>
+                  )}
+                  {post.owner.whatsappUrl && (
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">WhatsApp</h4>
+                      <Link href={post.owner.whatsappUrl} target="_blank" className="text-primary hover:underline">
+                        Contactar por WhatsApp
+                      </Link>
+                    </div>
+                  )}
+                  {post.owner.addressText && (
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">Dirección</h4>
+                      <p className="text-muted-foreground">{post.owner.addressText}</p>
+                    </div>
+                  )}
+                  {post.owner.locationText && (
+                    <div>
+                      <h4 className="font-semibold text-sm mb-1">Zona/Barrio</h4>
+                      <p className="text-muted-foreground">{post.owner.locationText}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {hasAcceptedRequest ? (
+                    <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                      <p className="text-sm text-green-800">
+                        Tu solicitud ha sido aceptada. El contacto del propietario se mostrará arriba.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="bg-muted p-4 rounded-lg mb-4">
+                        <p className="text-sm text-muted-foreground">
+                          Para contactar al propietario, debes enviar una solicitud y esperar su aprobación.
+                        </p>
+                      </div>
+                      {session ? (
+                        !showRequestForm ? (
+                          <Button className="w-full" onClick={() => setShowRequestForm(true)}>
+                            Enviar Solicitud
+                          </Button>
+                        ) : (
+                          <RequestForm postId={post.id} onSuccess={handleRequestSuccess} />
+                        )
+                      ) : (
+                        <Link href="/login">
+                          <Button className="w-full">Iniciar sesión para enviar solicitud</Button>
+                        </Link>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
