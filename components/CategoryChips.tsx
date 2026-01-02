@@ -59,7 +59,7 @@ export function CategoryChips({
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2 justify-around">
       <Button
         variant={selectedCategoryId === null ? "default" : "outline"}
         size="sm"

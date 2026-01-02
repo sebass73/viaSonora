@@ -95,21 +95,23 @@ export function Navigation() {
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="p-4 border-b">
-            <Link href="/" className="flex flex-col space-y-1">
-              <div className="flex items-center space-x-2">
+          <div className="p-4 border-b flex items-center justify-center">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="flex-shrink-0">
                 <Image
                   src="/logo.png"
                   alt="ViaSonora"
-                  width={32}
-                  height={32}
+                  width={56}
+                  height={56}
                   className="object-contain"
                 />
-                <span className="font-bold text-xl">ViaSonora</span>
               </div>
-              <span className="text-xs text-muted-foreground pl-10">
-                {t('findInstrumentsSubtitle')}
-              </span>
+              <div className="flex flex-col">
+                <span className="font-bold text-xl leading-tight">ViaSonora</span>
+                <span className="text-xs text-muted-foreground leading-tight">
+                  {t('findInstrumentsSubtitle')}
+                </span>
+              </div>
             </Link>
           </div>
           
@@ -189,20 +191,22 @@ export function Navigation() {
       {/* Mobile Navigation - Top Bar */}
       <nav className="md:hidden border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-auto py-2 items-center justify-between">
-          <Link href="/" className="flex flex-col space-y-0.5 min-w-0 flex-1">
-            <div className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex-shrink-0">
               <Image
                 src="/logo.png"
                 alt="ViaSonora"
-                width={24}
-                height={24}
-                className="object-contain flex-shrink-0"
+                width={48}
+                height={48}
+                className="object-contain"
               />
-              <span className="font-bold text-lg leading-tight">ViaSonora</span>
             </div>
-            <span className="text-[10px] text-muted-foreground pl-7 leading-tight">
-              {t('findInstrumentsSubtitle')}
-            </span>
+            <div className="flex flex-col min-w-0">
+              <span className="font-bold text-lg leading-tight truncate">ViaSonora</span>
+              <span className="text-[10px] text-muted-foreground leading-tight truncate">
+                {t('findInstrumentsSubtitle')}
+              </span>
+            </div>
           </Link>
           
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>

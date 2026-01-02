@@ -186,9 +186,7 @@ export default function HomePage() {
             {session && (
               <Button
                 type="button"
-                variant="outline"
-                onClick={() => router.push('/posts/new')}
-                className="flex-1 sm:flex-initial"
+                className="flex-1 sm:flex-initial bg-primary text-primary-foreground hover:bg-primary/90 md:bg-background md:text-foreground md:border md:border-input md:hover:bg-accent md:hover:text-accent-foreground"
               >
                 {t('addNew')}
               </Button>
@@ -300,7 +298,7 @@ export default function HomePage() {
         </div>
 
         {/* Mapa en la parte inferior - ocupa el resto del espacio */}
-        <div className="flex-1 min-h-0 border-t">
+        <div className="flex-1 min-h-0 border-t m-2">
           {!loading && (
             <MapViewDynamic
               posts={posts}
