@@ -13,7 +13,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Menu, User as UserIcon } from 'lucide-react';
+import { Menu, User as UserIcon, CreditCard, HelpCircle, FileText, Lock as LockIcon, Mail } from 'lucide-react';
+import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import Image from 'next/image';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
@@ -90,7 +91,7 @@ export function Navigation() {
   };
 
   return (
-    <>
+    <Dialog>
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="flex flex-col h-full">
@@ -137,6 +138,11 @@ export function Navigation() {
             <div className="space-y-2">
               <LanguageSwitcher />
               <ThemeSwitcher />
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-full">
+                  {t('about')}
+                </Button>
+              </DialogTrigger>
             </div>
           </div>
 
@@ -236,6 +242,11 @@ export function Navigation() {
                 <div className="pt-4 border-t space-y-3">
                   <LanguageSwitcher />
                   <ThemeSwitcher />
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="sm" className="w-full mt-2">
+                      {t('about')}
+                    </Button>
+                  </DialogTrigger>
                 </div>
                 <div className="pt-4 border-t">
                   {status === 'loading' ? (
@@ -286,7 +297,51 @@ export function Navigation() {
           </Sheet>
         </div>
       </nav>
-    </>
+
+      {/* About dialog content (root Dialog is wrapping entire nav) */}
+      <DialogContent>
+        <DialogTitle>{t('about')}</DialogTitle>
+        <DialogDescription className="mb-2">{t('aboutDescription')}</DialogDescription>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mt-2">
+          <DialogClose asChild>
+            <Link href="/pricing" className="w-full h-28 sm:h-36 md:h-40 rounded-lg border bg-background flex flex-col items-center justify-center gap-2 text-sm font-medium">
+              <CreditCard className="h-6 w-6 text-primary" />
+              <span>{t('aboutPricing')}</span>
+            </Link>
+          </DialogClose>
+
+          <DialogClose asChild>
+            <Link href="/faq" className="w-full h-28 sm:h-36 md:h-40 rounded-lg border bg-background flex flex-col items-center justify-center gap-2 text-sm font-medium">
+              <HelpCircle className="h-6 w-6 text-primary" />
+              <span>{t('aboutFAQ')}</span>
+            </Link>
+          </DialogClose>
+
+          <DialogClose asChild>
+            <Link href="/terms" className="w-full h-28 sm:h-36 md:h-40 rounded-lg border bg-background flex flex-col items-center justify-center gap-2 text-sm font-medium">
+              <FileText className="h-6 w-6 text-primary" />
+              <span>{t('aboutTerms')}</span>
+            </Link>
+          </DialogClose>
+
+          <DialogClose asChild>
+            <Link href="/privacy" className="w-full h-28 sm:h-36 md:h-40 rounded-lg border bg-background flex flex-col items-center justify-center gap-2 text-sm font-medium">
+              <LockIcon className="h-6 w-6 text-primary" />
+              <span>{t('aboutPrivacy')}</span>
+            </Link>
+          </DialogClose>
+
+          <DialogClose asChild>
+            <Link href="/contact" className="w-full h-28 sm:h-36 md:h-40 rounded-lg border bg-background flex flex-col items-center justify-center gap-2 text-sm font-medium">
+              <Mail className="h-6 w-6 text-primary" />
+              <span>{t('contactUs')}</span>
+            </Link>
+          </DialogClose>
+        </div>
+
+      </DialogContent>
+    </Dialog>
   );
 }
 

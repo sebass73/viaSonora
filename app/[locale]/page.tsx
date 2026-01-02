@@ -10,7 +10,9 @@ import { useRouter, Link } from '@/i18n/routing';
 import { useSession } from 'next-auth/react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Search, PlusCircle, Lock, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, PlusCircle, Lock, MapPin, Info, ShieldCheck, Globe, Users, FileText } from 'lucide-react';
+import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { TrustBlock } from '@/components/TrustBlock';
 import { CategoryChips } from '@/components/CategoryChips';
 import { InstrumentAutocomplete } from '@/components/InstrumentAutocomplete';
 
@@ -213,8 +215,8 @@ export default function HomePage() {
       {/* Contenedor principal: Cards + Mapa */}
       <div className="flex-1 min-h-0 flex flex-col">
         {/* Sección de cards de instrumentos - espacio mínimo necesario */}
-        <div className="flex-shrink-0 overflow-hidden relative" style={{ minHeight: '180px', maxHeight: '220px' }}>
-          <div className="container py-2 h-full flex items-center px-4 md:px-6">
+        <div className="flex-shrink-0 overflow-hidden relative" style={{ minHeight: '180px', maxHeight: '220px' }}> 
+          <div className="container py-3 h-full flex items-center px-4 md:px-6">
             {posts.length > 0 && (
               <Button
                 variant="outline"
@@ -305,38 +307,85 @@ export default function HomePage() {
         </div>
 
         {/* Banner entre cards y mapa */}
-        <div className="container mt-3 mb-3">
-          <div className="bg-background/5 border border-border rounded-md py-2 px-3">
-            <div className="flex items-center justify-between gap-4">
+        <div className="container mb-2">
+          <div className="bg-background/5 border border-border rounded-md py-1 px-2">
+            <div className="flex items-center justify-between gap-2 flex-nowrap">
               {/* Hidden on mobile: show only on md+ */}
-              <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
-                <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary cursor-pointer">
+              <div className="hidden md:flex items-center gap-4 text-xs text-muted-foreground flex-nowrap overflow-x-auto">
+                <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-md px-2 py-0.5 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary cursor-pointer">
                   <PlusCircle className="h-4 w-4" />
                   <span className="whitespace-nowrap">{t('bannerPublish')}</span>
                 </div>
-                <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary cursor-pointer">
+                <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-md px-2 py-0.5 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary cursor-pointer">
                   <Lock className="h-4 w-4" />
                   <span className="whitespace-nowrap">{t('bannerProtected')}</span>
                 </div>
-                <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary cursor-pointer">
+                <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-md px-2 py-0.5 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary cursor-pointer">
                   <MapPin className="h-4 w-4" />
                   <span className="whitespace-nowrap">{t('bannerMap')}</span>
                 </div>
               </div>
 
               {/* Always visible: on mobile center, on desktop align right */}
-              <div className="flex items-center w-full md:w-auto justify-center md:justify-end">
-                <Link href="/how-it-works" className="flex items-center gap-2 text-sm font-medium text-primary">
-                  <span>{t('bannerHowItWorks')}</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
+              <div className="flex items-center w-full md:w-auto justify-center md:justify-end text-xs">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="flex items-center gap-2 text-xs font-medium text-primary whitespace-nowrap">
+                      <span>{t('bannerHowItWorks')}</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </DialogTrigger>
+
+                  <DialogContent>
+                    <DialogTitle>{t('howTitle') || t('bannerHowItWorks')}</DialogTitle>
+                    <DialogDescription className="mb-2">{t('howDescription') || ''}</DialogDescription>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                      <DialogClose asChild>
+                        <Link href="/how/overview" className="w-full rounded-lg border bg-background flex items-center gap-3 p-3">
+                          <Info className="h-5 w-5 text-primary" />
+                          <span className="text-sm font-medium">{t('howOverview')}</span>
+                        </Link>
+                      </DialogClose>
+
+                      <DialogClose asChild>
+                        <Link href="/how/care" className="w-full rounded-lg border bg-background flex items-center gap-3 p-3">
+                          <ShieldCheck className="h-5 w-5 text-primary" />
+                          <span className="text-sm font-medium">{t('howCare')}</span>
+                        </Link>
+                      </DialogClose>
+
+                      <DialogClose asChild>
+                        <Link href="/how/travelers" className="w-full rounded-lg border bg-background flex items-center gap-3 p-3">
+                          <Globe className="h-5 w-5 text-primary" />
+                          <span className="text-sm font-medium">{t('howTravelers')}</span>
+                        </Link>
+                      </DialogClose>
+
+                      <DialogClose asChild>
+                        <Link href="/how/owners" className="w-full rounded-lg border bg-background flex items-center gap-3 p-3">
+                          <Users className="h-5 w-5 text-primary" />
+                          <span className="text-sm font-medium">{t('howOwners')}</span>
+                        </Link>
+                      </DialogClose>
+
+                      <DialogClose asChild>
+                        <Link href="/how/transparency" className="w-full rounded-lg border bg-background flex items-center gap-3 p-3">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <span className="text-sm font-medium">{t('howTransparency')}</span>
+                        </Link>
+                      </DialogClose>
+                    </div>
+
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           </div>
         </div>
 
         {/* Mapa en la parte inferior - ocupa el resto del espacio */}
-        <div className="flex-1 min-h-0 border-t overflow-hidden p-2">
+        <div className="flex-1 min-h-0 border-t overflow-hidden p-1">
           {!loading && (
             <MapViewDynamic
               posts={posts}
@@ -345,6 +394,11 @@ export default function HomePage() {
               onMarkerClick={(post) => handleRequest(post.id)}
             />
           )}
+        </div>
+
+        {/* Trust / confidence block */}
+        <div className="container mt-2">
+          <TrustBlock />
         </div>
       </div>
     </div>

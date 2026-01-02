@@ -15,6 +15,8 @@ const locales = [
   { value: 'es', label: 'Español' },
   { value: 'it', label: 'Italiano' },
   { value: 'en', label: 'English' },
+  { value: 'de', label: 'Deutsch' },
+  { value: 'fr', label: 'Français' },
 ];
 
 export function LanguageSwitcher() {
