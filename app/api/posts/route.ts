@@ -93,6 +93,8 @@ export async function GET(request: NextRequest) {
         { instrument: { title: { contains: search, mode: 'insensitive' } } },
         { instrument: { description: { contains: search, mode: 'insensitive' } } },
         { instrument: { brand: { contains: search, mode: 'insensitive' } } },
+        { city: { contains: search, mode: 'insensitive' } },
+        { areaText: { contains: search, mode: 'insensitive' } },
       ];
     }
 

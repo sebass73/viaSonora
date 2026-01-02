@@ -67,12 +67,12 @@ export default async function LocaleLayout({
   const messages = await getMessages({ locale });
 
   return (
-    <html lang={locale} className={`${inter.className} h-full`}>
-      <body className="h-full flex flex-col">
+    <html lang={locale} className={`${inter.className} h-full`} suppressHydrationWarning>
+      <body className="h-full flex flex-col" suppressHydrationWarning>
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <Navigation />
-            <main className="flex-1 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto md:ml-64">
               {children}
             </main>
           </Providers>

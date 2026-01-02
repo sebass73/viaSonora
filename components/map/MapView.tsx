@@ -54,7 +54,7 @@ function MapController({ center, zoom }: { center?: [number, number]; zoom?: num
 
 export function MapView({ posts, center = [-34.6037, -58.3816], zoom = 13, onMarkerClick }: MapViewProps) {
   return (
-    <div className="w-full h-full min-h-[500px] rounded-lg overflow-hidden">
+    <div className="w-full h-full min-h-[300px] rounded-lg overflow-hidden">
       <MapContainer
         center={center}
         zoom={zoom}
