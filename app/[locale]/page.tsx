@@ -54,8 +54,9 @@ export default function HomePage() {
 
       const res = await fetch(`/api/posts?${params.toString()}`);
       if (res.ok) {
-        const data = await res.json();
-        setPosts(data);
+        const result = await res.json();
+        // El API ahora retorna { data: [...], pagination: {...} }
+        setPosts(result.data || result);
       }
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -86,7 +87,7 @@ export default function HomePage() {
     : [-34.6037, -58.3816]; // Buenos Aires por defecto
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-full">
       {/* Barra de búsqueda sticky */}
       <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container py-4">

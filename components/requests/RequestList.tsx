@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { RequestCard } from './RequestCard';
 import { Button } from '@/components/ui/button';
+import { Pagination } from '@/components/ui/pagination';
 
 interface Request {
   id: string;
@@ -53,23 +54,45 @@ export function RequestList() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'sent' | 'received'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    pageSize: 3,
+    totalPages: 0,
+  });
+
+  useEffect(() => {
+    if (session) {
+      setCurrentPage(1); // Resetear a página 1 cuando cambia el tab
+      fetchRequests();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, activeTab]);
 
   useEffect(() => {
     if (session) {
       fetchRequests();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, activeTab]);
+  }, [currentPage]);
 
   const fetchRequests = async () => {
     try {
       setLoading(true);
       const type = activeTab === 'sent' ? 'sent' : activeTab === 'received' ? 'received' : null;
-      const params = type ? `?type=${type}` : '';
-      const res = await fetch(`/api/requests${params}`);
+      const params = new URLSearchParams();
+      if (type) params.set('type', type);
+      params.set('page', currentPage.toString());
+      params.set('pageSize', pagination.pageSize.toString());
+      
+      const res = await fetch(`/api/requests?${params.toString()}`);
       if (res.ok) {
-        const data = await res.json();
-        setRequests(data);
+        const result = await res.json();
+        setRequests(result.data || result); // Compatibilidad con respuesta antigua
+        if (result.pagination) {
+          setPagination(result.pagination);
+        }
       } else {
         console.error('Error fetching requests');
       }
@@ -100,18 +123,18 @@ export function RequestList() {
     }
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (!session) {
-    return <div className="container py-8">Debes iniciar sesión para ver tus solicitudes</div>;
+    return <div className="container py-4">Debes iniciar sesión para ver tus solicitudes</div>;
   }
 
   if (loading) {
-    return <div className="container py-8">Cargando...</div>;
+    return <div className="container py-4">Cargando...</div>;
   }
-
-  const sentRequests = requests.filter((r) => r.client.id === session.user?.id);
-  const receivedRequests = requests.filter((r) => r.owner.id === session.user?.id);
-
-  const displayRequests = activeTab === 'sent' ? sentRequests : activeTab === 'received' ? receivedRequests : requests;
 
   return (
     <div className="space-y-4">
@@ -121,40 +144,47 @@ export function RequestList() {
           onClick={() => setActiveTab('all')}
           className="rounded-b-none"
         >
-          Todas ({requests.length})
+          Todas ({pagination.total})
         </Button>
         <Button
           variant={activeTab === 'sent' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('sent')}
           className="rounded-b-none"
         >
-          Enviadas ({sentRequests.length})
+          Enviadas
         </Button>
         <Button
           variant={activeTab === 'received' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('received')}
           className="rounded-b-none"
         >
-          Recibidas ({receivedRequests.length})
+          Recibidas
         </Button>
       </div>
 
       <div className="space-y-4">
-        {displayRequests.length === 0 ? (
+        {requests.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             {activeTab === 'sent' && 'No has enviado solicitudes'}
             {activeTab === 'received' && 'No has recibido solicitudes'}
             {activeTab === 'all' && 'No tienes solicitudes'}
           </div>
         ) : (
-          displayRequests.map((request) => (
-            <RequestCard
-              key={request.id}
-              request={request}
-              currentUserId={session.user?.id || ''}
-              onStatusChange={handleStatusChange}
+          <>
+            {requests.map((request) => (
+              <RequestCard
+                key={request.id}
+                request={request}
+                currentUserId={session.user?.id || ''}
+                onStatusChange={handleStatusChange}
+              />
+            ))}
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
             />
-          ))
+          </>
         )}
       </div>
     </div>

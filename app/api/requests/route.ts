@@ -14,6 +14,10 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type'); // 'sent' | 'received' | null (ambos)
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(searchParams.get('pageSize') || '12', 10);
+    
+    const skip = (page - 1) * pageSize;
 
     const where: any = {};
     
@@ -28,6 +32,9 @@ export async function GET(request: NextRequest) {
         { clientId: session.user.id },
       ];
     }
+
+    // Obtener total de registros
+    const total = await prisma.request.count({ where });
 
     const requests = await prisma.request.findMany({
       where,
@@ -74,9 +81,21 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { createdAt: 'desc' },
+      skip,
+      take: pageSize,
     });
 
-    return NextResponse.json(requests);
+    const totalPages = Math.ceil(total / pageSize);
+
+    return NextResponse.json({
+      data: requests,
+      pagination: {
+        total,
+        page,
+        pageSize,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error('Error fetching requests:', error);
     return NextResponse.json(

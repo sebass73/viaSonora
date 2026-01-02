@@ -5,7 +5,7 @@ import { RequestList } from '@/components/requests/RequestList';
 
 export default function RequestsPage() {
   return (
-    <div className="container py-8">
+    <div className="container py-4">
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Mis Solicitudes</CardTitle>

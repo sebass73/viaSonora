@@ -11,6 +11,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(searchParams.get('pageSize') || '12', 10);
+    
+    const skip = (page - 1) * pageSize;
+
+    // Obtener total de registros
+    const total = await prisma.instrument.count({
+      where: { ownerId: session.user.id },
+    });
+
     const instruments = await prisma.instrument.findMany({
       where: { ownerId: session.user.id },
       include: {
@@ -24,9 +35,21 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { createdAt: 'desc' },
+      skip,
+      take: pageSize,
     });
 
-    return NextResponse.json(instruments);
+    const totalPages = Math.ceil(total / pageSize);
+
+    return NextResponse.json({
+      data: instruments,
+      pagination: {
+        total,
+        page,
+        pageSize,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error('Error fetching instruments:', error);
     return NextResponse.json(

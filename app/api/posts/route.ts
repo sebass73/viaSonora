@@ -18,6 +18,16 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
 
+      const page = parseInt(searchParams.get('page') || '1', 10);
+      const pageSize = parseInt(searchParams.get('pageSize') || '12', 10);
+      
+      const skip = (page - 1) * pageSize;
+
+      // Obtener total de registros
+      const total = await prisma.post.count({
+        where: { ownerId: session.user.id },
+      });
+
       const posts = await prisma.post.findMany({
         where: { ownerId: session.user.id },
         include: {
@@ -36,9 +46,21 @@ export async function GET(request: NextRequest) {
           },
         },
         orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
       });
 
-      return NextResponse.json(posts);
+      const totalPages = Math.ceil(total / pageSize);
+
+      return NextResponse.json({
+        data: posts,
+        pagination: {
+          total,
+          page,
+          pageSize,
+          totalPages,
+        },
+      });
     }
 
     // Posts públicos: solo APPROVED y no expirados
@@ -46,6 +68,10 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const city = searchParams.get('city');
     const categoryId = searchParams.get('categoryId');
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(searchParams.get('pageSize') || '12', 10);
+    
+    const skip = (page - 1) * pageSize;
 
     const where: any = {
       status: 'APPROVED',
@@ -70,6 +96,9 @@ export async function GET(request: NextRequest) {
       ];
     }
 
+    // Obtener total de registros
+    const total = await prisma.post.count({ where });
+
     const posts = await prisma.post.findMany({
       where,
       include: {
@@ -88,7 +117,8 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { createdAt: 'desc' },
-      take: 100, // Límite para MVP
+      skip,
+      take: pageSize,
     });
 
     // Aplicar jitter a las coordenadas para proteger privacidad
@@ -111,7 +141,17 @@ export async function GET(request: NextRequest) {
       return post;
     });
 
-    return NextResponse.json(postsWithJitter);
+    const totalPages = Math.ceil(total / pageSize);
+
+    return NextResponse.json({
+      data: postsWithJitter,
+      pagination: {
+        total,
+        page,
+        pageSize,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error('Error fetching posts:', error);
     return NextResponse.json(
