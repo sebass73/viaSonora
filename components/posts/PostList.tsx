@@ -132,11 +132,11 @@ export function PostList() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
             {posts.map((post) => (
               <Card key={post.id}>
                 {post.instrument.photos[0] && (
-                  <div className="relative w-full h-32 md:h-48">
+                  <div className="relative w-full h-24 md:h-48">
                     <Image
                       src={post.instrument.photos[0].url}
                       alt={post.instrument.title}
@@ -145,23 +145,23 @@ export function PostList() {
                     />
                   </div>
                 )}
-                <CardHeader>
-                  <CardTitle className="line-clamp-1">{post.instrument.title}</CardTitle>
-                  <CardDescription>
+                <CardHeader className="p-3 md:p-6">
+                  <CardTitle className="line-clamp-1 text-sm md:text-base">{post.instrument.title}</CardTitle>
+                  <CardDescription className="text-xs md:text-sm">
                     {post.instrument.category.nameEs} • {post.city}
                     {post.areaText && `, ${post.areaText}`}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className={`text-xs px-2 py-1 rounded ${statusColors[post.status] || 'bg-gray-100 text-gray-800'}`}>
+                <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+                  <div className="flex items-center gap-1.5 md:gap-2 mb-3 md:mb-4 flex-wrap">
+                    <span className={`text-xs px-1.5 md:px-2 py-0.5 md:py-1 rounded ${statusColors[post.status] || 'bg-gray-100 text-gray-800'}`}>
                       {statusLabels[post.status] || post.status}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       Expira: {new Date(post.expiresAt).toLocaleDateString()}
                     </span>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5 md:gap-2">
                     <Button
                       variant="outline"
                       size="sm"

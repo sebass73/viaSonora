@@ -113,11 +113,11 @@ export function InstrumentList() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
             {instruments.map((instrument) => (
               <Card key={instrument.id}>
                 {instrument.photos[0] && (
-                  <div className="relative w-full h-32 md:h-48">
+                  <div className="relative w-full h-24 md:h-48">
                     <Image
                       src={instrument.photos[0].url}
                       alt={instrument.title}
@@ -126,18 +126,18 @@ export function InstrumentList() {
                     />
                   </div>
                 )}
-                <CardHeader>
-                  <CardTitle className="line-clamp-1">{instrument.title}</CardTitle>
-                  <CardDescription>
+                <CardHeader className="p-3 md:p-6">
+                  <CardTitle className="line-clamp-1 text-sm md:text-base">{instrument.title}</CardTitle>
+                  <CardDescription className="text-xs md:text-sm">
                     {instrument.category.nameEs}
                     {instrument.locations[0] && ` • ${instrument.locations[0].city}`}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mb-3 md:mb-4">
                     {instrument.description}
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5 md:gap-2">
                     <Button
                       variant="outline"
                       size="sm"

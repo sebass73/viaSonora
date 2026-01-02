@@ -65,7 +65,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
   };
 
   return (
-    <div className="flex items-center justify-center gap-1 md:gap-2 mt-4 md:mt-8">
+    <div className="flex items-center justify-center gap-1 md:gap-2 mt-3 md:mt-8">
       <Button
         variant="outline"
         size="sm"

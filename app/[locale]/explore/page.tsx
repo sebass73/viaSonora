@@ -110,7 +110,7 @@ export default function ExplorePage() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
             {posts.map((post) => (
               <Card
                 key={post.id}
@@ -118,7 +118,7 @@ export default function ExplorePage() {
                 onClick={() => router.push(`/posts/${post.id}`)}
               >
                 {post.instrument.photos[0] && (
-                  <div className="relative w-full h-32 md:h-48">
+                  <div className="relative w-full h-24 md:h-48">
                     <Image
                       src={post.instrument.photos[0].url}
                       alt={post.instrument.title}
@@ -127,9 +127,9 @@ export default function ExplorePage() {
                     />
                   </div>
                 )}
-                <CardHeader>
-                  <CardTitle className="line-clamp-1">{post.instrument.title}</CardTitle>
-                  <CardDescription>
+                <CardHeader className="p-3 md:p-6">
+                  <CardTitle className="line-clamp-1 text-sm md:text-base">{post.instrument.title}</CardTitle>
+                  <CardDescription className="text-xs md:text-sm">
                     {post.instrument.category.nameEs} • {post.city}
                     {post.areaText && `, ${post.areaText}`}
                   </CardDescription>

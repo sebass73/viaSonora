@@ -7,11 +7,45 @@ import "../globals.css";
 import "../leaflet.css";
 import { Providers } from './providers';
 import { Navigation } from '@/components/navigation';
+import type { Metadata } from 'next';
 
 const inter = Inter({ subsets: ["latin"] });
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://via-sonora.vercel.app';
+  
+  return {
+    title: 'ViaSonora - Marketplace de Instrumentos Musicales para Músicos Viajeros',
+    description: 'Alquila y comparte instrumentos musicales mientras viajas. Conecta con músicos en todo el mundo y encuentra el instrumento perfecto para tu próxima aventura musical.',
+    openGraph: {
+      title: 'ViaSonora - Marketplace de Instrumentos Musicales',
+      description: 'Alquila y comparte instrumentos musicales mientras viajas. Conecta con músicos en todo el mundo.',
+      url: `${baseUrl}/${locale}`,
+      siteName: 'ViaSonora',
+      images: [
+        {
+          url: `${baseUrl}/og-image.jpg`, // Puedes agregar una imagen OG más adelante
+          width: 1200,
+          height: 630,
+          alt: 'ViaSonora - Marketplace de Instrumentos Musicales',
+        },
+      ],
+      locale: locale,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'ViaSonora - Marketplace de Instrumentos Musicales',
+      description: 'Alquila y comparte instrumentos musicales mientras viajas.',
+      images: [`${baseUrl}/og-image.jpg`],
+    },
+  };
 }
 
 export default async function LocaleLayout({
