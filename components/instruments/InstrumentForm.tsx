@@ -199,7 +199,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
       lat: shouldUseProfile ? (userProfileLocation.lat || 0) : 0,
       lng: shouldUseProfile ? (userProfileLocation.lng || 0) : 0,
       isPrimary: locations.length === 0,
-      useProfileLocation: shouldUseProfile || false,
+      useProfileLocation: Boolean(shouldUseProfile),
     }]);
   };
 
