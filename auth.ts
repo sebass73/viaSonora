@@ -65,19 +65,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user, account }) {
       if (user) {
         token.sub = user.id;
-        // Obtener staffRole del usuario
+        // Obtener staffRole y roles del usuario
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { staffRole: true },
+          select: { staffRole: true, roles: true },
         });
         if (dbUser) {
           token.staffRole = dbUser.staffRole;
+          // Si el usuario no tiene roles, asignar OWNER y CLIENT por defecto
+          // Esto cubre casos de OAuth donde el adapter crea el usuario sin roles
+          if (!dbUser.roles || dbUser.roles.length === 0) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                roles: ['OWNER', 'CLIENT'],
+              },
+            });
+          }
         }
-      }
-      // Si es OAuth, actualizar el usuario en la base de datos si es necesario
-      if (account?.provider === 'google' && user) {
-        // El adapter ya maneja esto, pero asegurémonos de tener el ID
-        token.sub = user.id;
       }
       return token;
     },

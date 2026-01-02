@@ -65,22 +65,23 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
   };
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-8">
+    <div className="flex items-center justify-center gap-1 md:gap-2 mt-4 md:mt-8">
       <Button
         variant="outline"
         size="sm"
         onClick={handlePrevious}
         disabled={currentPage === 1}
+        className="text-xs md:text-sm"
       >
-        <ChevronLeft className="h-4 w-4" />
-        Anterior
+        <ChevronLeft className="h-3 w-3 md:h-4 md:w-4" />
+        <span className="hidden sm:inline">Anterior</span>
       </Button>
       
-      <div className="flex gap-1">
+      <div className="flex gap-0.5 md:gap-1">
         {getPageNumbers().map((page, index) => {
           if (page === 'ellipsis') {
             return (
-              <span key={`ellipsis-${index}`} className="px-3 py-2 text-muted-foreground">
+              <span key={`ellipsis-${index}`} className="px-1 md:px-3 py-2 text-muted-foreground text-xs md:text-sm">
                 ...
               </span>
             );
@@ -93,7 +94,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
               variant={currentPage === pageNum ? 'default' : 'outline'}
               size="sm"
               onClick={() => onPageChange(pageNum)}
-              className="min-w-[40px]"
+              className="min-w-[32px] md:min-w-[40px] text-xs md:text-sm px-2 md:px-3"
             >
               {pageNum}
             </Button>
@@ -106,9 +107,10 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         size="sm"
         onClick={handleNext}
         disabled={currentPage === totalPages}
+        className="text-xs md:text-sm"
       >
-        Siguiente
-        <ChevronRight className="h-4 w-4" />
+        <span className="hidden sm:inline">Siguiente</span>
+        <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
       </Button>
     </div>
   );

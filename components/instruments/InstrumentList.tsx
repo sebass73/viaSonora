@@ -93,11 +93,12 @@ export function InstrumentList() {
 
   return (
     <div className="container py-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Mis Instrumentos</h1>
-        <Button onClick={() => router.push('/instruments/new')}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuevo Instrumento
+      <div className="flex justify-between items-center mb-4 md:mb-6 gap-2">
+        <h1 className="text-xl md:text-3xl font-bold">Mis Instrumentos</h1>
+        <Button onClick={() => router.push('/instruments/new')} size="sm" className="text-xs md:text-sm">
+          <Plus className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+          <span className="hidden sm:inline">Nuevo Instrumento</span>
+          <span className="sm:hidden">Nuevo</span>
         </Button>
       </div>
 
@@ -112,11 +113,11 @@ export function InstrumentList() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {instruments.map((instrument) => (
               <Card key={instrument.id}>
                 {instrument.photos[0] && (
-                  <div className="relative w-full h-48">
+                  <div className="relative w-full h-32 md:h-48">
                     <Image
                       src={instrument.photos[0].url}
                       alt={instrument.title}

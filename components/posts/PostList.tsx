@@ -112,11 +112,12 @@ export function PostList() {
 
   return (
     <div className="container py-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Mis Publicaciones</h1>
-        <Button onClick={() => router.push('/posts/new')}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nueva Publicación
+      <div className="flex justify-between items-center mb-4 md:mb-6 gap-2">
+        <h1 className="text-xl md:text-3xl font-bold">Mis Publicaciones</h1>
+        <Button onClick={() => router.push('/posts/new')} size="sm" className="text-xs md:text-sm">
+          <Plus className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+          <span className="hidden sm:inline">Nueva Publicación</span>
+          <span className="sm:hidden">Nueva</span>
         </Button>
       </div>
 
@@ -131,11 +132,11 @@ export function PostList() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {posts.map((post) => (
               <Card key={post.id}>
                 {post.instrument.photos[0] && (
-                  <div className="relative w-full h-48">
+                  <div className="relative w-full h-32 md:h-48">
                     <Image
                       src={post.instrument.photos[0].url}
                       alt={post.instrument.title}

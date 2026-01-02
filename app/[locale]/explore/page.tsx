@@ -82,9 +82,9 @@ export default function ExplorePage() {
 
   return (
     <div className="container py-4">
-      <h1 className="text-3xl font-bold mb-6">Explorar Instrumentos</h1>
+      <h1 className="text-xl md:text-3xl font-bold mb-4 md:mb-6">Explorar Instrumentos</h1>
 
-      <form onSubmit={handleSearch} className="flex gap-2 mb-6">
+      <form onSubmit={handleSearch} className="flex gap-2 mb-4 md:mb-6">
         <Input
           placeholder="Ciudad..."
           value={searchCity}
@@ -110,7 +110,7 @@ export default function ExplorePage() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {posts.map((post) => (
               <Card
                 key={post.id}
@@ -118,7 +118,7 @@ export default function ExplorePage() {
                 onClick={() => router.push(`/posts/${post.id}`)}
               >
                 {post.instrument.photos[0] && (
-                  <div className="relative w-full h-48">
+                  <div className="relative w-full h-32 md:h-48">
                     <Image
                       src={post.instrument.photos[0].url}
                       alt={post.instrument.title}

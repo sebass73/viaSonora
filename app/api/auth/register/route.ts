@@ -23,13 +23,14 @@ export async function POST(request: NextRequest) {
     // Hashear contraseña
     const hashedPassword = await bcrypt.hash(validated.password, 10);
 
-    // Crear usuario
+    // Crear usuario con roles OWNER y CLIENT por defecto
     const user = await prisma.user.create({
       data: {
         name: validated.name,
         lastName: validated.lastName || null,
         email: validated.email,
         password: hashedPassword,
+        roles: ['OWNER', 'CLIENT'],
       },
     });
 
