@@ -123,6 +123,7 @@ export async function PUT(
           lat: loc.lat,
           lng: loc.lng,
           isPrimary: loc.isPrimary || false,
+          useProfileLocation: Boolean(loc.useProfileLocation) || false,
         })),
       };
     }

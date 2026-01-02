@@ -52,8 +52,8 @@ export const createInstrumentLocationSchema = z.object({
 // Post validation
 export const createPostSchema = z.object({
   instrumentId: z.string().min(1),
-  city: z.string().min(1).max(100),
-  areaText: z.string().max(100).optional(),
+  city: z.string().min(1).max(500), // Aumentado para permitir direcciones completas
+  areaText: z.string().max(200).optional(), // Aumentado para zonas/barrios más largos
   // expiresAt se calcula automáticamente (30 días)
 });
 

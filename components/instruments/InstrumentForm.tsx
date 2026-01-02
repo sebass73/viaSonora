@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PhotoUpload } from './PhotoUpload';
+import { CityAutocomplete } from '@/components/ui/city-autocomplete';
+import { EmojiPickerButton } from '@/components/ui/emoji-picker-button';
 
 interface Category {
   id: string;
@@ -31,6 +33,7 @@ interface Instrument {
     lat: number;
     lng: number;
     isPrimary: boolean;
+    useProfileLocation?: boolean;
   }>;
 }
 
@@ -58,10 +61,20 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     lat: number;
     lng: number;
     isPrimary: boolean;
+    useProfileLocation: boolean;
   }>>([]);
+  const [userProfileLocation, setUserProfileLocation] = useState<{
+    addressText: string | null;
+    locationText: string | null;
+    lat: number | null;
+    lng: number | null;
+  } | null>(null);
+  const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const extrasTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     fetchCategories();
+    fetchUserProfile();
     if (instrument) {
       setFormData({
         title: instrument.title,
@@ -79,6 +92,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
         lat: loc.lat,
         lng: loc.lng,
         isPrimary: loc.isPrimary,
+        useProfileLocation: Boolean((loc as any).useProfileLocation) || false,
       })));
     }
   }, [instrument]);
@@ -95,6 +109,26 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     }
   };
 
+  const fetchUserProfile = async () => {
+    try {
+      const res = await fetch('/api/me');
+      if (res.ok) {
+        const data = await res.json();
+        // Solo establecer si tiene al menos addressText y coordenadas
+        if (data.addressText && data.lat && data.lng) {
+          setUserProfileLocation({
+            addressText: data.addressText,
+            locationText: data.locationText,
+            lat: data.lat,
+            lng: data.lng,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -105,6 +139,13 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
 
     if (locations.length === 0) {
       alert('Debes agregar al menos una ubicación');
+      return;
+    }
+
+    // Validar que todas las ubicaciones tengan coordenadas válidas
+    const invalidLocations = locations.filter(loc => loc.lat === 0 || loc.lng === 0 || !loc.city.trim());
+    if (invalidLocations.length > 0) {
+      alert('Todas las ubicaciones deben tener una ciudad válida seleccionada. Por favor, selecciona una ciudad de las sugerencias.');
       return;
     }
 
@@ -126,6 +167,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
             lat: loc.lat,
             lng: loc.lng,
             isPrimary: loc.isPrimary,
+            useProfileLocation: Boolean(loc.useProfileLocation),
           })),
         }),
       });
@@ -145,12 +187,19 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
   };
 
   const addLocation = () => {
+    // Siempre sugerir la ubicación del perfil si está disponible
+    const shouldUseProfile = userProfileLocation && 
+      userProfileLocation.addressText && 
+      userProfileLocation.lat && 
+      userProfileLocation.lng;
+
     setLocations([...locations, {
-      city: '',
-      areaText: '',
-      lat: 0,
-      lng: 0,
+      city: shouldUseProfile ? (userProfileLocation.addressText || '') : '',
+      areaText: shouldUseProfile ? (userProfileLocation.locationText || '') : '',
+      lat: shouldUseProfile ? (userProfileLocation.lat || 0) : 0,
+      lng: shouldUseProfile ? (userProfileLocation.lng || 0) : 0,
       isPrimary: locations.length === 0,
+      useProfileLocation: shouldUseProfile || false,
     }]);
   };
 
@@ -165,6 +214,43 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
   const updateLocation = (index: number, field: string, value: any) => {
     const newLocations = [...locations];
     newLocations[index] = { ...newLocations[index], [field]: value };
+    setLocations(newLocations);
+  };
+
+  const handleCitySelect = (index: number, city: string, lat: number, lng: number, fullAddress: string) => {
+    const newLocations = [...locations];
+    newLocations[index] = {
+      ...newLocations[index],
+      city,
+      lat,
+      lng,
+      areaText: newLocations[index].areaText || '', // Mantener areaText si existe
+      useProfileLocation: false, // Si se selecciona manualmente, desactivar sync con perfil
+    };
+    setLocations(newLocations);
+  };
+
+  const handleUseProfileLocationToggle = (index: number, checked: boolean) => {
+    const newLocations = [...locations];
+    
+    if (checked && userProfileLocation && userProfileLocation.addressText && userProfileLocation.lat && userProfileLocation.lng) {
+      // Sincronizar con ubicación de perfil
+      newLocations[index] = {
+        ...newLocations[index],
+        city: userProfileLocation.addressText,
+        areaText: userProfileLocation.locationText || '',
+        lat: userProfileLocation.lat,
+        lng: userProfileLocation.lng,
+        useProfileLocation: true,
+      };
+    } else {
+      // Desactivar sincronización
+      newLocations[index] = {
+        ...newLocations[index],
+        useProfileLocation: false,
+      };
+    }
+    
     setLocations(newLocations);
   };
 
@@ -209,8 +295,32 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="description">Descripción *</Label>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="description">Descripción *</Label>
+              <EmojiPickerButton
+                onEmojiClick={(emoji) => {
+                  const textarea = descriptionTextareaRef.current;
+                  if (textarea) {
+                    const start = textarea.selectionStart || 0;
+                    const end = textarea.selectionEnd || 0;
+                    const text = formData.description;
+                    const newText = text.substring(0, start) + emoji + text.substring(end);
+                    setFormData({ ...formData, description: newText });
+                    // Restaurar posición del cursor después del emoji
+                    setTimeout(() => {
+                      textarea.focus();
+                      textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                    }, 0);
+                  } else {
+                    // Si no hay textarea enfocado, agregar al final
+                    setFormData({ ...formData, description: formData.description + emoji });
+                  }
+                }}
+                disabled={loading}
+              />
+            </div>
             <Textarea
+              ref={descriptionTextareaRef}
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -258,11 +368,36 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="extras">Extras / Accesorios</Label>
+            <div className="flex items-center justify-between mb-2">
+              <Label htmlFor="extras">Extras / Accesorios</Label>
+              <EmojiPickerButton
+                onEmojiClick={(emoji) => {
+                  const textarea = extrasTextareaRef.current;
+                  if (textarea) {
+                    const start = textarea.selectionStart || 0;
+                    const end = textarea.selectionEnd || 0;
+                    const text = formData.extras;
+                    const newText = text.substring(0, start) + emoji + text.substring(end);
+                    setFormData({ ...formData, extras: newText });
+                    // Restaurar posición del cursor después del emoji
+                    setTimeout(() => {
+                      textarea.focus();
+                      textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                    }, 0);
+                  } else {
+                    // Si no hay textarea enfocado, agregar al final
+                    setFormData({ ...formData, extras: formData.extras + emoji });
+                  }
+                }}
+                disabled={loading}
+              />
+            </div>
             <Textarea
+              ref={extrasTextareaRef}
               id="extras"
               value={formData.extras}
               onChange={(e) => setFormData({ ...formData, extras: e.target.value })}
+              placeholder="Especifica accesorios adicionales..."
               rows={3}
             />
           </div>
@@ -270,8 +405,13 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
           <PhotoUpload photos={photos} onChange={setPhotos} />
 
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <Label>Ubicaciones *</Label>
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <Label>¿Dónde está disponible este instrumento? *</Label>
+                <p className="text-sm text-muted-foreground">
+                  Agrega las ubicaciones donde este instrumento está disponible para otros músicos.
+                </p>
+              </div>
               <Button type="button" variant="outline" size="sm" onClick={addLocation}>
                 + Agregar ubicación
               </Button>
@@ -289,55 +429,68 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
                     Eliminar
                   </Button>
                 </div>
+                {userProfileLocation && userProfileLocation.addressText && userProfileLocation.lat && userProfileLocation.lng && !loc.useProfileLocation && (
+                  <div className="mb-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleUseProfileLocationToggle(index, true)}
+                      className="w-full"
+                    >
+                      📍 Usar mi ubicación de perfil: {userProfileLocation.addressText}
+                    </Button>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <CityAutocomplete
+                      value={loc.city}
+                      onChange={(city) => {
+                        updateLocation(index, 'city', city);
+                        // Si se edita manualmente, desactivar sync con perfil
+                        if (loc.useProfileLocation) {
+                          updateLocation(index, 'useProfileLocation', false);
+                        }
+                      }}
+                      onSelect={(city, lat, lng, fullAddress) => handleCitySelect(index, city, lat, lng, fullAddress)}
+                      placeholder="Buscar ciudad *"
+                      required
+                      disabled={loc.useProfileLocation}
+                    />
+                  </div>
                   <Input
-                    placeholder="Ciudad *"
-                    value={loc.city}
-                    onChange={(e) => updateLocation(index, 'city', e.target.value)}
-                    required
-                  />
-                  <Input
-                    placeholder="Zona/Barrio"
+                    placeholder="Zona/Barrio (opcional)"
                     value={loc.areaText}
-                    onChange={(e) => updateLocation(index, 'areaText', e.target.value)}
+                    onChange={(e) => {
+                      updateLocation(index, 'areaText', e.target.value);
+                      // Si se edita manualmente, desactivar sync con perfil
+                      if (loc.useProfileLocation) {
+                        updateLocation(index, 'useProfileLocation', false);
+                      }
+                    }}
+                    disabled={loc.useProfileLocation}
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <Input
-                    type="text"
-                    placeholder="Latitud"
-                    value={loc.lat !== 0 ? loc.lat.toString() : ''}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      // Permitir números, punto decimal, y signo negativo al inicio
-                      if (value === '' || /^-?\d*\.?\d*$/.test(value)) {
-                        const numValue = value === '' ? 0 : parseFloat(value);
-                        if (!isNaN(numValue) || value === '' || value === '-' || value === '.') {
-                          updateLocation(index, 'lat', value === '' ? 0 : (isNaN(numValue) ? 0 : numValue));
-                        }
-                      }
-                    }}
-                    required
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Longitud"
-                    value={loc.lng !== 0 ? loc.lng.toString() : ''}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      // Permitir números, punto decimal, y signo negativo al inicio
-                      if (value === '' || /^-?\d*\.?\d*$/.test(value)) {
-                        const numValue = value === '' ? 0 : parseFloat(value);
-                        if (!isNaN(numValue) || value === '' || value === '-' || value === '.') {
-                          updateLocation(index, 'lng', value === '' ? 0 : (isNaN(numValue) ? 0 : numValue));
-                        }
-                      }
-                    }}
-                    required
-                  />
+                <div className="flex flex-col gap-2">
+                  {userProfileLocation && userProfileLocation.addressText && userProfileLocation.lat && userProfileLocation.lng && (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`useProfile-${index}`}
+                        checked={loc.useProfileLocation}
+                        onChange={(e) => handleUseProfileLocationToggle(index, e.target.checked)}
+                        className="mr-2"
+                      />
+                      <Label htmlFor={`useProfile-${index}`} className="text-sm cursor-pointer">
+                        Usar mi ubicación de perfil ({userProfileLocation.addressText})
+                      </Label>
+                    </div>
+                  )}
                   <div className="flex items-center">
                     <input
                       type="checkbox"
+                      id={`primary-${index}`}
                       checked={loc.isPrimary}
                       onChange={(e) => {
                         const newLocations = [...locations];
@@ -348,7 +501,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
                       }}
                       className="mr-2"
                     />
-                    <Label className="text-sm">Principal</Label>
+                    <Label htmlFor={`primary-${index}`} className="text-sm cursor-pointer">Principal</Label>
                   </div>
                 </div>
               </div>

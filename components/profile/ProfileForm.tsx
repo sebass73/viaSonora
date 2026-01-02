@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
 import { Camera } from 'lucide-react';
+import { CityAutocomplete } from '@/components/ui/city-autocomplete';
 import {
   Dialog,
   DialogContent,
@@ -49,6 +50,8 @@ export function ProfileForm() {
     whatsappUrl: '',
     addressText: '',
     locationText: '',
+    lat: null as number | null,
+    lng: null as number | null,
     termsAccepted: false,
   });
 
@@ -71,6 +74,8 @@ export function ProfileForm() {
           whatsappUrl: data.whatsappUrl || '',
           addressText: data.addressText || '',
           locationText: data.locationText || '',
+          lat: data.lat || null,
+          lng: data.lng || null,
           termsAccepted: !!data.termsAcceptedAt,
         });
       }
@@ -138,6 +143,8 @@ export function ProfileForm() {
         body: JSON.stringify({
           ...formData,
           image: formData.image || undefined,
+          lat: formData.lat || undefined,
+          lng: formData.lng || undefined,
           termsAccepted: formData.termsAccepted ? true : undefined,
         }),
       });
@@ -263,23 +270,54 @@ export function ProfileForm() {
           </div>
 
           <div>
-            <Label htmlFor="addressText">Dirección</Label>
-            <Input
-              id="addressText"
+            <Label htmlFor="addressText">Tu ubicación de contacto</Label>
+            <p className="text-sm text-muted-foreground mb-2">
+              ¿Dónde estás? Esta ubicación se usará para que otros usuarios puedan contactarte cuando aceptes una solicitud.
+            </p>
+            <CityAutocomplete
               value={formData.addressText}
-              onChange={(e) => setFormData({ ...formData, addressText: e.target.value })}
-              placeholder="Calle y número"
+              onChange={(address) => setFormData({ ...formData, addressText: address })}
+              onSelect={(city, lat, lng, fullAddress) => {
+                // Extraer información de la dirección completa
+                // fullAddress puede ser: "Santa Fe 2160, Mar del Plata, Buenos Aires, Argentina"
+                const parts = fullAddress.split(',').map(p => p.trim());
+                
+                // Si tiene más de 2 partes, la segunda suele ser la ciudad/zona
+                // Si tiene 2 partes, la segunda es la ciudad
+                let locationText = '';
+                if (parts.length >= 2) {
+                  // Tomar la ciudad (segunda parte) o zona si está disponible
+                  locationText = parts[1] || parts[0];
+                }
+                
+                setFormData({
+                  ...formData,
+                  addressText: fullAddress, // Usar la dirección completa
+                  locationText: locationText || formData.locationText, // Actualizar si se encontró
+                  lat,
+                  lng,
+                });
+              }}
+              placeholder="Buscar tu ubicación..."
             />
+            {formData.lat && formData.lng && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Coordenadas guardadas: {formData.lat.toFixed(6)}, {formData.lng.toFixed(6)}
+              </p>
+            )}
           </div>
 
           <div>
-            <Label htmlFor="locationText">Zona/Barrio</Label>
+            <Label htmlFor="locationText">Zona/Barrio (opcional)</Label>
             <Input
               id="locationText"
               value={formData.locationText}
               onChange={(e) => setFormData({ ...formData, locationText: e.target.value })}
               placeholder="Ej: Palermo, San Telmo"
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Puedes especificar una zona o barrio adicional si lo deseas
+            </p>
           </div>
 
           <div className="flex items-center space-x-2">

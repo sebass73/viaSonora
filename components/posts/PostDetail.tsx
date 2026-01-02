@@ -9,9 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Image from 'next/image';
 import { RequestForm } from '@/components/requests/RequestForm';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
 interface Post {
   id: string;
+  ownerId: string;
   city: string;
   areaText: string | null;
   status: string;
@@ -57,6 +59,11 @@ interface Post {
   acceptedRequest?: {
     id: string;
     status: string;
+  } | null;
+  userRequest?: {
+    id: string;
+    status: string;
+    createdAt: string;
   } | null;
 }
 
@@ -108,6 +115,24 @@ export function PostDetail() {
   const isOwner = post && session?.user?.id === post.ownerId;
   const hasAcceptedRequest = post?.acceptedRequest?.status === 'ACCEPTED';
   const showContact = isOwner || hasAcceptedRequest;
+  const userRequest = post?.userRequest;
+  
+  // Estados de solicitud
+  const requestStatusLabels: Record<string, string> = {
+    REQUESTED: 'Pendiente',
+    ACCEPTED: 'Aceptada',
+    DECLINED: 'Rechazada',
+    CANCELLED: 'Cancelada',
+    COMPLETED: 'Completada',
+  };
+  
+  const requestStatusColors: Record<string, string> = {
+    REQUESTED: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    ACCEPTED: 'bg-green-100 text-green-800 border-green-200',
+    DECLINED: 'bg-red-100 text-red-800 border-red-200',
+    CANCELLED: 'bg-gray-100 text-gray-800 border-gray-200',
+    COMPLETED: 'bg-blue-100 text-blue-800 border-blue-200',
+  };
 
   if (loading) {
     return <div className="container py-8">Cargando...</div>;
@@ -252,11 +277,39 @@ export function PostDetail() {
                 </div>
               ) : (
                 <>
-                  {hasAcceptedRequest ? (
-                    <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
-                      <p className="text-sm text-green-800">
-                        Tu solicitud ha sido aceptada. El contacto del propietario se mostrará arriba.
-                      </p>
+                  {userRequest ? (
+                    <div className={`border p-4 rounded-lg ${requestStatusColors[userRequest.status] || 'bg-gray-50 border-gray-200'}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="font-semibold text-sm">Estado de tu solicitud:</p>
+                        <Badge className={requestStatusColors[userRequest.status] || 'bg-gray-100 text-gray-800'}>
+                          {requestStatusLabels[userRequest.status] || userRequest.status}
+                        </Badge>
+                      </div>
+                      {userRequest.status === 'REQUESTED' && (
+                        <p className="text-sm">
+                          Tu solicitud está pendiente de respuesta. El propietario recibirá una notificación y te responderá pronto.
+                        </p>
+                      )}
+                      {userRequest.status === 'ACCEPTED' && (
+                        <p className="text-sm">
+                          ¡Tu solicitud ha sido aceptada! El contacto del propietario se muestra arriba. Puedes contactarlo ahora.
+                        </p>
+                      )}
+                      {userRequest.status === 'DECLINED' && (
+                        <p className="text-sm">
+                          Tu solicitud fue rechazada por el propietario. Puedes intentar con otro instrumento o contactar al propietario directamente si tienes otra forma de comunicación.
+                        </p>
+                      )}
+                      {userRequest.status === 'CANCELLED' && (
+                        <p className="text-sm">
+                          Has cancelado esta solicitud. Si cambias de opinión, puedes enviar una nueva solicitud.
+                        </p>
+                      )}
+                      {userRequest.status === 'COMPLETED' && (
+                        <p className="text-sm">
+                          Esta solicitud ha sido marcada como completada.
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <>

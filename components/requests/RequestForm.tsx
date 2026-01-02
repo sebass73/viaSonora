@@ -66,6 +66,14 @@ export function RequestForm({ postId, onSuccess }: RequestFormProps) {
       const data = await res.json();
 
       if (!res.ok) {
+        // Si el error es que ya existe una solicitud activa, mostrar mensaje específico
+        if (data.error && data.error.includes('Ya existe una solicitud activa')) {
+          alert('Ya has enviado una solicitud para este instrumento. Por favor, espera la respuesta del propietario. Puedes ver el estado de tu solicitud en la página del post.');
+          if (onSuccess) {
+            onSuccess();
+          }
+          return;
+        }
         alert(data.error || 'Error al enviar la solicitud');
         return;
       }

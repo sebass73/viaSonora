@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
             lat: loc.lat,
             lng: loc.lng,
             isPrimary: loc.isPrimary || false,
+            useProfileLocation: Boolean(loc.useProfileLocation) || false,
           })),
         } : undefined,
       },

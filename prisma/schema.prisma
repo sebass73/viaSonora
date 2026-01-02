@@ -185,6 +185,7 @@ model InstrumentLocation {
   lat         Float
   lng         Float
   isPrimary   Boolean  @default(false)
+  useProfileLocation Boolean @default(false) // Si true, esta ubicación se sincroniza con la del perfil del usuario
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

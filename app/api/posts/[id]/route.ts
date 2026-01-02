@@ -74,19 +74,26 @@ export async function GET(
       }
     }
 
-    // Verificar si hay una request ACCEPTED del usuario logueado para este post
+    // Verificar si hay una request del usuario logueado para este post (cualquier estado)
+    let userRequest = null;
     let acceptedRequest = null;
     let showContact = isOwner; // El owner siempre ve su propio contacto
 
     if (session?.user?.id && !isOwner) {
-      acceptedRequest = await prisma.request.findFirst({
+      // Buscar cualquier request del cliente para este post
+      userRequest = await prisma.request.findFirst({
         where: {
           postId: post.id,
           clientId: session.user.id,
-          status: 'ACCEPTED',
         },
+        orderBy: { createdAt: 'desc' }, // La más reciente
       });
-      showContact = !!acceptedRequest;
+
+      // Si hay una request ACCEPTED, mostrar contacto
+      if (userRequest?.status === 'ACCEPTED') {
+        acceptedRequest = userRequest;
+        showContact = true;
+      }
     }
 
     // Preparar datos del owner (con o sin contacto según corresponda)
@@ -115,6 +122,7 @@ export async function GET(
     // Aplicar jitter a las coordenadas del instrumento
     const postWithJitter = {
       ...post,
+      ownerId: post.ownerId, // Incluir ownerId para compatibilidad con el frontend
       instrument: {
         ...post.instrument,
         locations: post.instrument.locations.map((loc) => {
@@ -131,6 +139,12 @@ export async function GET(
       acceptedRequest: acceptedRequest ? {
         id: acceptedRequest.id,
         status: acceptedRequest.status,
+      } : null,
+      // Incluir información sobre cualquier request del usuario (para mostrar estado)
+      userRequest: userRequest ? {
+        id: userRequest.id,
+        status: userRequest.status,
+        createdAt: userRequest.createdAt.toISOString(),
       } : null,
     };
 
