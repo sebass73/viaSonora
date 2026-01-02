@@ -57,7 +57,11 @@
     "user": "Usuario",
     "findInstrumentsSubtitle": "Encuentra instrumentos donde estés",
     "menu": "Menú",
-    "openMenu": "Abrir menú"
+    "openMenu": "Abrir menú",
+    "bannerPublish": "Publicá tu instrumento",
+    "bannerProtected": "Contacto protegido",
+    "bannerMap": "Buscá por mapa",
+    "bannerHowItWorks": "Cómo funciona"
   },
   "home": {
     "title": "Encuentra instrumentos para músicos viajeros",

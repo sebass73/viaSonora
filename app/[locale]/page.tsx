@@ -6,11 +6,11 @@ import { MapView } from '@/components/map/MapView';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useRouter } from '@/i18n/routing';
+import { useRouter, Link } from '@/i18n/routing';
 import { useSession } from 'next-auth/react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, PlusCircle, Lock, MapPin } from 'lucide-react';
 import { CategoryChips } from '@/components/CategoryChips';
 import { InstrumentAutocomplete } from '@/components/InstrumentAutocomplete';
 
@@ -115,7 +115,17 @@ export default function HomePage() {
     router.push(`/posts/${postId}`);
   };
 
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = () => {
+      // Focus the main search input when search icon in nav is clicked
+      searchInputRef.current?.focus();
+    };
+    window.addEventListener('openSearch', handler);
+    return () => window.removeEventListener('openSearch', handler);
+  }, []);
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
@@ -162,10 +172,11 @@ export default function HomePage() {
           <form onSubmit={handleSearch} className="flex gap-2 flex-wrap">
             <div className="relative flex-1 min-w-[150px] md:min-w-[200px]">
               <Input
+                ref={searchInputRef}
                 placeholder={t('searchByTitle')}
                 value={searchTitle}
                 onChange={(e) => setSearchTitle(e.target.value)}
-                className="w-full"
+                className="w-full pr-12"
               />
               <InstrumentAutocomplete
                 searchQuery={searchTitle}
@@ -174,23 +185,17 @@ export default function HomePage() {
                   setSearchTitle(''); // Limpiar búsqueda después de seleccionar
                 }}
               />
-            </div>
-            {/* Botón Buscar solo visible en desktop */}
-            <Button 
-              type="submit" 
-              disabled={loading} 
-              className="bg-primary hidden md:inline-flex flex-1 sm:flex-initial"
-            >
-              {loading ? t('searching') : t('search')}
-            </Button>
-            {session && (
-              <Button
-                type="button"
-                className="flex-1 sm:flex-initial bg-primary text-primary-foreground hover:bg-primary/90 md:bg-background md:text-foreground md:border md:border-input md:hover:bg-accent md:hover:text-accent-foreground"
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-md flex items-center justify-center bg-primary text-primary-foreground hover:bg-primary/90 z-10"
+                aria-label={t('search')}
               >
-                {t('addNew')}
-              </Button>
-            )}
+                <Search className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+
           </form>
           
           {/* Chips de categorías */}
@@ -200,6 +205,8 @@ export default function HomePage() {
             onCategoryChange={setSelectedCategoryId}
             locale={locale}
           />
+
+
         </div>
       </div>
 
@@ -297,8 +304,39 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Banner entre cards y mapa */}
+        <div className="container mt-3 mb-3">
+          <div className="bg-background/5 border border-border rounded-md py-2 px-3">
+            <div className="flex items-center justify-between gap-4">
+              {/* Hidden on mobile: show only on md+ */}
+              <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
+                <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary cursor-pointer">
+                  <PlusCircle className="h-4 w-4" />
+                  <span className="whitespace-nowrap">{t('bannerPublish')}</span>
+                </div>
+                <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary cursor-pointer">
+                  <Lock className="h-4 w-4" />
+                  <span className="whitespace-nowrap">{t('bannerProtected')}</span>
+                </div>
+                <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-md px-2 py-1 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary cursor-pointer">
+                  <MapPin className="h-4 w-4" />
+                  <span className="whitespace-nowrap">{t('bannerMap')}</span>
+                </div>
+              </div>
+
+              {/* Always visible: on mobile center, on desktop align right */}
+              <div className="flex items-center w-full md:w-auto justify-center md:justify-end">
+                <Link href="/how-it-works" className="flex items-center gap-2 text-sm font-medium text-primary">
+                  <span>{t('bannerHowItWorks')}</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Mapa en la parte inferior - ocupa el resto del espacio */}
-        <div className="flex-1 min-h-0 border-t m-2">
+        <div className="flex-1 min-h-0 border-t overflow-hidden p-2">
           {!loading && (
             <MapViewDynamic
               posts={posts}
