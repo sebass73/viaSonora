@@ -484,3 +484,4 @@ Según `DOCUMENTACION_FUNCIONAL.md`, estas están fuera del MVP:
 
 *Última actualización: 2025-01-02*
 
+

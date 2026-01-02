@@ -14,7 +14,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Menu, User as UserIcon, CreditCard, HelpCircle, FileText, Lock as LockIcon, Mail } from 'lucide-react';
-import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import Image from 'next/image';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
@@ -25,6 +25,7 @@ export function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [aboutDialogOpen, setAboutDialogOpen] = useState(false);
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [userImage, setUserImage] = useState<string | null | undefined>(session?.user?.image);
@@ -90,8 +91,13 @@ export function Navigation() {
     return pathname?.startsWith(href);
   };
 
+  const handleAboutClick = () => {
+    setAboutDialogOpen(true);
+    setMobileMenuOpen(false); // Cerrar el menú móvil cuando se abre el diálogo
+  };
+
   return (
-    <Dialog>
+    <Dialog open={aboutDialogOpen} onOpenChange={setAboutDialogOpen}>
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 flex-col border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         <div className="flex flex-col h-full">
@@ -138,11 +144,14 @@ export function Navigation() {
             <div className="space-y-2">
               <LanguageSwitcher />
               <ThemeSwitcher />
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-full">
-                  {t('about')}
-                </Button>
-              </DialogTrigger>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full"
+                onClick={() => setAboutDialogOpen(true)}
+              >
+                {t('about')}
+              </Button>
             </div>
           </div>
 
@@ -242,11 +251,14 @@ export function Navigation() {
                 <div className="pt-4 border-t space-y-3">
                   <LanguageSwitcher />
                   <ThemeSwitcher />
-                  <DialogTrigger asChild>
-                    <Button variant="ghost" size="sm" className="w-full mt-2">
-                      {t('about')}
-                    </Button>
-                  </DialogTrigger>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full mt-2"
+                    onClick={handleAboutClick}
+                  >
+                    {t('about')}
+                  </Button>
                 </div>
                 <div className="pt-4 border-t">
                   {status === 'loading' ? (
