@@ -191,13 +191,13 @@ export async function POST(request: NextRequest) {
       const toDate = new Date(validated.toDate);
 
       // Validar cada día del rango
+      const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
       const currentDate = new Date(fromDate);
       while (currentDate <= toDate) {
         const dayOfWeek = currentDate.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
         const dayAvailability = availability.find(a => a.dayOfWeek === dayOfWeek && a.isAvailable);
         
         if (!dayAvailability) {
-          const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
           return NextResponse.json(
             { error: `El día ${days[dayOfWeek]} no está disponible para este instrumento` },
             { status: 400 }
