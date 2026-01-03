@@ -24,6 +24,7 @@ interface Post {
     title: string;
     photos: Array<{ url: string }>;
     category: {
+      id?: string;
       nameEs: string;
     };
     locations: Array<{
@@ -37,7 +38,7 @@ interface MapViewProps {
   posts: Post[];
   center?: [number, number];
   zoom?: number;
-  onMarkerClick?: (post: Post) => void;
+  onMarkerClick?: (post: any) => void;
 }
 
 function MapController({ center, zoom }: { center?: [number, number]; zoom?: number }) {
@@ -54,7 +55,7 @@ function MapController({ center, zoom }: { center?: [number, number]; zoom?: num
 
 export function MapView({ posts, center = [-34.6037, -58.3816], zoom = 13, onMarkerClick }: MapViewProps) {
   return (
-    <div className="w-full h-full min-h-[320px] rounded-lg overflow-hidden">
+    <div className="w-full h-full min-h-[310px] rounded-lg overflow-hidden">
       <MapContainer
         center={center}
         zoom={zoom}
@@ -82,7 +83,14 @@ export function MapView({ posts, center = [-34.6037, -58.3816], zoom = 13, onMar
                 <div className="p-2">
                   <h3 className="font-semibold text-sm">{post.instrument.title}</h3>
                   <p className="text-xs text-muted-foreground">{post.instrument.category.nameEs}</p>
-                  <p className="text-xs text-muted-foreground">{post.city}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {(() => {
+                      // Extraer solo la ciudad de la dirección completa (antes de la primera coma)
+                      const cityOnly = post.city.split(',')[0].trim();
+                      return cityOnly;
+                    })()}
+                    {post.areaText && `, ${post.areaText}`}
+                  </p>
                   {onMarkerClick && (
                     <button
                       onClick={() => onMarkerClick(post)}

@@ -148,7 +148,11 @@ export function PostList() {
                 <CardHeader className="p-3 md:p-6">
                   <CardTitle className="line-clamp-1 text-sm md:text-base">{post.instrument.title}</CardTitle>
                   <CardDescription className="text-xs md:text-sm">
-                    {post.instrument.category.nameEs} • {post.city}
+                    {post.instrument.category.nameEs} • {(() => {
+                      // Extraer solo la ciudad de la dirección completa (antes de la primera coma)
+                      const cityOnly = post.city.split(',')[0].trim();
+                      return cityOnly;
+                    })()}
                     {post.areaText && `, ${post.areaText}`}
                   </CardDescription>
                 </CardHeader>

@@ -71,4 +71,109 @@
   }
 }
 
+/* react-day-picker styles */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: hsl(var(--primary));
+  --rdp-background-color: hsl(var(--accent));
+  --rdp-accent-color-dark: hsl(var(--primary));
+  --rdp-background-color-dark: hsl(var(--accent));
+  --rdp-outline: 2px solid var(--rdp-accent-color);
+  --rdp-outline-selected: 3px solid var(--rdp-accent-color);
+  margin: 0;
+}
+
+.rdp-button_reset {
+  appearance: none;
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+.rdp-button {
+  border: 2px solid transparent;
+}
+
+.rdp-button[disabled] {
+  opacity: 0.25;
+}
+
+.rdp-day_selected,
+.rdp-day_selected:focus-visible,
+.rdp-day_selected:hover {
+  color: hsl(var(--primary-foreground));
+  opacity: 1;
+  background-color: var(--rdp-accent-color);
+}
+
+/* Asegurar que los encabezados del calendario tengan el mismo tamaño */
+.rdp-head_cell,
+.rdp-weekday,
+.rdp-weekday th {
+  width: 2.25rem !important;
+  min-width: 2.25rem !important;
+  max-width: 2.25rem !important;
+  text-align: center !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+  flex: 0 0 2.25rem !important;
+}
+
+/* Asegurar que la fila de encabezados use grid */
+.rdp-weekdays,
+.rdp-head_row,
+.rdp-weekdays tr {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  width: 100% !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.rdp-weekdays th,
+.rdp-head_row th {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 1 0% !important;
+}
+
+/* Asegurar que el caption tenga altura fija y espacio para las flechas */
+.rdp-caption {
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* padding-left: 2.5rem; */
+  /* padding-right: 2.5rem; */
+}
+
+/* Asegurar espacio entre las flechas de navegación */
+.rdp-nav_button_previous {
+  /* left: 0.25rem !important; */
+}
+
+.rdp-nav_button_next {
+  /* right: 0.25rem !important; */
+}
+
+/* Estilos para días disponibles en el calendario */
+.rdp-day_available {
+  background-color: hsl(var(--primary) / 0.1) !important;
+  border: 1px solid hsl(var(--primary) / 0.3) !important;
+  font-weight: 500 !important;
+}
+
+.rdp-day_available:hover:not(.rdp-day_selected):not(.rdp-day_disabled) {
+  background-color: hsl(var(--primary) / 0.2) !important;
+  border-color: hsl(var(--primary) / 0.5) !important;
+}
+
+.rdp-day_available.rdp-day_today {
+  background-color: hsl(var(--primary) / 0.15) !important;
+  border-color: hsl(var(--primary)) !important;
+  font-weight: 600 !important;
+}
+
 

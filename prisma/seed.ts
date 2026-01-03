@@ -146,7 +146,7 @@ async function main() {
     'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800',
   ];
 
-  // Instrument 1: Guitarra en Buenos Aires
+  // Instrument 1: Guitarra en Buenos Aires - SIN disponibilidad (permite cualquier fecha/hora)
   const guitar1 = await prisma.instrument.create({
     data: {
       ownerId: demoUser.id,
@@ -182,10 +182,11 @@ async function main() {
           },
         ],
       },
+      // SIN disponibilidad - permite cualquier fecha/hora
     },
   });
 
-  // Instrument 2: Piano en Córdoba
+  // Instrument 2: Piano en Córdoba - CON disponibilidad: Todos los días 09:00-18:00
   const piano1 = await prisma.instrument.create({
     data: {
       ownerId: demoUser.id,
@@ -214,10 +215,21 @@ async function main() {
           },
         ],
       },
+      availability: {
+        create: [
+          { dayOfWeek: 0, startTime: '09:00', endTime: '18:00', isAvailable: true }, // Domingo
+          { dayOfWeek: 1, startTime: '09:00', endTime: '18:00', isAvailable: true }, // Lunes
+          { dayOfWeek: 2, startTime: '09:00', endTime: '18:00', isAvailable: true }, // Martes
+          { dayOfWeek: 3, startTime: '09:00', endTime: '18:00', isAvailable: true }, // Miércoles
+          { dayOfWeek: 4, startTime: '09:00', endTime: '18:00', isAvailable: true }, // Jueves
+          { dayOfWeek: 5, startTime: '09:00', endTime: '18:00', isAvailable: true }, // Viernes
+          { dayOfWeek: 6, startTime: '09:00', endTime: '18:00', isAvailable: true }, // Sábado
+        ],
+      },
     },
   });
 
-  // Instrument 3: Batería en Rosario
+  // Instrument 3: Batería en Rosario - CON disponibilidad: Solo días laborables (Lun-Vie) 10:00-20:00
   const drums1 = await prisma.instrument.create({
     data: {
       ownerId: demoUser.id,
@@ -246,10 +258,19 @@ async function main() {
           },
         ],
       },
+      availability: {
+        create: [
+          { dayOfWeek: 1, startTime: '10:00', endTime: '20:00', isAvailable: true }, // Lunes
+          { dayOfWeek: 2, startTime: '10:00', endTime: '20:00', isAvailable: true }, // Martes
+          { dayOfWeek: 3, startTime: '10:00', endTime: '20:00', isAvailable: true }, // Miércoles
+          { dayOfWeek: 4, startTime: '10:00', endTime: '20:00', isAvailable: true }, // Jueves
+          { dayOfWeek: 5, startTime: '10:00', endTime: '20:00', isAvailable: true }, // Viernes
+        ],
+      },
     },
   });
 
-  // Instrument 4: Violín en Mendoza
+  // Instrument 4: Violín en Mendoza - CON disponibilidad: Solo fines de semana (Dom-Sáb) 14:00-22:00
   const violin1 = await prisma.instrument.create({
     data: {
       ownerId: demoUser.id,
@@ -278,10 +299,16 @@ async function main() {
           },
         ],
       },
+      availability: {
+        create: [
+          { dayOfWeek: 0, startTime: '14:00', endTime: '22:00', isAvailable: true }, // Domingo
+          { dayOfWeek: 6, startTime: '14:00', endTime: '22:00', isAvailable: true }, // Sábado
+        ],
+      },
     },
   });
 
-  // Instrument 5: Saxofón en Buenos Aires
+  // Instrument 5: Saxofón en Buenos Aires - CON disponibilidad: Horarios diferentes por día
   const sax1 = await prisma.instrument.create({
     data: {
       ownerId: demoUser.id,
@@ -308,6 +335,13 @@ async function main() {
             lng: -58.4378,
             isPrimary: true,
           },
+        ],
+      },
+      availability: {
+        create: [
+          { dayOfWeek: 1, startTime: '09:00', endTime: '17:00', isAvailable: true }, // Lunes
+          { dayOfWeek: 3, startTime: '14:00', endTime: '22:00', isAvailable: true }, // Miércoles
+          { dayOfWeek: 5, startTime: '10:00', endTime: '18:00', isAvailable: true }, // Viernes
         ],
       },
     },
@@ -601,7 +635,7 @@ async function main() {
     },
   });
 
-  // Instrument 15: Guitarra Clásica
+  // Instrument 15: Guitarra Clásica - SIN disponibilidad
   const guitar5 = await prisma.instrument.create({
     data: {
       ownerId: demoUser.id,
@@ -628,6 +662,129 @@ async function main() {
             lng: -65.4117,
             isPrimary: true,
           },
+        ],
+      },
+      // SIN disponibilidad
+    },
+  });
+
+  // Instrument 16: Piano Digital - CON disponibilidad: Lun-Vie 08:00-19:00 (horario extendido)
+  const piano5 = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Piano Digital Yamaha P-125',
+      description: 'Piano digital portátil de 88 teclas. Perfecto para músicos que necesitan flexibilidad horaria.',
+      categoryId: pianoCategory.id,
+      brand: 'Yamaha',
+      model: 'P-125',
+      condition: 'EXCELLENT',
+      extras: 'Pedal, soporte, manual, adaptador',
+      photos: {
+        create: [
+          { url: placeholderImages[4], order: 0 },
+          { url: placeholderImages[5], order: 1 },
+          { url: placeholderImages[6], order: 2 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Buenos Aires',
+            areaText: 'Recoleta',
+            lat: -34.5895,
+            lng: -58.3974,
+            isPrimary: true,
+          },
+        ],
+      },
+      availability: {
+        create: [
+          { dayOfWeek: 1, startTime: '08:00', endTime: '19:00', isAvailable: true }, // Lunes
+          { dayOfWeek: 2, startTime: '08:00', endTime: '19:00', isAvailable: true }, // Martes
+          { dayOfWeek: 3, startTime: '08:00', endTime: '19:00', isAvailable: true }, // Miércoles
+          { dayOfWeek: 4, startTime: '08:00', endTime: '19:00', isAvailable: true }, // Jueves
+          { dayOfWeek: 5, startTime: '08:00', endTime: '19:00', isAvailable: true }, // Viernes
+        ],
+      },
+    },
+  });
+
+  // Instrument 17: Batería Electrónica - CON disponibilidad: Solo Martes y Jueves 18:00-22:00
+  const drums5 = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Batería Electrónica Alesis Nitro',
+      description: 'Batería electrónica compacta. Perfecta para apartamentos. Solo disponible en horarios nocturnos específicos.',
+      categoryId: drumsCategory.id,
+      brand: 'Alesis',
+      model: 'Nitro Mesh',
+      condition: 'GOOD',
+      extras: 'Baquetas, manual, cables',
+      photos: {
+        create: [
+          { url: placeholderImages[7], order: 0 },
+          { url: placeholderImages[8], order: 1 },
+          { url: placeholderImages[9], order: 2 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Buenos Aires',
+            areaText: 'Palermo',
+            lat: -34.5889,
+            lng: -58.3974,
+            isPrimary: true,
+          },
+        ],
+      },
+      availability: {
+        create: [
+          { dayOfWeek: 2, startTime: '18:00', endTime: '22:00', isAvailable: true }, // Martes
+          { dayOfWeek: 4, startTime: '18:00', endTime: '22:00', isAvailable: true }, // Jueves
+        ],
+      },
+    },
+  });
+
+  // Instrument 18: Violín - CON disponibilidad: Todos los días 00:00-23:59 (disponible siempre)
+  const violin4 = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Violín Profesional Stradivarius Réplica',
+      description: 'Violín de alta calidad, réplica de Stradivarius. Disponible en cualquier momento.',
+      categoryId: violinCategory.id,
+      brand: 'Yamaha',
+      model: 'SV-250',
+      condition: 'EXCELLENT',
+      extras: 'Arco profesional, estuche rígido, resina',
+      photos: {
+        create: [
+          { url: placeholderImages[11], order: 0 },
+          { url: placeholderImages[12], order: 1 },
+          { url: placeholderImages[13], order: 2 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Buenos Aires',
+            areaText: 'Belgrano',
+            lat: -34.5639,
+            lng: -58.4558,
+            isPrimary: true,
+          },
+        ],
+      },
+      availability: {
+        create: [
+          { dayOfWeek: 0, startTime: '00:00', endTime: '23:59', isAvailable: true }, // Domingo
+          { dayOfWeek: 1, startTime: '00:00', endTime: '23:59', isAvailable: true }, // Lunes
+          { dayOfWeek: 2, startTime: '00:00', endTime: '23:59', isAvailable: true }, // Martes
+          { dayOfWeek: 3, startTime: '00:00', endTime: '23:59', isAvailable: true }, // Miércoles
+          { dayOfWeek: 4, startTime: '00:00', endTime: '23:59', isAvailable: true }, // Jueves
+          { dayOfWeek: 5, startTime: '00:00', endTime: '23:59', isAvailable: true }, // Viernes
+          { dayOfWeek: 6, startTime: '00:00', endTime: '23:59', isAvailable: true }, // Sábado
         ],
       },
     },
@@ -1019,7 +1176,16 @@ async function main() {
   console.log('   - 1 demo user (OWNER + CLIENT)');
   console.log('   - 1 client user (CLIENT)');
   console.log('   - 1 admin user (ADMIN)');
-  console.log('   - 15 instruments with photos and locations');
+  console.log('   - 18 instruments with photos and locations');
+  console.log('   - Disponibilidad configurada:');
+  console.log('     • SIN disponibilidad: guitar1, guitar5 (permite cualquier fecha/hora)');
+  console.log('     • Todos los días 09:00-18:00: piano1');
+  console.log('     • Solo Lun-Vie 10:00-20:00: drums1');
+  console.log('     • Solo Dom-Sáb 14:00-22:00: violin1');
+  console.log('     • Horarios diferentes por día: sax1 (Lun 09-17, Mié 14-22, Vie 10-18)');
+  console.log('     • Lun-Vie 08:00-19:00: piano5');
+  console.log('     • Solo Mar-Jue 18:00-22:00: drums5');
+  console.log('     • Todos los días 00:00-23:59: violin4');
   console.log('   - 20 posts:');
   console.log('     • 5 PENDING_APPROVAL');
   console.log('     • 5 APPROVED');
@@ -1028,6 +1194,9 @@ async function main() {
   console.log('     • 4 EXPIRED');
   console.log('   - 1 request (REQUESTED)');
   console.log('\n🗺️  Posts APPROVED will appear in the map!');
+  console.log('\n🧪 Para testing:');
+  console.log('   - Ver GUIA_TESTS_MANUALES.md para guía completa de tests');
+  console.log('   - Instrumentos con diferentes disponibilidades listos para probar');
 }
 
 main()

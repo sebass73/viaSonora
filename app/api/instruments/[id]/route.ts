@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { updateInstrumentSchema } from '@/lib/validation';
+import { updateInstrumentSchema, updateInstrumentAvailabilitySchema } from '@/lib/validation';
 
 export async function GET(
   request: NextRequest,
@@ -24,6 +24,9 @@ export async function GET(
         },
         locations: {
           orderBy: { isPrimary: 'desc' },
+        },
+        availability: {
+          orderBy: { dayOfWeek: 'asc' },
         },
         owner: {
           select: {
@@ -87,9 +90,16 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { photos, locations, ...instrumentData } = body;
+    const { photos, locations, availability, ...instrumentData } = body;
     
     const validated = updateInstrumentSchema.parse(instrumentData);
+    
+    // Validar disponibilidad si se proporciona
+    if (availability && Array.isArray(availability)) {
+      availability.forEach((avail: any) => {
+        updateInstrumentAvailabilitySchema.parse([avail]);
+      });
+    }
 
     // Actualizar instrumento
     const updateData: any = { ...validated };
@@ -128,6 +138,25 @@ export async function PUT(
       };
     }
 
+    // Si se envía disponibilidad, reemplazar todas
+    if (availability !== undefined) {
+      // Eliminar disponibilidad existente
+      await prisma.instrumentAvailability.deleteMany({
+        where: { instrumentId: id },
+      });
+      // Crear nueva disponibilidad solo si hay elementos
+      if (Array.isArray(availability) && availability.length > 0) {
+        updateData.availability = {
+          create: availability.map((avail: any) => ({
+            dayOfWeek: avail.dayOfWeek,
+            startTime: avail.startTime,
+            endTime: avail.endTime,
+            isAvailable: avail.isAvailable !== false,
+          })),
+        };
+      }
+    }
+
     const instrument = await prisma.instrument.update({
       where: { id },
       data: updateData,
@@ -138,6 +167,9 @@ export async function PUT(
         },
         locations: {
           orderBy: { isPrimary: 'desc' },
+        },
+        availability: {
+          orderBy: { dayOfWeek: 'asc' },
         },
       },
     });

@@ -38,12 +38,14 @@ export function PostForm() {
     try {
       const res = await fetch('/api/instruments');
       if (res.ok) {
-        const data = await res.json();
-        setInstruments(data);
+        const response = await res.json();
+        // La API devuelve { data: [...], pagination: {...} }
+        const instrumentsList = response.data || response;
+        setInstruments(Array.isArray(instrumentsList) ? instrumentsList : []);
         
         // Si hay instrumentos, usar el primero y su ubicación primaria
-        if (data.length > 0) {
-          const firstInstrument = data[0];
+        if (Array.isArray(instrumentsList) && instrumentsList.length > 0) {
+          const firstInstrument = instrumentsList[0];
           const primaryLocation = firstInstrument.locations?.find((loc: any) => loc.isPrimary) || firstInstrument.locations?.[0];
           setFormData({
             instrumentId: firstInstrument.id,

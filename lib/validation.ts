@@ -49,6 +49,25 @@ export const createInstrumentLocationSchema = z.object({
   isPrimary: z.boolean().default(false),
 });
 
+// Instrument Availability validation
+export const createInstrumentAvailabilitySchema = z.object({
+  dayOfWeek: z.number().min(0).max(6), // 0=Domingo, 1=Lunes, ..., 6=Sábado
+  startTime: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Formato inválido. Use HH:mm'),
+  endTime: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Formato inválido. Use HH:mm'),
+  isAvailable: z.boolean().default(true),
+}).refine((data) => {
+  const [startHour, startMin] = data.startTime.split(':').map(Number);
+  const [endHour, endMin] = data.endTime.split(':').map(Number);
+  const startMinutes = startHour * 60 + startMin;
+  const endMinutes = endHour * 60 + endMin;
+  return endMinutes > startMinutes;
+}, {
+  message: 'La hora de fin debe ser posterior a la hora de inicio',
+  path: ['endTime'],
+});
+
+export const updateInstrumentAvailabilitySchema = z.array(createInstrumentAvailabilitySchema).optional();
+
 // Post validation
 export const createPostSchema = z.object({
   instrumentId: z.string().min(1),

@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PhotoUpload } from './PhotoUpload';
 import { CityAutocomplete } from '@/components/ui/city-autocomplete';
 import { EmojiPickerButton } from '@/components/ui/emoji-picker-button';
+import { AvailabilityForm } from './AvailabilityForm';
 
 interface Category {
   id: string;
@@ -34,6 +35,12 @@ interface Instrument {
     lng: number;
     isPrimary: boolean;
     useProfileLocation?: boolean;
+  }>;
+  availability?: Array<{
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    isAvailable: boolean;
   }>;
 }
 
@@ -69,6 +76,12 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     lat: number | null;
     lng: number | null;
   } | null>(null);
+  const [availability, setAvailability] = useState<Array<{
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    isAvailable: boolean;
+  }>>([]);
   const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
   const extrasTextareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -94,6 +107,9 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
         isPrimary: loc.isPrimary,
         useProfileLocation: Boolean((loc as any).useProfileLocation) || false,
       })));
+      if (instrument.availability) {
+        setAvailability(instrument.availability);
+      }
     }
   }, [instrument]);
 
@@ -155,21 +171,41 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
       const url = instrument ? `/api/instruments/${instrument.id}` : '/api/instruments';
       const method = instrument ? 'PUT' : 'POST';
 
+      // Preparar datos del formulario, filtrando campos vacíos en modo edición
+      const submitData: any = {
+        ...formData,
+        photos,
+        locations: locations.map(loc => ({
+          city: loc.city,
+          areaText: loc.areaText || null,
+          lat: loc.lat,
+          lng: loc.lng,
+          isPrimary: loc.isPrimary,
+          useProfileLocation: Boolean(loc.useProfileLocation),
+        })),
+      };
+
+      // Manejar disponibilidad:
+      // - Si hay disponibilidad, enviarla
+      // - Si no hay disponibilidad pero estamos editando, enviar [] para eliminar la existente
+      // - Si no hay disponibilidad y es nuevo, no enviar (undefined)
+      if (availability.length > 0) {
+        submitData.availability = availability;
+      } else if (instrument) {
+        // En modo edición, si se deseleccionan todos los días, enviar [] para eliminar disponibilidad existente
+        submitData.availability = [];
+      }
+      // Si es nuevo instrumento sin disponibilidad, no incluir availability (undefined)
+
+      // En modo edición, no incluir categoryId si está vacío (mantener el existente)
+      if (instrument && !submitData.categoryId) {
+        delete submitData.categoryId;
+      }
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          photos,
-          locations: locations.map(loc => ({
-            city: loc.city,
-            areaText: loc.areaText || null,
-            lat: loc.lat,
-            lng: loc.lng,
-            isPrimary: loc.isPrimary,
-            useProfileLocation: Boolean(loc.useProfileLocation),
-          })),
-        }),
+        body: JSON.stringify(submitData),
       });
 
       if (res.ok) {
@@ -512,6 +548,12 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
               </p>
             )}
           </div>
+
+          <AvailabilityForm
+            value={availability}
+            onChange={setAvailability}
+            disabled={loading}
+          />
 
           <div className="flex gap-2">
             <Button type="submit" disabled={loading}>

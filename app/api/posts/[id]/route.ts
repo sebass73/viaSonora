@@ -24,6 +24,9 @@ export async function GET(
             locations: {
               orderBy: { isPrimary: 'desc' },
             },
+            availability: {
+              orderBy: { dayOfWeek: 'asc' },
+            },
             owner: {
               select: {
                 id: true,

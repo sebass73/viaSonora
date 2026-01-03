@@ -1,88 +1,20 @@
 # Tareas Pendientes - ViaSonora
 
 **Fecha de creación:** 2025-01-02  
-**Estado actual:** Etapas 1-2 completas, Etapas 3-4 parciales  
+**Última actualización:** 2025-01-02  
+**Estado actual:** Etapas 1-2 completas ✅, Etapas 3-4 parciales  
 **Objetivo:** Completar funcionalidades faltantes según planificación de etapas
 
 ---
 
 ## 📋 Índice
 
-1. [Etapa 2 - Funcionalidades Faltantes](#etapa-2---funcionalidades-faltantes)
 2. [Etapa 3 - Funcionalidades Faltantes](#etapa-3---funcionalidades-faltantes)
 3. [Etapa 4 - Funcionalidades Faltantes](#etapa-4---funcionalidades-faltantes)
 4. [Priorización](#priorización)
 5. [Detalles Técnicos](#detalles-técnicos)
 
 ---
-
-## 1. Etapa 2 - Funcionalidades Faltantes
-
-### 🔴 1.1 Disponibilidad por Instrumento (Días Semana + Rango Horario)
-
-**Estado:** ❌ No implementado  
-**Prioridad:** Alta  
-**Complejidad:** Media-Alta
-
-#### Descripción
-Actualmente las requests solo tienen `fromDate` y `toDate`. Se necesita agregar disponibilidad más granular por días de la semana y horarios para cada instrumento.
-
-#### Requisitos
-- Cada instrumento debe poder definir su disponibilidad
-- Configuración por días de la semana (lunes a domingo)
-- Rango horario por día (ej: Lunes 9:00-18:00, Martes 14:00-20:00)
-- Validación: Las requests deben respetar la disponibilidad definida
-
-#### Tareas Técnicas
-
-**1.1.1 Schema/Base de Datos**
-- [ ] Crear modelo `InstrumentAvailability` en Prisma
-  ```prisma
-  model InstrumentAvailability {
-    id          String   @id @default(cuid())
-    instrumentId String
-    dayOfWeek   Int      // 0=Domingo, 1=Lunes, ..., 6=Sábado
-    startTime   String   // Formato "HH:mm" (ej: "09:00")
-    endTime     String   // Formato "HH:mm" (ej: "18:00")
-    isAvailable Boolean  @default(true)
-    
-    instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
-    
-    @@unique([instrumentId, dayOfWeek])
-    @@index([instrumentId])
-  }
-  ```
-- [ ] Agregar relación `availability InstrumentAvailability[]` al modelo `Instrument`
-- [ ] Crear y ejecutar migración
-
-**1.1.2 Validación Backend**
-- [ ] Crear schema Zod para disponibilidad (`lib/validation.ts`)
-- [ ] Validar que las requests respeten la disponibilidad al crear
-- [ ] Modificar `POST /api/requests` para validar disponibilidad
-
-**1.1.3 UI - Formulario de Instrumento**
-- [ ] Agregar sección "Disponibilidad" en `InstrumentForm.tsx`
-- [ ] Componente para seleccionar días y horarios
-- [ ] UI para agregar/editar/eliminar horarios por día
-- [ ] Validación client-side (ej: endTime > startTime)
-
-**1.1.4 UI - Solicitud de Request**
-- [ ] Mostrar disponibilidad del instrumento al cliente
-- [ ] Validar que las fechas seleccionadas coincidan con días/horarios disponibles
-- [ ] Mostrar mensaje de error si la fecha no está disponible
-
-**1.1.5 API**
-- [ ] `GET /api/instruments/[id]` - Incluir disponibilidad
-- [ ] `POST /api/instruments` - Aceptar y guardar disponibilidad
-- [ ] `PUT /api/instruments/[id]` - Actualizar disponibilidad
-
-**1.1.6 Testing**
-- [ ] Crear instrumento con disponibilidad
-- [ ] Enviar request en día/horario disponible → debe funcionar
-- [ ] Enviar request en día/horario no disponible → debe rechazar
-
----
-
 ## 2. Etapa 3 - Funcionalidades Faltantes
 
 ### 🔴 2.1 Sistema de Reportes de Posts
@@ -405,7 +337,6 @@ Sistema básico de feature flags para habilitar/deshabilitar funcionalidades sin
 
 ### 🔴 Alta Prioridad (Implementar primero)
 
-1. **Disponibilidad por Instrumento (1.1)** - Es parte de Etapa 2, funcionalidad core
 2. **Sistema de Reportes (2.1)** - Es parte de Etapa 3, importante para moderación
 
 ### 🟡 Media Prioridad (Después)
@@ -477,6 +408,23 @@ Según `DOCUMENTACION_FUNCIONAL.md`, estas están fuera del MVP:
 - Sistema de mensajería entre usuarios
 - Sistema de calificaciones/reviews
 - Sistema de pagos completo (solo stub en Etapa 4)
+
+---
+
+## 7. Resumen de Completados
+
+### ✅ Etapa 2 - Completada
+
+**1.1 Disponibilidad por Instrumento** ✅
+- Schema y migración implementados
+- Validación backend completa
+- UI completa (formulario, visualización, solicitud)
+- APIs implementadas
+- Testing y documentación completados
+- Seed actualizado con datos de prueba
+- Guía de tests manuales creada (`GUIA_TESTS_MANUALES.md`)
+- Calendario mejorado con días disponibles resaltados
+- Correcciones de seguridad (direcciones completas)
 
 ---
 

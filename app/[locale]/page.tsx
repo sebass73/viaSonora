@@ -56,6 +56,7 @@ export default function HomePage() {
   const [searchTitle, setSearchTitle] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -117,6 +118,10 @@ export default function HomePage() {
     router.push(`/posts/${postId}`);
   };
 
+  const handleMarkerClick = (post: any) => {
+    setSelectedPost(post as Post);
+  };
+
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -167,7 +172,7 @@ export default function HomePage() {
     : [-34.6037, -58.3816]; // Buenos Aires por defecto
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full min-h-0 overflow-hidden">
       {/* Sección de búsqueda */}
       <div className="bg-background border-b flex-shrink-0">
         <div className="container py-2 space-y-3">
@@ -385,14 +390,62 @@ export default function HomePage() {
         </div>
 
         {/* Mapa en la parte inferior - ocupa el resto del espacio */}
-        <div className="flex-1 min-h-0 border-t overflow-hidden p-1">
+        <div className="flex-1 min-h-0 border-t overflow-hidden p-1 relative">
           {!loading && (
-            <MapViewDynamic
-              posts={posts}
-              center={mapCenter}
-              zoom={13}
-              onMarkerClick={(post) => handleRequest(post.id)}
-            />
+            <>
+              <MapViewDynamic
+                posts={posts}
+                center={mapCenter}
+                zoom={13}
+                onMarkerClick={handleMarkerClick}
+              />
+              {/* Card de resumen del post seleccionado */}
+              {selectedPost && (
+                <div className="absolute bottom-4 left-4 z-[1000] max-w-[300px] md:max-w-[350px]">
+                  <Card className="shadow-lg border-2">
+                    <CardHeader className="p-3 pb-2">
+                      {selectedPost.instrument.photos[0] && (
+                        <div className="relative w-full h-32 mb-2 rounded-md overflow-hidden">
+                          <Image
+                            src={selectedPost.instrument.photos[0].url}
+                            alt={selectedPost.instrument.title}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      )}
+                      <CardTitle className="text-base line-clamp-1">{selectedPost.instrument.title}</CardTitle>
+                      <CardDescription className="text-xs">
+                        {selectedPost.instrument.category.nameEs} • {(() => {
+                          // Extraer solo la ciudad de la dirección completa (antes de la primera coma o el primer número)
+                          const cityOnly = selectedPost.city.split(',')[0].trim();
+                          return cityOnly;
+                        })()}
+                        {selectedPost.areaText && `, ${selectedPost.areaText}`}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-3 pt-0">
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleRequest(selectedPost.id)}
+                        >
+                          {t('request')}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedPost(null)}
+                        >
+                          Cerrar
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </>
           )}
         </div>
 

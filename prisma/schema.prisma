@@ -159,6 +159,7 @@ model Instrument {
   locations InstrumentLocation[]
   posts    Post[]
   requests Request[]
+  availability InstrumentAvailability[]
   
   @@index([ownerId])
   @@index([categoryId])
@@ -217,6 +218,23 @@ model Post {
   @@index([status])
   @@index([city])
   @@index([expiresAt])
+}
+
+model InstrumentAvailability {
+  id          String   @id @default(cuid())
+  instrumentId String
+  dayOfWeek   Int      // 0=Domingo, 1=Lunes, ..., 6=Sábado
+  startTime   String   // Formato "HH:mm" (ej: "09:00")
+  endTime     String   // Formato "HH:mm" (ej: "18:00")
+  isAvailable Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+  
+  @@unique([instrumentId, dayOfWeek])
+  @@index([instrumentId])
 }
 
 model Request {

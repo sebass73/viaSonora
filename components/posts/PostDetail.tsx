@@ -36,6 +36,12 @@ interface Post {
       lat: number;
       lng: number;
     }>;
+    availability?: Array<{
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+      isAvailable: boolean;
+    }>;
     owner: {
       id: string;
       name: string | null;
@@ -154,7 +160,11 @@ export function PostDetail() {
             <CardHeader>
               <CardTitle>{post.instrument.title}</CardTitle>
               <CardDescription>
-                {post.instrument.category.nameEs} • {post.city}
+                {post.instrument.category.nameEs} • {(() => {
+                  // Extraer solo la ciudad de la dirección completa (antes de la primera coma)
+                  const cityOnly = post.city.split(',')[0].trim();
+                  return cityOnly;
+                })()}
                 {post.areaText && `, ${post.areaText}`}
               </CardDescription>
             </CardHeader>
@@ -205,6 +215,28 @@ export function PostDetail() {
                   <div>
                     <h3 className="font-semibold mb-2">Extras / Accesorios</h3>
                     <p className="text-muted-foreground whitespace-pre-wrap">{post.instrument.extras}</p>
+                  </div>
+                )}
+
+                {post.instrument.availability && post.instrument.availability.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-2">Disponibilidad</h3>
+                    <div className="space-y-2">
+                      {post.instrument.availability.map((avail, index) => {
+                        const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                        return (
+                          <div key={index} className="flex items-center gap-2 text-sm">
+                            <span className="font-medium w-24">{days[avail.dayOfWeek]}:</span>
+                            <span className="text-muted-foreground">
+                              {avail.startTime} - {avail.endTime}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Los usuarios deberán coordinar la gestión del instrumento directamente contigo.
+                    </p>
                   </div>
                 )}
               </div>
@@ -324,7 +356,12 @@ export function PostDetail() {
                             Enviar Solicitud
                           </Button>
                         ) : (
-                          <RequestForm postId={post.id} onSuccess={handleRequestSuccess} />
+                          <RequestForm 
+                            postId={post.id} 
+                            instrumentId={post.instrument.id}
+                            availability={post.instrument.availability || []}
+                            onSuccess={handleRequestSuccess} 
+                          />
                         )
                       ) : (
                         <Link href="/login">

@@ -1,8 +1,8 @@
 # Documentación Funcional - ViaSonora
 
-**Versión:** 1.0  
-**Última actualización:** Etapa 2 - Requests + Contacto bloqueado  
-**Estado:** MVP en desarrollo
+**Versión:** 1.1  
+**Última actualización:** 2025-01-02 - Etapa 2 Completada (Disponibilidad por Instrumento)  
+**Estado:** MVP en desarrollo - Etapa 2 completada ✅
 
 ---
 
@@ -32,8 +32,10 @@ ViaSonora es un marketplace que conecta músicos viajeros con propietarios de in
 
 - ✅ Autenticación (Google OAuth + Email/Password)
 - ✅ Gestión de instrumentos (CRUD completo)
+- ✅ Disponibilidad por instrumento (días de semana + rangos horarios)
 - ✅ Publicaciones de instrumentos (Posts) con moderación
 - ✅ Sistema de solicitudes (Requests) con revelación condicional de contacto
+- ✅ Validación de solicitudes según disponibilidad del instrumento
 - ✅ Mapa interactivo con ubicaciones aproximadas (jitter)
 - ✅ Panel de administración para moderación
 - ✅ Multi-idioma (ES/IT/EN)
@@ -72,7 +74,13 @@ ViaSonora es un marketplace que conecta músicos viajeros con propietarios de in
 - `id`, `ownerId`, `title`, `description`
 - `categoryId`, `brand`, `model`, `condition`
 - `extras` (accesorios opcionales)
-- Relaciones: `photos[]`, `locations[]`, `posts[]`, `requests[]`
+- Relaciones: `photos[]`, `locations[]`, `posts[]`, `requests[]`, `availability[]`
+
+#### Disponibilidad (InstrumentAvailability)
+- Configuración opcional de días de la semana y horarios de disponibilidad
+- Cada disponibilidad incluye: `dayOfWeek` (0=Domingo, 6=Sábado), `startTime`, `endTime`
+- Si no se configura disponibilidad, el instrumento está disponible en cualquier fecha/hora
+- Si se configura, las solicitudes deben respetar los días y horarios definidos
 
 #### Estados
 - No tiene estados propios (es una entidad base)
@@ -249,21 +257,26 @@ Reglas:
 7. Click "Enviar Solicitud"
    ↓
 8. Completa formulario:
-   - Fecha inicio/fin
+   - Fecha inicio/fin (validadas según disponibilidad del instrumento)
+   - Hora inicio/fin (validadas según disponibilidad del instrumento)
    - Mensaje (obligatorio)
    - Accesorios (opcional)
    ↓
-9. Request creada con status = REQUESTED
+9. Sistema valida que las fechas/horarios coincidan con disponibilidad del instrumento
+   - Si no hay disponibilidad configurada: permite cualquier fecha/hora
+   - Si hay disponibilidad: valida días de semana y rangos horarios
    ↓
-10. OWNER recibe notificación (en /requests)
+10. Request creada con status = REQUESTED (si pasa validación)
+   ↓
+11. OWNER recibe notificación (en /requests)
     ↓
-11. OWNER acepta → status = ACCEPTED
+12. OWNER acepta → status = ACCEPTED
     ↓
-12. CLIENT ve contacto en detalle del post
+13. CLIENT ve contacto en detalle del post
     ↓
-13. CLIENT contacta al OWNER
+14. CLIENT contacta al OWNER
     ↓
-14. (Opcional) OWNER marca como COMPLETED
+15. (Opcional) OWNER marca como COMPLETED
 ```
 
 ### 4.3 Flujo: Moderación de Posts (ADMIN/OPERATOR)
@@ -501,7 +514,7 @@ DELETE /api/posts/[id]                 - Eliminar post (solo owner)
 GET    /api/requests?type=sent     - Listar requests enviadas
 GET    /api/requests?type=received - Listar requests recibidas
 GET    /api/requests               - Listar todas (sent + received)
-POST   /api/requests               - Crear request
+POST   /api/requests               - Crear request (valida disponibilidad del instrumento)
 GET    /api/requests/[id]          - Obtener request
 PUT    /api/requests/[id]          - Actualizar status (aceptar/rechazar/cancelar/completar)
 ```
@@ -574,6 +587,12 @@ POST /api/upload - Subir imagen (folder: 'instruments' o 'profile')
    - Debe tener al menos 3 fotos (máximo 10)
    - Debe tener al menos 1 ubicación
    - Una ubicación debe ser marcada como isPrimary = true
+   - Disponibilidad es opcional (si no se configura, el instrumento está disponible siempre)
+   - Si se configura disponibilidad:
+     - Puede definir disponibilidad por días de la semana (0=Domingo, 6=Sábado)
+     - Cada día puede tener un rango horario (formato HH:mm)
+     - endTime debe ser posterior a startTime
+     - Puede configurar diferentes horarios para diferentes días
 
 2. **Edición/Eliminación:**
    - Solo el owner puede editar/eliminar sus instrumentos
@@ -757,7 +776,7 @@ APPROVED  REJECTED  BANNED
 
 **Flujo Principal:**
 1. CLIENT busca y encuentra post
-2. CLIENT envía request con fechas y mensaje
+2. CLIENT envía request con fechas/horas y mensaje (validado según disponibilidad del instrumento)
 3. OWNER recibe request
 4. OWNER acepta
 5. CLIENT ve contacto
@@ -783,7 +802,6 @@ APPROVED  REJECTED  BANNED
 ### 10.1 Limitaciones Actuales (MVP)
 
 - ❌ No hay sistema de notificaciones (email/push)
-- ❌ No hay disponibilidad por días/horarios (solo fechas)
 - ❌ No hay sistema de pagos (solo stub)
 - ❌ No hay sistema de reportes de posts (solo estructura)
 - ❌ No hay traducción automática de contenido
@@ -801,14 +819,14 @@ APPROVED  REJECTED  BANNED
 
 ### 10.3 Mejoras Futuras (Fuera de MVP)
 
-- Sistema de disponibilidad (días semana + horarios)
-- Notificaciones en tiempo real
+- Notificaciones en tiempo real (email/push)
 - Sistema de pagos completo
 - Reportes de posts funcionales
 - Mensajería interna
-- Sistema de calificaciones
+- Sistema de calificaciones/reviews
 - Traducción automática de contenido
 - Cron job automático para expiración
+- Disponibilidad con horarios que cruzan medianoche (actualmente limitado a horarios dentro del mismo día)
 
 ---
 
@@ -818,6 +836,7 @@ APPROVED  REJECTED  BANNED
 - **CLIENT**: Usuario que busca y solicita instrumentos (cliente)
 - **Post**: Publicación de un instrumento (visible públicamente si APPROVED)
 - **Request**: Solicitud de un CLIENT para usar un instrumento
+- **Disponibilidad (InstrumentAvailability)**: Configuración de días de semana y horarios en que un instrumento está disponible
 - **Jitter**: Ruido aleatorio aplicado a coordenadas para privacidad
 - **Moderación**: Proceso de aprobar/rechazar posts por ADMIN/OPERATOR
 - **Status**: Estado de una entidad (Post, Request)

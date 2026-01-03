@@ -134,7 +134,13 @@ export async function POST(request: NextRequest) {
     const post = await prisma.post.findUnique({
       where: { id: validated.postId },
       include: {
-        instrument: true,
+        instrument: {
+          include: {
+            availability: {
+              orderBy: { dayOfWeek: 'asc' },
+            },
+          },
+        },
       },
     });
 
@@ -176,6 +182,63 @@ export async function POST(request: NextRequest) {
         { error: 'Ya existe una solicitud activa para este post' },
         { status: 400 }
       );
+    }
+
+    // Validar disponibilidad del instrumento (si está configurada)
+    const availability = post.instrument.availability || [];
+    if (availability.length > 0) {
+      const fromDate = new Date(validated.fromDate);
+      const toDate = new Date(validated.toDate);
+
+      // Validar cada día del rango
+      const currentDate = new Date(fromDate);
+      while (currentDate <= toDate) {
+        const dayOfWeek = currentDate.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+        const dayAvailability = availability.find(a => a.dayOfWeek === dayOfWeek && a.isAvailable);
+        
+        if (!dayAvailability) {
+          const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+          return NextResponse.json(
+            { error: `El día ${days[dayOfWeek]} no está disponible para este instrumento` },
+            { status: 400 }
+          );
+        }
+
+        // Validar horas solo para el primer y último día
+        const [fromHour, fromMin] = fromDate.toTimeString().split(':').map(Number);
+        const [toHour, toMin] = toDate.toTimeString().split(':').map(Number);
+        const fromMinutes = fromHour * 60 + fromMin;
+        const toMinutes = toHour * 60 + toMin;
+        
+        const [startHour, startMin] = dayAvailability.startTime.split(':').map(Number);
+        const [endHour, endMin] = dayAvailability.endTime.split(':').map(Number);
+        const startMinutes = startHour * 60 + startMin;
+        const endMinutes = endHour * 60 + endMin;
+
+        // Si es el primer día, validar hora de inicio
+        if (currentDate.toDateString() === fromDate.toDateString()) {
+          if (fromMinutes < startMinutes || fromMinutes > endMinutes) {
+            return NextResponse.json(
+              { error: `La hora de inicio debe estar entre ${dayAvailability.startTime} y ${dayAvailability.endTime} para ${days[dayOfWeek]}` },
+              { status: 400 }
+            );
+          }
+        }
+
+        // Si es el último día, validar hora de fin
+        if (currentDate.toDateString() === toDate.toDateString()) {
+          if (toMinutes < startMinutes || toMinutes > endMinutes) {
+            return NextResponse.json(
+              { error: `La hora de fin debe estar entre ${dayAvailability.startTime} y ${dayAvailability.endTime} para ${days[dayOfWeek]}` },
+              { status: 400 }
+            );
+          }
+        }
+
+        // Avanzar al siguiente día
+        currentDate.setDate(currentDate.getDate() + 1);
+        currentDate.setHours(0, 0, 0, 0);
+      }
     }
 
     // Crear la request

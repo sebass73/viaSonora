@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { createInstrumentSchema } from '@/lib/validation';
+import { createInstrumentSchema, updateInstrumentAvailabilitySchema } from '@/lib/validation';
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,6 +32,9 @@ export async function GET(request: NextRequest) {
         locations: {
           where: { isPrimary: true },
           take: 1,
+        },
+        availability: {
+          orderBy: { dayOfWeek: 'asc' },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -68,9 +71,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { photos, locations, ...instrumentData } = body;
+    const { photos, locations, availability, ...instrumentData } = body;
     
     const validated = createInstrumentSchema.parse(instrumentData);
+    
+    // Validar disponibilidad si se proporciona
+    if (availability && Array.isArray(availability)) {
+      availability.forEach((avail: any) => {
+        updateInstrumentAvailabilitySchema.parse([avail]);
+      });
+    }
 
     // Verificar que la categoría existe
     const category = await prisma.category.findUnique({
@@ -105,6 +115,14 @@ export async function POST(request: NextRequest) {
             useProfileLocation: Boolean(loc.useProfileLocation) || false,
           })),
         } : undefined,
+        availability: availability && Array.isArray(availability) && availability.length > 0 ? {
+          create: availability.map((avail: any) => ({
+            dayOfWeek: avail.dayOfWeek,
+            startTime: avail.startTime,
+            endTime: avail.endTime,
+            isAvailable: avail.isAvailable !== false,
+          })),
+        } : undefined,
       },
       include: {
         category: true,
@@ -113,6 +131,9 @@ export async function POST(request: NextRequest) {
         },
         locations: {
           orderBy: { isPrimary: 'desc' },
+        },
+        availability: {
+          orderBy: { dayOfWeek: 'asc' },
         },
       },
     });

@@ -72,7 +72,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <Providers>
             <Navigation />
-            <main className="flex-1 overflow-y-auto md:ml-64">
+            <main className="flex-1 md:ml-64 flex flex-col min-h-0">
               {children}
             </main>
           </Providers>
