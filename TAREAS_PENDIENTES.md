@@ -2,7 +2,7 @@
 
 **Fecha de creación:** 2025-01-02  
 **Última actualización:** 2025-01-02  
-**Estado actual:** Etapas 1-2 completas ✅, Etapas 3-4 parciales  
+**Estado actual:** Etapas 1-2 completas ✅, Etapa 3 parcial (Sistema de Reportes completado ✅), Etapa 4 pendiente  
 **Objetivo:** Completar funcionalidades faltantes según planificación de etapas
 
 ---
@@ -17,9 +17,9 @@
 ---
 ## 2. Etapa 3 - Funcionalidades Faltantes
 
-### 🔴 2.1 Sistema de Reportes de Posts
+### ✅ 2.1 Sistema de Reportes de Posts
 
-**Estado:** ❌ No implementado (solo estructura mencionada)  
+**Estado:** ✅ Completado  
 **Prioridad:** Alta  
 **Complejidad:** Media
 
@@ -37,7 +37,7 @@ Permitir que usuarios reporten posts por diversas razones (contenido inapropiado
 #### Tareas Técnicas
 
 **2.1.1 Schema/Base de Datos**
-- [ ] Crear enum `ReportReason` en Prisma
+- [x] Crear enum `ReportReason` en Prisma
   ```prisma
   enum ReportReason {
     SPAM
@@ -47,7 +47,7 @@ Permitir que usuarios reporten posts por diversas razones (contenido inapropiado
     OTHER
   }
   ```
-- [ ] Crear modelo `PostReport` en Prisma
+- [x] Crear modelo `PostReport` en Prisma
   ```prisma
   model PostReport {
     id          String      @id @default(cuid())
@@ -70,46 +70,47 @@ Permitir que usuarios reporten posts por diversas razones (contenido inapropiado
     @@index([reporterId])
   }
   ```
-- [ ] Crear enum `ReportStatus`
-- [ ] Agregar relaciones a `Post` y `User`
-- [ ] Crear y ejecutar migración
+- [x] Crear enum `ReportStatus`
+- [x] Agregar relaciones a `Post` y `User`
+- [x] Crear y ejecutar migración
 
 **2.1.2 Validación Backend**
-- [ ] Crear schema Zod para crear reporte (`lib/validation.ts`)
-- [ ] Validar que el usuario no haya reportado el mismo post antes
+- [x] Crear schema Zod para crear reporte (`lib/validation.ts`)
+- [x] Validar que el usuario no haya reportado el mismo post antes
 
 **2.1.3 API - Reportes**
-- [ ] `POST /api/reports` - Crear nuevo reporte
-- [ ] `GET /api/reports?status=PENDING` - Listar reportes (solo admin/operator)
-- [ ] `PUT /api/reports/[id]` - Actualizar status (marcar como revisado/resuelto)
+- [x] `POST /api/reports` - Crear nuevo reporte
+- [x] `GET /api/reports?status=PENDING` - Listar reportes (solo admin/operator)
+- [x] `PUT /api/reports/[id]` - Actualizar status (marcar como revisado/resuelto)
 
 **2.1.4 UI - Reportar Post**
-- [ ] Agregar botón "Reportar" en `PostDetail.tsx` (solo si no es el owner)
-- [ ] Crear componente `ReportPostDialog.tsx`
+- [x] Agregar botón "Reportar" en `PostDetail.tsx` (solo si no es el owner)
+- [x] Crear componente `ReportPostDialog.tsx`
   - Select para razón del reporte
   - Textarea para comentario opcional
   - Botón de envío
-- [ ] Validación y mensaje de éxito/error
+- [x] Validación y mensaje de éxito/error
 
 **2.1.5 UI - Panel de Admin**
-- [ ] Crear página `/admin/reports` o agregar sección en `/admin`
-- [ ] Listar reportes pendientes con:
+- [x] Crear página `/admin/reports` o agregar sección en `/admin`
+- [x] Listar reportes pendientes con:
   - Post reportado (con link)
   - Usuario que reportó
   - Razón
   - Comentario
   - Fecha
-- [ ] Botones de acción:
+- [x] Botones de acción:
   - "Ver Post" - Link al post
   - "Marcar como Resuelto" - Cambiar status a RESOLVED
   - "Descartar" - Cambiar status a DISMISSED
-- [ ] Filtros por status (PENDING, REVIEWED, RESOLVED, DISMISSED)
+- [x] Filtros por status (PENDING, REVIEWED, RESOLVED, DISMISSED)
 
 **2.1.6 Testing**
-- [ ] Usuario reporta post → debe crear reporte
-- [ ] Usuario intenta reportar mismo post dos veces → debe rechazar
-- [ ] Admin ve reportes pendientes
-- [ ] Admin marca reporte como resuelto
+- [x] Usuario reporta post → debe crear reporte
+- [x] Usuario intenta reportar mismo post dos veces → debe rechazar
+- [x] Admin ve reportes pendientes
+- [x] Admin marca reporte como resuelto
+- [x] Guía de tests manuales creada (`GUIA_TESTS_REPORTES.md`)
 
 ---
 
@@ -337,7 +338,7 @@ Sistema básico de feature flags para habilitar/deshabilitar funcionalidades sin
 
 ### 🔴 Alta Prioridad (Implementar primero)
 
-2. **Sistema de Reportes (2.1)** - Es parte de Etapa 3, importante para moderación
+~~2. **Sistema de Reportes (2.1)**~~ ✅ Completado
 
 ### 🟡 Media Prioridad (Después)
 
@@ -425,6 +426,17 @@ Según `DOCUMENTACION_FUNCIONAL.md`, estas están fuera del MVP:
 - Guía de tests manuales creada (`GUIA_TESTS_MANUALES.md`)
 - Calendario mejorado con días disponibles resaltados
 - Correcciones de seguridad (direcciones completas)
+
+### ✅ Etapa 3 - Funcionalidades Completadas
+
+**2.1 Sistema de Reportes de Posts** ✅
+- Schema y migración implementados (ReportReason, ReportStatus, PostReport)
+- Validación backend completa (schemas Zod, validación de duplicados)
+- APIs implementadas (POST, GET, PUT /api/reports)
+- UI completa (ReportPostDialog, botón en PostDetail, panel de admin)
+- Panel de admin con tabs (Publicaciones y Reportes)
+- Filtros por status (PENDING, REVIEWED, RESOLVED, DISMISSED)
+- Guía de tests manuales creada (`GUIA_TESTS_REPORTES.md`)
 
 ---
 

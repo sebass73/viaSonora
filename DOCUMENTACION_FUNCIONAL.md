@@ -1,8 +1,8 @@
 # Documentación Funcional - ViaSonora
 
-**Versión:** 1.1  
-**Última actualización:** 2025-01-02 - Etapa 2 Completada (Disponibilidad por Instrumento)  
-**Estado:** MVP en desarrollo - Etapa 2 completada ✅
+**Versión:** 1.2  
+**Última actualización:** 2025-01-02 - Etapa 3 Parcial (Sistema de Reportes completado)  
+**Estado:** MVP en desarrollo - Etapa 2 completada ✅, Etapa 3 parcial (Reportes completado ✅)
 
 ---
 
@@ -36,8 +36,9 @@ ViaSonora es un marketplace que conecta músicos viajeros con propietarios de in
 - ✅ Publicaciones de instrumentos (Posts) con moderación
 - ✅ Sistema de solicitudes (Requests) con revelación condicional de contacto
 - ✅ Validación de solicitudes según disponibilidad del instrumento
+- ✅ Sistema de reportes de posts (usuarios pueden reportar contenido inapropiado)
 - ✅ Mapa interactivo con ubicaciones aproximadas (jitter)
-- ✅ Panel de administración para moderación
+- ✅ Panel de administración para moderación y gestión de reportes
 - ✅ Multi-idioma (ES/IT/EN)
 
 ### 1.3 Entidades Principales
@@ -47,6 +48,7 @@ ViaSonora es un marketplace que conecta músicos viajeros con propietarios de in
 3. **Post** - Publicaciones de instrumentos
 4. **Request** - Solicitudes de alquiler/prestamo
 5. **Category** - Categorías de instrumentos
+6. **PostReport** - Reportes de posts por usuarios
 
 ---
 
@@ -803,7 +805,6 @@ APPROVED  REJECTED  BANNED
 
 - ❌ No hay sistema de notificaciones (email/push)
 - ❌ No hay sistema de pagos (solo stub)
-- ❌ No hay sistema de reportes de posts (solo estructura)
 - ❌ No hay traducción automática de contenido
 - ❌ Expiración de posts es manual (no hay cron job automatizado)
 - ❌ No hay sistema de mensajería entre usuarios
@@ -819,14 +820,14 @@ APPROVED  REJECTED  BANNED
 
 ### 10.3 Mejoras Futuras (Fuera de MVP)
 
-- Notificaciones en tiempo real (email/push)
+- Notificaciones en tiempo real (email/push) para nuevos reportes
 - Sistema de pagos completo
-- Reportes de posts funcionales
 - Mensajería interna
 - Sistema de calificaciones/reviews
 - Traducción automática de contenido
 - Cron job automático para expiración
 - Disponibilidad con horarios que cruzan medianoche (actualmente limitado a horarios dentro del mismo día)
+- Estadísticas y análisis de reportes
 
 ---
 
@@ -839,7 +840,7 @@ APPROVED  REJECTED  BANNED
 - **Disponibilidad (InstrumentAvailability)**: Configuración de días de semana y horarios en que un instrumento está disponible
 - **Jitter**: Ruido aleatorio aplicado a coordenadas para privacidad
 - **Moderación**: Proceso de aprobar/rechazar posts por ADMIN/OPERATOR
-- **Status**: Estado de una entidad (Post, Request)
+- **Status**: Estado de una entidad (Post, Request, Report)
 - **Expiración**: Proceso automático/manual de marcar posts como EXPIRED
 
 ---

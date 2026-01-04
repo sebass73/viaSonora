@@ -110,3 +110,14 @@ export const updateRequestStatusSchema = z.object({
   status: z.enum(['ACCEPTED', 'DECLINED', 'CANCELLED', 'COMPLETED']),
 });
 
+// Report validation
+export const createReportSchema = z.object({
+  postId: z.string().min(1),
+  reason: z.enum(['SPAM', 'INAPPROPRIATE', 'FAKE', 'INCORRECT_INFO', 'OTHER']),
+  comment: z.string().max(1000).optional(),
+});
+
+export const updateReportStatusSchema = z.object({
+  status: z.enum(['PENDING', 'REVIEWED', 'RESOLVED', 'DISMISSED']),
+});
+

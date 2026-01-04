@@ -1166,6 +1166,52 @@ async function main() {
     console.log('✅ Request created (REQUESTED)');
   }
 
+  // Create some reports for testing
+  const reportPost = await prisma.post.findFirst({
+    where: {
+      status: 'APPROVED',
+      ownerId: demoUser.id,
+    },
+  });
+
+  if (reportPost && clientUser) {
+    // Create a PENDING report
+    await prisma.postReport.create({
+      data: {
+        postId: reportPost.id,
+        reporterId: clientUser.id,
+        reason: 'SPAM',
+        comment: 'Este post parece ser spam o contenido duplicado.',
+        status: 'PENDING',
+      },
+    });
+
+    // Create a RESOLVED report (need another approved post)
+    const reportPost2 = await prisma.post.findFirst({
+      where: {
+        status: 'APPROVED',
+        ownerId: demoUser.id,
+        id: { not: reportPost.id },
+      },
+    });
+
+    if (reportPost2) {
+      await prisma.postReport.create({
+        data: {
+          postId: reportPost2.id,
+          reporterId: clientUser.id,
+          reason: 'INAPPROPRIATE',
+          comment: 'Contenido inapropiado detectado.',
+          status: 'RESOLVED',
+          reviewedBy: adminUser.id,
+          reviewedAt: new Date(),
+        },
+      });
+    }
+
+    console.log('✅ Reports created (PENDING and RESOLVED)');
+  }
+
   console.log('\n🎉 Seed completed successfully!');
   console.log('\n📝 User credentials:');
   console.log('   Owner: demo@viasonora.com / Password: owner123');
@@ -1193,9 +1239,11 @@ async function main() {
   console.log('     • 2 BANNED');
   console.log('     • 4 EXPIRED');
   console.log('   - 1 request (REQUESTED)');
+  console.log('   - 2 reportes (1 PENDING, 1 RESOLVED)');
   console.log('\n🗺️  Posts APPROVED will appear in the map!');
   console.log('\n🧪 Para testing:');
-  console.log('   - Ver GUIA_TESTS_MANUALES.md para guía completa de tests');
+  console.log('   - Ver GUIA_TESTS_MANUALES.md para guía completa de tests de disponibilidad');
+  console.log('   - Ver GUIA_TESTS_REPORTES.md para guía completa de tests de reportes');
   console.log('   - Instrumentos con diferentes disponibilidades listos para probar');
 }
 

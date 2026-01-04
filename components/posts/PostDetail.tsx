@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { RequestForm } from '@/components/requests/RequestForm';
+import { ReportPostDialog } from '@/components/reports/ReportPostDialog';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 
@@ -371,6 +372,13 @@ export function PostDetail() {
                     </>
                   )}
                 </>
+              )}
+
+              {/* Botón de reportar (solo si no es el owner y está autenticado) */}
+              {session && !isOwner && (
+                <div className="mt-4 pt-4 border-t">
+                  <ReportPostDialog postId={post.id} />
+                </div>
               )}
             </CardContent>
           </Card>

@@ -44,41 +44,58 @@ enum RequestStatus {
   COMPLETED
 }
 
+enum ReportReason {
+  SPAM
+  INAPPROPRIATE
+  FAKE
+  INCORRECT_INFO
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
 model User {
-  id        String   @id @default(cuid())
-  name      String?
-  lastName  String?
-  email     String   @unique
+  id            String    @id @default(cuid())
+  name          String?
+  lastName      String?
+  email         String    @unique
   emailVerified DateTime?
-  password  String?  // Para autenticación con email/contraseña (hasheada)
-  image     String?
-  phone     String?
-  whatsappUrl String?
-  
-  addressText String?
+  password      String? // Para autenticación con email/contraseña (hasheada)
+  image         String?
+  phone         String?
+  whatsappUrl   String?
+
+  addressText  String?
   locationText String? // zona/barrio
-  lat         Float?
-  lng         Float?
-  
+  lat          Float?
+  lng          Float?
+
   roles     UserRole[] @default([])
-  staffRole StaffRole @default(NONE)
-  
+  staffRole StaffRole  @default(NONE)
+
   onboardingCompleted Boolean   @default(false)
   termsAcceptedAt     DateTime?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // NextAuth relations
   accounts Account[]
   sessions Session[]
-  
+
   // Relations
-  instruments Instrument[]
-  posts       Post[]
-  ownerRequests  Request[] @relation("OwnerRequests")
-  clientRequests Request[] @relation("ClientRequests")
-  
+  instruments       Instrument[]
+  posts             Post[]
+  ownerRequests     Request[]    @relation("OwnerRequests")
+  clientRequests    Request[]    @relation("ClientRequests")
+  reportsAsReporter PostReport[] @relation("Reporter")
+  reportsAsReviewer PostReport[] @relation("Reviewer")
+
   @@index([email])
 }
 
@@ -122,97 +139,98 @@ model VerificationToken {
 }
 
 model Category {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String  @id @default(cuid())
+  name        String  @unique
   nameEs      String
   nameIt      String
   nameEn      String
-  slug        String   @unique
+  slug        String  @unique
   description String?
   icon        String?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   instruments Instrument[]
-  
+
   @@index([slug])
 }
 
 model Instrument {
-  id          String   @id @default(cuid())
-  ownerId    String
+  id          String              @id @default(cuid())
+  ownerId     String
   title       String
-  description String   @db.Text
+  description String              @db.Text
   categoryId  String
   brand       String?
   model       String?
   condition   InstrumentCondition
-  extras      String?  @db.Text
-  
+  extras      String?             @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  owner    User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  category Category          @relation(fields: [categoryId], references: [id])
-  photos   InstrumentPhoto[]
-  locations InstrumentLocation[]
-  posts    Post[]
-  requests Request[]
+
+  owner        User                     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  category     Category                 @relation(fields: [categoryId], references: [id])
+  photos       InstrumentPhoto[]
+  locations    InstrumentLocation[]
+  posts        Post[]
+  requests     Request[]
   availability InstrumentAvailability[]
-  
+
   @@index([ownerId])
   @@index([categoryId])
 }
 
 model InstrumentPhoto {
-  id           String   @id @default(cuid())
+  id           String @id @default(cuid())
   instrumentId String
   url          String
-  order        Int      @default(0)
-  
+  order        Int    @default(0)
+
   createdAt DateTime @default(now())
-  
+
   instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
-  
+
   @@index([instrumentId])
 }
 
 model InstrumentLocation {
-  id          String   @id @default(cuid())
-  instrumentId String
-  city        String
-  areaText    String?  // zona/barrio
-  lat         Float
-  lng         Float
-  isPrimary   Boolean  @default(false)
+  id                 String  @id @default(cuid())
+  instrumentId       String
+  city               String
+  areaText           String? // zona/barrio
+  lat                Float
+  lng                Float
+  isPrimary          Boolean @default(false)
   useProfileLocation Boolean @default(false) // Si true, esta ubicación se sincroniza con la del perfil del usuario
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
-  
+
   @@index([instrumentId])
   @@index([city])
 }
 
 model Post {
-  id          String    @id @default(cuid())
+  id           String     @id @default(cuid())
   instrumentId String
-  ownerId     String
-  city        String
-  areaText    String?   // zona/barrio para búsqueda
-  status      PostStatus @default(PENDING_APPROVAL)
-  expiresAt   DateTime
-  
+  ownerId      String
+  city         String
+  areaText     String? // zona/barrio para búsqueda
+  status       PostStatus @default(PENDING_APPROVAL)
+  expiresAt    DateTime
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
-  owner      User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  instrument Instrument   @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+  owner      User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   requests   Request[]
-  
+  reports    PostReport[]
+
   @@index([instrumentId])
   @@index([ownerId])
   @@index([status])
@@ -221,42 +239,42 @@ model Post {
 }
 
 model InstrumentAvailability {
-  id          String   @id @default(cuid())
+  id           String  @id @default(cuid())
   instrumentId String
-  dayOfWeek   Int      // 0=Domingo, 1=Lunes, ..., 6=Sábado
-  startTime   String   // Formato "HH:mm" (ej: "09:00")
-  endTime     String   // Formato "HH:mm" (ej: "18:00")
-  isAvailable Boolean  @default(true)
-  
+  dayOfWeek    Int // 0=Domingo, 1=Lunes, ..., 6=Sábado
+  startTime    String // Formato "HH:mm" (ej: "09:00")
+  endTime      String // Formato "HH:mm" (ej: "18:00")
+  isAvailable  Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
-  
+
   @@unique([instrumentId, dayOfWeek])
   @@index([instrumentId])
 }
 
 model Request {
-  id          String        @id @default(cuid())
-  postId      String
+  id           String        @id @default(cuid())
+  postId       String
   instrumentId String
-  ownerId     String
-  clientId    String
-  status      RequestStatus @default(REQUESTED)
-  fromDate    DateTime
-  toDate      DateTime
-  message     String        @db.Text
-  accessories String?       @db.Text
-  
+  ownerId      String
+  clientId     String
+  status       RequestStatus @default(REQUESTED)
+  fromDate     DateTime
+  toDate       DateTime
+  message      String        @db.Text
+  accessories  String?       @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  post       Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
   instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
-  owner      User     @relation("OwnerRequests", fields: [ownerId], references: [id], onDelete: Cascade)
-  client     User     @relation("ClientRequests", fields: [clientId], references: [id], onDelete: Cascade)
-  
+  owner      User       @relation("OwnerRequests", fields: [ownerId], references: [id], onDelete: Cascade)
+  client     User       @relation("ClientRequests", fields: [clientId], references: [id], onDelete: Cascade)
+
   @@index([postId])
   @@index([instrumentId])
   @@index([ownerId])
@@ -264,3 +282,24 @@ model Request {
   @@index([status])
 }
 
+model PostReport {
+  id         String       @id @default(cuid())
+  postId     String
+  reporterId String // Usuario que reporta
+  reason     ReportReason
+  comment    String?      @db.Text
+  status     ReportStatus @default(PENDING)
+  reviewedBy String? // Admin/Operator que revisó
+  reviewedAt DateTime?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  post     Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporter User  @relation("Reporter", fields: [reporterId], references: [id])
+  reviewer User? @relation("Reviewer", fields: [reviewedBy], references: [id])
+
+  @@unique([postId, reporterId]) // Un usuario no puede reportar el mismo post dos veces
+  @@index([postId])
+  @@index([status])
+  @@index([reporterId])
+}
