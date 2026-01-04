@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { es, en, it } from 'date-fns/locale';
+import { es, enUS, it } from 'date-fns/locale';
 
 interface PostReport {
   id: string;
@@ -85,7 +85,7 @@ export function ReportsList() {
   const reasonLabels = getReasonLabels(t);
   const statusLabels = getStatusLabels(t);
   
-  const dateLocale = locale === 'es' ? es : locale === 'it' ? it : en;
+  const dateLocale = locale === 'es' ? es : locale === 'it' ? it : enUS;
 
   useEffect(() => {
     fetchReports();
