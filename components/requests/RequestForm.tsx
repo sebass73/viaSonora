@@ -186,15 +186,23 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
       return;
     }
 
-    // Construir fechas completas
+    // Construir fechas completas usando el constructor Date(year, month, day, hour, minute)
+    // Esto crea la fecha en la zona horaria local, evitando problemas de conversión UTC
     const [fromHour, fromMin] = fromTime.split(':').map(Number);
     const [toHour, toMin] = toTime.split(':').map(Number);
     
-    const fromDateTime = new Date(fromDate);
-    fromDateTime.setHours(fromHour, fromMin, 0, 0);
+    // Extraer año, mes y día de las fechas seleccionadas
+    const fromYear = fromDate.getFullYear();
+    const fromMonth = fromDate.getMonth();
+    const fromDay = fromDate.getDate();
     
-    const toDateTime = new Date(toDate);
-    toDateTime.setHours(toHour, toMin, 0, 0);
+    const toYear = toDate.getFullYear();
+    const toMonth = toDate.getMonth();
+    const toDay = toDate.getDate();
+    
+    // Crear fechas en zona horaria local
+    const fromDateTime = new Date(fromYear, fromMonth, fromDay, fromHour, fromMin, 0, 0);
+    const toDateTime = new Date(toYear, toMonth, toDay, toHour, toMin, 0, 0);
 
     if (toDateTime <= fromDateTime) {
       setErrors(prev => ({ ...prev, toDate: 'La fecha y hora de fin debe ser posterior a la de inicio' }));
@@ -204,6 +212,7 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
     setLoading(true);
 
     try {
+      // Enviar fechas como ISO string (se convertirán a UTC, pero el backend las interpretará correctamente)
       const res = await fetch('/api/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

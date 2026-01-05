@@ -187,13 +187,37 @@ export async function POST(request: NextRequest) {
     // Validar disponibilidad del instrumento (si está configurada)
     const availability = post.instrument.availability || [];
     if (availability.length > 0) {
-      const fromDate = new Date(validated.fromDate);
-      const toDate = new Date(validated.toDate);
+      // Parsear las fechas recibidas (vienen en UTC como ISO string)
+      const fromDateUTC = new Date(validated.fromDate);
+      const toDateUTC = new Date(validated.toDate);
+
+      // Extraer la fecha local (año, mes, día) de las fechas UTC
+      // Usamos UTC para obtener la fecha correcta independientemente de la zona horaria del servidor
+      const fromYear = fromDateUTC.getUTCFullYear();
+      const fromMonth = fromDateUTC.getUTCMonth();
+      const fromDay = fromDateUTC.getUTCDate();
+      const fromHour = fromDateUTC.getUTCHours();
+      const fromMin = fromDateUTC.getUTCMinutes();
+      
+      const toYear = toDateUTC.getUTCFullYear();
+      const toMonth = toDateUTC.getUTCMonth();
+      const toDay = toDateUTC.getUTCDate();
+      const toHour = toDateUTC.getUTCHours();
+      const toMin = toDateUTC.getUTCMinutes();
+
+      // Crear fechas locales para validación (usando la fecha UTC pero interpretada localmente)
+      // Esto asegura que el día de la semana sea correcto
+      const fromDateLocal = new Date(fromYear, fromMonth, fromDay, fromHour, fromMin, 0, 0);
+      const toDateLocal = new Date(toYear, toMonth, toDay, toHour, toMin, 0, 0);
 
       // Validar cada día del rango
       const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-      const currentDate = new Date(fromDate);
-      while (currentDate <= toDate) {
+      const currentDate = new Date(fromDateLocal);
+      currentDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(toDateLocal);
+      endDate.setHours(23, 59, 59, 999);
+      
+      while (currentDate <= endDate) {
         const dayOfWeek = currentDate.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
         const dayAvailability = availability.find(a => a.dayOfWeek === dayOfWeek && a.isAvailable);
         
@@ -205,8 +229,6 @@ export async function POST(request: NextRequest) {
         }
 
         // Validar horas solo para el primer y último día
-        const [fromHour, fromMin] = fromDate.toTimeString().split(':').map(Number);
-        const [toHour, toMin] = toDate.toTimeString().split(':').map(Number);
         const fromMinutes = fromHour * 60 + fromMin;
         const toMinutes = toHour * 60 + toMin;
         
@@ -216,7 +238,10 @@ export async function POST(request: NextRequest) {
         const endMinutes = endHour * 60 + endMin;
 
         // Si es el primer día, validar hora de inicio
-        if (currentDate.toDateString() === fromDate.toDateString()) {
+        const currentDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+        const fromDateStr = `${fromYear}-${String(fromMonth + 1).padStart(2, '0')}-${String(fromDay).padStart(2, '0')}`;
+        
+        if (currentDateStr === fromDateStr) {
           if (fromMinutes < startMinutes || fromMinutes > endMinutes) {
             return NextResponse.json(
               { error: `La hora de inicio debe estar entre ${dayAvailability.startTime} y ${dayAvailability.endTime} para ${days[dayOfWeek]}` },
@@ -226,7 +251,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Si es el último día, validar hora de fin
-        if (currentDate.toDateString() === toDate.toDateString()) {
+        const toDateStr = `${toYear}-${String(toMonth + 1).padStart(2, '0')}-${String(toDay).padStart(2, '0')}`;
+        if (currentDateStr === toDateStr) {
           if (toMinutes < startMinutes || toMinutes > endMinutes) {
             return NextResponse.json(
               { error: `La hora de fin debe estar entre ${dayAvailability.startTime} y ${dayAvailability.endTime} para ${days[dayOfWeek]}` },
@@ -237,7 +263,6 @@ export async function POST(request: NextRequest) {
 
         // Avanzar al siguiente día
         currentDate.setDate(currentDate.getDate() + 1);
-        currentDate.setHours(0, 0, 0, 0);
       }
     }
 
