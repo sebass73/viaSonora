@@ -212,14 +212,20 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
     setLoading(true);
 
     try {
-      // Enviar fechas como ISO string (se convertirán a UTC, pero el backend las interpretará correctamente)
+      // Enviar fecha y hora por separado para evitar problemas de zona horaria
+      // Formato: YYYY-MM-DD para fecha, HH:mm para hora
+      const fromDateStr = `${fromYear}-${String(fromMonth + 1).padStart(2, '0')}-${String(fromDay).padStart(2, '0')}`;
+      const toDateStr = `${toYear}-${String(toMonth + 1).padStart(2, '0')}-${String(toDay).padStart(2, '0')}`;
+      const fromTimeStr = `${String(fromHour).padStart(2, '0')}:${String(fromMin).padStart(2, '0')}`;
+      const toTimeStr = `${String(toHour).padStart(2, '0')}:${String(toMin).padStart(2, '0')}`;
+      
       const res = await fetch('/api/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           postId,
-          fromDate: fromDateTime.toISOString(),
-          toDate: toDateTime.toISOString(),
+          fromDate: `${fromDateStr}T${fromTimeStr}:00`,
+          toDate: `${toDateStr}T${toTimeStr}:00`,
           message: formData.message.trim(),
           accessories: formData.accessories.trim() || undefined,
         }),

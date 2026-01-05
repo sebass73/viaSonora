@@ -93,13 +93,22 @@ export const searchPostsSchema = z.object({
 // Request validation
 export const createRequestSchema = z.object({
   postId: z.string().min(1),
-  fromDate: z.string().datetime(),
-  toDate: z.string().datetime(),
+  // Aceptar formato YYYY-MM-DDTHH:mm:ss (sin Z) o formato ISO completo
+  fromDate: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?$/, 'Formato de fecha inválido'),
+  toDate: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?$/, 'Formato de fecha inválido'),
   message: z.string().min(10, 'El mensaje debe tener al menos 10 caracteres').max(2000),
   accessories: z.string().max(500).optional(),
 }).refine((data) => {
-  const from = new Date(data.fromDate);
-  const to = new Date(data.toDate);
+  // Parsear fechas manualmente para comparación
+  const [fromDatePart, fromTimePart] = data.fromDate.split('T');
+  const [toDatePart, toTimePart] = data.toDate.split('T');
+  const [fromYear, fromMonth, fromDay] = fromDatePart.split('-').map(Number);
+  const [fromHour, fromMin] = fromTimePart.split(':').map(Number);
+  const [toYear, toMonth, toDay] = toDatePart.split('-').map(Number);
+  const [toHour, toMin] = toTimePart.split(':').map(Number);
+  
+  const from = new Date(fromYear, fromMonth - 1, fromDay, fromHour, fromMin, 0, 0);
+  const to = new Date(toYear, toMonth - 1, toDay, toHour, toMin, 0, 0);
   return to > from;
 }, {
   message: 'La fecha de fin debe ser posterior a la fecha de inicio',

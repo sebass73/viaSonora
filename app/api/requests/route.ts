@@ -187,28 +187,24 @@ export async function POST(request: NextRequest) {
     // Validar disponibilidad del instrumento (si está configurada)
     const availability = post.instrument.availability || [];
     if (availability.length > 0) {
-      // Parsear las fechas recibidas (vienen en UTC como ISO string)
-      const fromDateUTC = new Date(validated.fromDate);
-      const toDateUTC = new Date(validated.toDate);
-
-      // Extraer la fecha local (año, mes, día) de las fechas UTC
-      // Usamos UTC para obtener la fecha correcta independientemente de la zona horaria del servidor
-      const fromYear = fromDateUTC.getUTCFullYear();
-      const fromMonth = fromDateUTC.getUTCMonth();
-      const fromDay = fromDateUTC.getUTCDate();
-      const fromHour = fromDateUTC.getUTCHours();
-      const fromMin = fromDateUTC.getUTCMinutes();
+      // Parsear las fechas recibidas (formato: YYYY-MM-DDTHH:mm:ss sin Z)
+      // Esto preserva la fecha y hora local sin conversión UTC
+      const fromDateStr = validated.fromDate;
+      const toDateStr = validated.toDate;
       
-      const toYear = toDateUTC.getUTCFullYear();
-      const toMonth = toDateUTC.getUTCMonth();
-      const toDay = toDateUTC.getUTCDate();
-      const toHour = toDateUTC.getUTCHours();
-      const toMin = toDateUTC.getUTCMinutes();
+      // Extraer fecha y hora del string (formato: YYYY-MM-DDTHH:mm:ss)
+      const [fromDatePart, fromTimePart] = fromDateStr.split('T');
+      const [toDatePart, toTimePart] = toDateStr.split('T');
+      
+      const [fromYear, fromMonth, fromDay] = fromDatePart.split('-').map(Number);
+      const [fromHour, fromMin] = fromTimePart.split(':').map(Number);
+      
+      const [toYear, toMonth, toDay] = toDatePart.split('-').map(Number);
+      const [toHour, toMin] = toTimePart.split(':').map(Number);
 
-      // Crear fechas locales para validación (usando la fecha UTC pero interpretada localmente)
-      // Esto asegura que el día de la semana sea correcto
-      const fromDateLocal = new Date(fromYear, fromMonth, fromDay, fromHour, fromMin, 0, 0);
-      const toDateLocal = new Date(toYear, toMonth, toDay, toHour, toMin, 0, 0);
+      // Crear fechas locales para validación (sin conversión UTC)
+      const fromDateLocal = new Date(fromYear, fromMonth - 1, fromDay, fromHour, fromMin, 0, 0);
+      const toDateLocal = new Date(toYear, toMonth - 1, toDay, toHour, toMin, 0, 0);
 
       // Validar cada día del rango
       const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -239,9 +235,9 @@ export async function POST(request: NextRequest) {
 
         // Si es el primer día, validar hora de inicio
         const currentDateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
-        const fromDateStr = `${fromYear}-${String(fromMonth + 1).padStart(2, '0')}-${String(fromDay).padStart(2, '0')}`;
+        const fromDateStrCheck = `${fromYear}-${String(fromMonth).padStart(2, '0')}-${String(fromDay).padStart(2, '0')}`;
         
-        if (currentDateStr === fromDateStr) {
+        if (currentDateStr === fromDateStrCheck) {
           if (fromMinutes < startMinutes || fromMinutes > endMinutes) {
             return NextResponse.json(
               { error: `La hora de inicio debe estar entre ${dayAvailability.startTime} y ${dayAvailability.endTime} para ${days[dayOfWeek]}` },
@@ -251,8 +247,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Si es el último día, validar hora de fin
-        const toDateStr = `${toYear}-${String(toMonth + 1).padStart(2, '0')}-${String(toDay).padStart(2, '0')}`;
-        if (currentDateStr === toDateStr) {
+        const toDateStrCheck = `${toYear}-${String(toMonth).padStart(2, '0')}-${String(toDay).padStart(2, '0')}`;
+        if (currentDateStr === toDateStrCheck) {
           if (toMinutes < startMinutes || toMinutes > endMinutes) {
             return NextResponse.json(
               { error: `La hora de fin debe estar entre ${dayAvailability.startTime} y ${dayAvailability.endTime} para ${days[dayOfWeek]}` },
@@ -266,6 +262,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Parsear fechas para guardar en la base de datos
+    // Las fechas vienen en formato YYYY-MM-DDTHH:mm:ss (sin Z)
+    // Necesitamos convertirlas a Date objects para Prisma
+    const [fromDatePart, fromTimePart] = validated.fromDate.split('T');
+    const [toDatePart, toTimePart] = validated.toDate.split('T');
+    const [fromYear, fromMonth, fromDay] = fromDatePart.split('-').map(Number);
+    const [fromHour, fromMin] = fromTimePart.split(':').map(Number);
+    const [toYear, toMonth, toDay] = toDatePart.split('-').map(Number);
+    const [toHour, toMin] = toTimePart.split(':').map(Number);
+    
+    // Crear fechas en UTC para almacenar en la base de datos
+    // Esto asegura que la fecha se almacene correctamente independientemente de la zona horaria del servidor
+    const fromDateUTC = new Date(Date.UTC(fromYear, fromMonth - 1, fromDay, fromHour, fromMin, 0, 0));
+    const toDateUTC = new Date(Date.UTC(toYear, toMonth - 1, toDay, toHour, toMin, 0, 0));
+
     // Crear la request
     const newRequest = await prisma.request.create({
       data: {
@@ -273,8 +284,8 @@ export async function POST(request: NextRequest) {
         instrumentId: post.instrumentId,
         ownerId: post.ownerId,
         clientId: session.user.id,
-        fromDate: new Date(validated.fromDate),
-        toDate: new Date(validated.toDate),
+        fromDate: fromDateUTC,
+        toDate: toDateUTC,
         message: validated.message,
         accessories: validated.accessories || null,
         status: 'REQUESTED',
