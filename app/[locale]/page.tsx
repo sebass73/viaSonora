@@ -136,16 +136,32 @@ export default function HomePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Centro del mapa siempre por IP (backend). Sin permisos ni localStorage.
+  // Centro del mapa: primero geolocalización del navegador (precisa), sino IP (API).
   useEffect(() => {
-    fetch('/api/geo')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { lat?: number; lng?: number } | null) => {
-        if (data && Number.isFinite(data.lat) && Number.isFinite(data.lng)) {
-          setMapCenter([data.lat!, data.lng!]);
-        }
-      })
-      .catch(() => {});
+    const applyCenter = (lat: number, lng: number) => {
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        setMapCenter([lat, lng]);
+      }
+    };
+    const fallbackToIp = () => {
+      fetch('/api/geo')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data: { lat?: number; lng?: number } | null) => {
+          if (data && Number.isFinite(data.lat) && Number.isFinite(data.lng)) {
+            applyCenter(data.lat!, data.lng!);
+          }
+        })
+        .catch(() => {});
+    };
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => applyCenter(pos.coords.latitude, pos.coords.longitude),
+        fallbackToIp,
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+      );
+    } else {
+      fallbackToIp();
+    }
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
