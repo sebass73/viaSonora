@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { updateReportStatusSchema } from '@/lib/validation';
 import { isAdminOrOperator } from '@/lib/auth-helpers';
 
+export const dynamic = 'force-dynamic';
+
 // PUT: Actualizar status de reporte (solo admin/operator)
 export async function PUT(
   request: NextRequest,

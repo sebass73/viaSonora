@@ -3,6 +3,8 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { updateRequestStatusSchema } from '@/lib/validation';
 
+export const dynamic = 'force-dynamic';
+
 // GET: Obtener request individual
 export async function GET(
   request: NextRequest,

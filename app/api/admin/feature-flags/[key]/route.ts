@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { isAdmin } from '@/lib/auth-helpers';
 import { FEATURE_FLAG_DEFINITIONS } from '@/lib/feature-flags';
 
+export const dynamic = 'force-dynamic';
+
 type RouteParams = { params: Promise<{ key: string }> };
 
 /**

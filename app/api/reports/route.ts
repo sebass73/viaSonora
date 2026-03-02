@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { createReportSchema } from '@/lib/validation';
 import { isAdminOrOperator } from '@/lib/auth-helpers';
 
+export const dynamic = 'force-dynamic';
+
 // POST: Crear nuevo reporte
 export async function POST(request: NextRequest) {
   try {

@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { createRequestSchema } from '@/lib/validation';
 import { isFeatureEnabled } from '@/lib/feature-flags';
 
+export const dynamic = 'force-dynamic';
+
 // GET: Listar requests del usuario (enviadas o recibidas)
 export async function GET(request: NextRequest) {
   try {

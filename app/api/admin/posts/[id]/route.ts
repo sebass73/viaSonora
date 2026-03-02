@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { isAdminOrOperator } from '@/lib/auth-helpers';
 import { updatePostStatusSchema } from '@/lib/validation';
 
+export const dynamic = 'force-dynamic';
+
 // PUT: Actualizar status de un post (moderación)
 export async function PUT(
   request: NextRequest,

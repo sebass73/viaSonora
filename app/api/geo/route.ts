@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 const FALLBACK_LAT = -34.6037;
 const FALLBACK_LNG = -58.3816;
 

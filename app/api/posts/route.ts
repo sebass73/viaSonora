@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { createPostSchema, searchPostsSchema } from '@/lib/validation';
 import { getPublicLatLng } from '@/lib/privacy';
 
+export const dynamic = 'force-dynamic';
+
 // GET: Listar posts públicos (APPROVED y no expirados) o mis posts
 export async function GET(request: NextRequest) {
   try {

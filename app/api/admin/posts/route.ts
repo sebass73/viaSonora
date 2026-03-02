@@ -3,6 +3,8 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { isAdminOrOperator } from '@/lib/auth-helpers';
 
+export const dynamic = 'force-dynamic';
+
 // GET: Listar posts para moderación (todos los estados)
 export async function GET(request: NextRequest) {
   try {

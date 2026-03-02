@@ -12,6 +12,7 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
+    "db:deploy": "prisma db push --accept-data-loss && tsx prisma/seed.ts",
     "db:studio": "prisma studio"
   },
   "prisma": {

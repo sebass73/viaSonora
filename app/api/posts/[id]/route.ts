@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { getPublicLatLng } from '@/lib/privacy';
 import { updatePostSchema } from '@/lib/validation';
 
+export const dynamic = 'force-dynamic';
+
 // GET: Obtener post público individual
 export async function GET(
   request: NextRequest,
