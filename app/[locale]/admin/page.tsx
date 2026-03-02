@@ -1,5 +1,6 @@
 import { AdminPostList } from '@/components/admin/AdminPostList';
 import { ReportsList } from '@/components/admin/ReportsList';
+import { AdminFeaturesList } from '@/components/admin/AdminFeaturesList';
 import { getCurrentUserWithRole } from '@/lib/auth-helpers';
 import { redirect } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,12 +31,16 @@ export default async function AdminPage() {
         <TabsList>
           <TabsTrigger value="posts">{tCommon('publications')}</TabsTrigger>
           <TabsTrigger value="reports">{tCommon('reports')}</TabsTrigger>
+          <TabsTrigger value="features">{tCommon('features')}</TabsTrigger>
         </TabsList>
         <TabsContent value="posts">
           <AdminPostList />
         </TabsContent>
         <TabsContent value="reports">
           <ReportsList />
+        </TabsContent>
+        <TabsContent value="features">
+          <AdminFeaturesList />
         </TabsContent>
       </Tabs>
     </div>

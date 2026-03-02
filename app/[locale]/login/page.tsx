@@ -33,13 +33,13 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError('Email o contraseña incorrectos');
+        setError(t('invalidEmailOrPassword'));
       } else {
         router.push('/');
         router.refresh();
       }
     } catch (error) {
-      setError('Error al iniciar sesión');
+      setError(t('errorSigningIn'));
     } finally {
       setLoading(false);
     }
@@ -56,7 +56,7 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle>{t('login')}</CardTitle>
           <CardDescription>
-            Inicia sesión para continuar
+            {t('loginSubtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -103,7 +103,7 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
-                O continúa con
+                {t('orContinueWith')}
               </span>
             </div>
           </div>

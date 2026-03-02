@@ -2,31 +2,37 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CategoryName } from '@/components/CategoryName';
 
 interface Instrument {
   id: string;
   title: string;
   category: {
-    nameEs: string;
+    slug: string;
   };
   locations: Array<{
     city: string;
+    country?: string | null;
     areaText: string | null;
   }>;
 }
 
 export function PostForm() {
+  const t = useTranslations('common');
+  const tPosts = useTranslations('posts');
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [formData, setFormData] = useState({
     instrumentId: '',
     city: '',
+    country: '',
     areaText: '',
   });
 
@@ -50,6 +56,7 @@ export function PostForm() {
           setFormData({
             instrumentId: firstInstrument.id,
             city: primaryLocation?.city || '',
+            country: primaryLocation?.country || '',
             areaText: primaryLocation?.areaText || '',
           });
         }
@@ -63,7 +70,7 @@ export function PostForm() {
     e.preventDefault();
     
     if (!formData.instrumentId) {
-      alert('Debes seleccionar un instrumento');
+      alert(tPosts('selectInstrumentRequired'));
       return;
     }
 
@@ -76,6 +83,7 @@ export function PostForm() {
         body: JSON.stringify({
           instrumentId: formData.instrumentId,
           city: formData.city || undefined,
+          country: formData.country || undefined,
           areaText: formData.areaText || undefined,
         }),
       });
@@ -84,11 +92,11 @@ export function PostForm() {
         router.push('/posts');
       } else {
         const error = await res.json();
-        alert(`Error: ${error.error || 'No se pudo crear el post'}`);
+        alert(`${tPosts('errorCreating')}: ${error.error || tPosts('errorCreatingMessage')}`);
       }
     } catch (error) {
       console.error('Error creating post:', error);
-      alert('Error al crear el post');
+      alert(tPosts('errorCreating'));
     } finally {
       setLoading(false);
     }
@@ -100,15 +108,15 @@ export function PostForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Nueva Publicación</CardTitle>
+        <CardTitle>{tPosts('formTitle')}</CardTitle>
         <CardDescription>
-          Publica un instrumento para que otros músicos lo encuentren
+          {tPosts('formDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="instrumentId">Instrumento *</Label>
+            <Label htmlFor="instrumentId">{tPosts('instrumentLabel')} *</Label>
             <Select
               value={formData.instrumentId}
               onValueChange={(value) => {
@@ -117,63 +125,74 @@ export function PostForm() {
                 setFormData({
                   instrumentId: value,
                   city: location?.city || '',
+                  country: location?.country || '',
                   areaText: location?.areaText || '',
                 });
               }}
               required
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecciona un instrumento" />
+                <SelectValue placeholder={tPosts('selectInstrument')} />
               </SelectTrigger>
               <SelectContent>
                 {instruments.map((instrument) => (
                   <SelectItem key={instrument.id} value={instrument.id}>
-                    {instrument.title} ({instrument.category.nameEs})
+                    {instrument.title} (<CategoryName category={instrument.category} />)
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {instruments.length === 0 && (
               <p className="text-sm text-muted-foreground mt-1">
-                No tienes instrumentos. <a href="/instruments/new" className="text-primary underline">Crea uno primero</a>
+                {tPosts('noInstrumentsHint')}{' '}
+                <a href="/instruments/new" className="text-primary underline">{tPosts('createOneFirst')}</a>
               </p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="city">Ciudad *</Label>
+            <Label htmlFor="city">{tPosts('cityLabel')} *</Label>
             <Input
               id="city"
               value={formData.city}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               required
-              placeholder={primaryLocation?.city || 'Ej: Buenos Aires'}
+              placeholder={primaryLocation?.city || tPosts('cityPlaceholder')}
             />
           </div>
 
           <div>
-            <Label htmlFor="areaText">Zona/Barrio</Label>
+            <Label htmlFor="country">{tPosts('countryLabel')}</Label>
+            <Input
+              id="country"
+              value={formData.country}
+              onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+              placeholder={tPosts('countryPlaceholder')}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="areaText">{tPosts('areaLabel')}</Label>
             <Input
               id="areaText"
               value={formData.areaText}
               onChange={(e) => setFormData({ ...formData, areaText: e.target.value })}
-              placeholder={primaryLocation?.areaText || 'Ej: Palermo'}
+              placeholder={primaryLocation?.areaText || tPosts('areaPlaceholder')}
             />
           </div>
 
           <div className="bg-muted p-4 rounded-lg">
             <p className="text-sm text-muted-foreground">
-              <strong>Nota:</strong> El post quedará en estado <strong>PENDING_APPROVAL</strong> hasta que un moderador lo apruebe.
-              Una vez aprobado, será visible en el mapa y listados públicos.
+              {tPosts('notePending')}
             </p>
           </div>
 
           <div className="flex gap-2">
             <Button type="submit" disabled={loading || instruments.length === 0}>
-              {loading ? 'Creando...' : 'Crear Publicación'}
+              {loading ? tPosts('creating') : tPosts('createButton')}
             </Button>
             <Button type="button" variant="outline" onClick={() => router.back()}>
-              Cancelar
+              {t('cancel')}
             </Button>
           </div>
         </form>

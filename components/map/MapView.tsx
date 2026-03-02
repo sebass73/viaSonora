@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { CategoryName } from '@/components/CategoryName';
 
 // Fix para iconos de Leaflet en Next.js
 if (typeof window !== 'undefined') {
@@ -25,7 +26,7 @@ interface Post {
     photos: Array<{ url: string }>;
     category: {
       id?: string;
-      nameEs: string;
+      slug: string;
     };
     locations: Array<{
       lat: number;
@@ -82,7 +83,7 @@ export function MapView({ posts, center = [-34.6037, -58.3816], zoom = 13, onMar
               <Popup>
                 <div className="p-2">
                   <h3 className="font-semibold text-sm">{post.instrument.title}</h3>
-                  <p className="text-xs text-muted-foreground">{post.instrument.category.nameEs}</p>
+                  <p className="text-xs text-muted-foreground"><CategoryName category={post.instrument.category} /></p>
                   <p className="text-xs text-muted-foreground">
                     {(() => {
                       // Extraer solo la ciudad de la dirección completa (antes de la primera coma)

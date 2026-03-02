@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { Check, X, Ban, Eye } from 'lucide-react';
 import Link from 'next/link';
+import { CategoryName } from '@/components/CategoryName';
 
 interface Post {
   id: string;
@@ -19,7 +20,7 @@ interface Post {
     title: string;
     photos: Array<{ url: string }>;
     category: {
-      nameEs: string;
+      slug: string;
     };
     owner: {
       id: string;
@@ -77,7 +78,7 @@ export function AdminPostCard({ post, onStatusChange }: AdminPostCardProps) {
               <div className="flex-1">
                 <CardTitle className="line-clamp-1">{post.instrument.title}</CardTitle>
                 <CardDescription>
-                  {post.instrument.category.nameEs} • {post.city}
+                  <CategoryName category={post.instrument.category} /> • {post.city}
                   {post.areaText && `, ${post.areaText}`}
                 </CardDescription>
               </div>

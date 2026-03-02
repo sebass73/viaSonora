@@ -7,7 +7,8 @@ export const updateProfileSchema = z.object({
   image: z.string().url().optional().or(z.literal('')),
   phone: z.string().max(20).optional(),
   whatsappUrl: z.string().url().optional().or(z.literal('')),
-  addressText: z.string().max(200).optional(),
+  city: z.string().max(100).optional(),
+  country: z.string().max(100).optional(),
   locationText: z.string().max(100).optional(),
   lat: z.number().min(-90).max(90).optional(),
   lng: z.number().min(-180).max(180).optional(),
@@ -43,6 +44,7 @@ export const updateInstrumentSchema = createInstrumentSchema.partial();
 // Instrument Location validation
 export const createInstrumentLocationSchema = z.object({
   city: z.string().min(1).max(100),
+  country: z.string().max(100).optional(),
   areaText: z.string().max(100).optional(),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
@@ -71,9 +73,17 @@ export const updateInstrumentAvailabilitySchema = z.array(createInstrumentAvaila
 // Post validation
 export const createPostSchema = z.object({
   instrumentId: z.string().min(1),
-  city: z.string().min(1).max(500), // Aumentado para permitir direcciones completas
-  areaText: z.string().max(200).optional(), // Aumentado para zonas/barrios más largos
+  city: z.string().min(1).max(100),
+  country: z.string().max(100).optional(),
+  areaText: z.string().max(200).optional(),
   // expiresAt se calcula automáticamente (30 días)
+});
+
+/** Actualizar post (solo owner): ciudad, país, zona */
+export const updatePostSchema = z.object({
+  city: z.string().min(1).max(100).optional(),
+  country: z.string().max(100).optional(),
+  areaText: z.string().max(200).optional(),
 });
 
 export const updatePostStatusSchema = z.object({

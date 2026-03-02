@@ -18,7 +18,7 @@ interface CitySuggestion {
 interface CityAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
-  onSelect: (city: string, lat: number, lng: number, fullAddress: string) => void;
+  onSelect: (city: string, lat: number, lng: number, fullAddress: string, state?: string, country?: string) => void;
   placeholder?: string;
   disabled?: boolean;
   required?: boolean;
@@ -117,7 +117,7 @@ export function CityAutocomplete({
     const selectedName = hasDetailedAddress ? displayName : cityOnly;
     
     onChange(selectedName);
-    onSelect(selectedName, suggestion.lat, suggestion.lng, suggestion.fullAddress);
+    onSelect(selectedName, suggestion.lat, suggestion.lng, suggestion.fullAddress, suggestion.state, suggestion.country);
     setShowSuggestions(false);
     setSelectedIndex(-1);
     setSuggestions([]);

@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pagination } from '@/components/ui/pagination';
 import Image from 'next/image';
+import { CategoryName } from '@/components/CategoryName';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 
 interface Instrument {
@@ -13,7 +15,7 @@ interface Instrument {
   title: string;
   description: string;
   category: {
-    nameEs: string;
+    slug: string;
   };
   photos: Array<{ url: string }>;
   locations: Array<{
@@ -22,6 +24,8 @@ interface Instrument {
 }
 
 export function InstrumentList() {
+  const t = useTranslations('instruments');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +61,7 @@ export function InstrumentList() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este instrumento?')) {
+    if (!confirm(t('deleteConfirm'))) {
       return;
     }
 
@@ -74,11 +78,11 @@ export function InstrumentList() {
           fetchInstruments();
         }
       } else {
-        alert('Error al eliminar el instrumento');
+        alert(t('errorDeleting'));
       }
     } catch (error) {
       console.error('Error deleting instrument:', error);
-      alert('Error al eliminar el instrumento');
+      alert(t('errorDeleting'));
     }
   };
 
@@ -88,26 +92,26 @@ export function InstrumentList() {
   };
 
   if (loading) {
-    return <div className="container py-4">Cargando...</div>;
+    return <div className="container py-4">{tCommon('loading')}</div>;
   }
 
   return (
     <div className="container py-4">
       <div className="flex justify-between items-center mb-4 md:mb-6 gap-2">
-        <h1 className="text-xl md:text-3xl font-bold">Mis Instrumentos</h1>
+        <h1 className="text-xl md:text-3xl font-bold">{t('title')}</h1>
         <Button onClick={() => router.push('/instruments/new')} size="sm" className="text-xs md:text-sm">
           <Plus className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-          <span className="hidden sm:inline">Nuevo Instrumento</span>
-          <span className="sm:hidden">Nuevo</span>
+          <span className="hidden sm:inline">{t('newInstrument')}</span>
+          <span className="sm:hidden">{t('newShort')}</span>
         </Button>
       </div>
 
       {instruments.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">No tienes instrumentos registrados</p>
+            <p className="text-muted-foreground mb-4">{t('noInstruments')}</p>
             <Button onClick={() => router.push('/instruments/new')}>
-              Crear tu primer instrumento
+              {t('createFirst')}
             </Button>
           </CardContent>
         </Card>
@@ -129,7 +133,7 @@ export function InstrumentList() {
                 <CardHeader className="p-3 md:p-6">
                   <CardTitle className="line-clamp-1 text-sm md:text-base">{instrument.title}</CardTitle>
                   <CardDescription className="text-xs md:text-sm">
-                    {instrument.category.nameEs}
+                    <CategoryName category={instrument.category} />
                     {instrument.locations[0] && ` • ${instrument.locations[0].city}`}
                   </CardDescription>
                 </CardHeader>
@@ -145,7 +149,7 @@ export function InstrumentList() {
                       className="flex-1"
                     >
                       <Edit className="mr-2 h-4 w-4" />
-                      Editar
+                      {t('edit')}
                     </Button>
                     <Button
                       variant="destructive"

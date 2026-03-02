@@ -37,7 +37,7 @@ export default function TermsPage() {
       {/* <h1 className="text-2xl font-bold mb-4">{t('aboutTerms') || 'Términos'}</h1> */}
 
       {loading ? (
-        <div className="text-sm text-muted-foreground">Cargando...</div>
+        <div className="text-sm text-muted-foreground">{t('loading')}</div>
       ) : (
         <article className="prose max-w-none">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>

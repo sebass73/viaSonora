@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
 import Image from 'next/image';
+import { CategoryName } from '@/components/CategoryName';
 
 interface Post {
   id: string;
@@ -17,12 +19,14 @@ interface Post {
     title: string;
     photos: Array<{ url: string }>;
     category: {
-      nameEs: string;
+      slug: string;
     };
   };
 }
 
 export default function ExplorePage() {
+  const t = useTranslations('explore');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,35 +81,35 @@ export default function ExplorePage() {
   };
 
   if (loading) {
-    return <div className="container py-4">Cargando...</div>;
+    return <div className="container py-4">{t('loading')}</div>;
   }
 
   return (
     <div className="container py-4">
-      <h1 className="text-xl md:text-3xl font-bold mb-4 md:mb-6">Explorar Instrumentos</h1>
+      <h1 className="text-xl md:text-3xl font-bold mb-4 md:mb-6">{t('title')}</h1>
 
       <form onSubmit={handleSearch} className="flex gap-2 mb-4 md:mb-6">
         <Input
-          placeholder="Ciudad..."
+          placeholder={t('cityPlaceholder')}
           value={searchCity}
           onChange={(e) => setSearchCity(e.target.value)}
           className="flex-1"
         />
         <Input
-          placeholder="Buscar instrumento..."
+          placeholder={t('searchPlaceholder')}
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           className="flex-1"
         />
         <Button type="submit" disabled={loading}>
-          {loading ? 'Buscando...' : 'Buscar'}
+          {loading ? tCommon('searching') : tCommon('search')}
         </Button>
       </form>
 
       {posts.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">No se encontraron instrumentos</p>
+            <p className="text-muted-foreground">{tCommon('noInstrumentsFound')}</p>
           </CardContent>
         </Card>
       ) : (
@@ -130,7 +134,7 @@ export default function ExplorePage() {
                 <CardHeader className="p-3 md:p-6">
                   <CardTitle className="line-clamp-1 text-sm md:text-base">{post.instrument.title}</CardTitle>
                   <CardDescription className="text-xs md:text-sm">
-                    {post.instrument.category.nameEs} • {(() => {
+                    <CategoryName category={post.instrument.category} /> • {(() => {
                       // Extraer solo la ciudad de la dirección completa (antes de la primera coma)
                       const cityOnly = post.city.split(',')[0].trim();
                       return cityOnly;

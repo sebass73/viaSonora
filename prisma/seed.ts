@@ -4,48 +4,13 @@ import bcrypt from 'bcryptjs';
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // Create categories
+  // Categorías fijas. La UI usa slug + i18n (messages/categories). nameEs/nameIt/nameEn ya no se usan.
   const categories = [
-    {
-      name: 'guitar',
-      nameEs: 'Guitarra',
-      nameIt: 'Chitarra',
-      nameEn: 'Guitar',
-      slug: 'guitar',
-      description: 'Guitarras acústicas y eléctricas',
-    },
-    {
-      name: 'piano',
-      nameEs: 'Piano',
-      nameIt: 'Pianoforte',
-      nameEn: 'Piano',
-      slug: 'piano',
-      description: 'Pianos acústicos y digitales',
-    },
-    {
-      name: 'drums',
-      nameEs: 'Batería',
-      nameIt: 'Batteria',
-      nameEn: 'Drums',
-      slug: 'drums',
-      description: 'Baterías acústicas y electrónicas',
-    },
-    {
-      name: 'violin',
-      nameEs: 'Violín',
-      nameIt: 'Violino',
-      nameEn: 'Violin',
-      slug: 'violin',
-      description: 'Violines y instrumentos de cuerda',
-    },
-    {
-      name: 'saxophone',
-      nameEs: 'Saxofón',
-      nameIt: 'Sassofono',
-      nameEn: 'Saxophone',
-      slug: 'saxophone',
-      description: 'Saxofones y vientos',
-    },
+    { name: 'instrumentos', slug: 'instrumentos', description: 'Instrumentos musicales' },
+    { name: 'amplificadores', slug: 'amplificadores', description: 'Amplificadores y cabezales' },
+    { name: 'altavoces', slug: 'altavoces', description: 'Altavoces y cajas' },
+    { name: 'accesorios', slug: 'accesorios', description: 'Accesorios y complementos' },
+    { name: 'otro', slug: 'otro', description: 'Otros productos' },
   ];
 
   for (const category of categories) {
@@ -59,13 +24,13 @@ async function main() {
   console.log('✅ Categories created');
 
   // Get categories for use in instruments
-  const guitarCategory = await prisma.category.findUnique({ where: { slug: 'guitar' } });
-  const pianoCategory = await prisma.category.findUnique({ where: { slug: 'piano' } });
-  const drumsCategory = await prisma.category.findUnique({ where: { slug: 'drums' } });
-  const violinCategory = await prisma.category.findUnique({ where: { slug: 'violin' } });
-  const saxophoneCategory = await prisma.category.findUnique({ where: { slug: 'saxophone' } });
+  const instrumentosCategory = await prisma.category.findUnique({ where: { slug: 'instrumentos' } });
+  const amplificadoresCategory = await prisma.category.findUnique({ where: { slug: 'amplificadores' } });
+  const altavocesCategory = await prisma.category.findUnique({ where: { slug: 'altavoces' } });
+  const accesoriosCategory = await prisma.category.findUnique({ where: { slug: 'accesorios' } });
+  const otroCategory = await prisma.category.findUnique({ where: { slug: 'otro' } });
 
-  if (!guitarCategory || !pianoCategory || !drumsCategory || !violinCategory || !saxophoneCategory) {
+  if (!instrumentosCategory || !amplificadoresCategory || !altavocesCategory || !accesoriosCategory || !otroCategory) {
     throw new Error('Categories not found');
   }
 
@@ -83,7 +48,8 @@ async function main() {
       password: ownerPassword,
       phone: '+54 9 11 1234-5678',
       whatsappUrl: 'https://wa.me/5491112345678',
-      addressText: 'Av. Corrientes 1234',
+      city: 'Buenos Aires',
+      country: 'Argentina',
       locationText: 'Palermo',
       lat: -34.5889,
       lng: -58.3974,
@@ -152,7 +118,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Guitarra Acústica Yamaha FG800',
       description: 'Hermosa guitarra acústica en excelente estado. Perfecta para viajeros. Incluye estuche rígido y cuerdas nuevas. Ideal para músicos que buscan calidad y portabilidad.',
-      categoryId: guitarCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Yamaha',
       model: 'FG800',
       condition: 'EXCELLENT',
@@ -192,7 +158,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Piano Digital Casio Privia PX-160',
       description: 'Piano digital compacto y ligero, perfecto para músicos viajeros. 88 teclas con acción martillo, sonido de alta calidad. Incluye pedal y soporte.',
-      categoryId: pianoCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Casio',
       model: 'Privia PX-160',
       condition: 'GOOD',
@@ -235,7 +201,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Batería Acústica Pearl Export',
       description: 'Batería completa en muy buen estado. Incluye todos los platillos, baquetas y hardware. Perfecta para ensayos y presentaciones.',
-      categoryId: drumsCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Pearl',
       model: 'Export',
       condition: 'GOOD',
@@ -276,7 +242,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Violín Clásico 4/4',
       description: 'Violín profesional en excelente estado. Incluye arco, estuche y resina. Perfecto para músicos clásicos y viajeros.',
-      categoryId: violinCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Stentor',
       model: 'Student II',
       condition: 'EXCELLENT',
@@ -314,7 +280,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Saxofón Alto Yamaha YAS-280',
       description: 'Saxofón alto en perfecto estado. Ideal para estudiantes y profesionales. Incluye estuche y boquilla.',
-      categoryId: saxophoneCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Yamaha',
       model: 'YAS-280',
       condition: 'EXCELLENT',
@@ -353,7 +319,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Guitarra Eléctrica Epiphone Les Paul',
       description: 'Guitarra eléctrica Les Paul en excelente estado. Perfecta para rock y blues. Incluye amplificador pequeño.',
-      categoryId: guitarCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Epiphone',
       model: 'Les Paul Standard',
       condition: 'EXCELLENT',
@@ -385,7 +351,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Piano Digital Kawai ES110',
       description: 'Piano digital portátil de 88 teclas. Ponderadas con tecnología AHA IV. Incluye pedal y soporte.',
-      categoryId: pianoCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Kawai',
       model: 'ES110',
       condition: 'GOOD',
@@ -417,7 +383,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Batería Acústica DW Performance',
       description: 'Batería profesional completa. Excelente estado. Ideal para estudios de grabación y conciertos.',
-      categoryId: drumsCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'DW',
       model: 'Performance Series',
       condition: 'EXCELLENT',
@@ -449,7 +415,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Violín Profesional 4/4',
       description: 'Violín de nivel profesional. Sonido cálido y rico. Incluye arco profesional y estuche de calidad.',
-      categoryId: violinCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Yamaha',
       model: 'SV-250',
       condition: 'EXCELLENT',
@@ -481,7 +447,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Saxofón Tenor Selmer',
       description: 'Saxofón tenor profesional. Excelente para jazz y música clásica. En perfecto estado.',
-      categoryId: saxophoneCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Selmer',
       model: 'TS280',
       condition: 'GOOD',
@@ -513,7 +479,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Guitarra Acústica Fender CD-60',
       description: 'Guitarra acústica económica pero de buena calidad. Perfecta para principiantes y viajeros.',
-      categoryId: guitarCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Fender',
       model: 'CD-60',
       condition: 'GOOD',
@@ -545,7 +511,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Piano Acústico Vertical',
       description: 'Piano acústico vertical en buen estado. Perfecto para estudios y escuelas de música.',
-      categoryId: pianoCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Yamaha',
       model: 'U1',
       condition: 'GOOD',
@@ -577,7 +543,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Batería Electrónica Roland TD-17',
       description: 'Batería electrónica compacta. Perfecta para apartamentos y grabaciones. Incluye todo el hardware.',
-      categoryId: drumsCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Roland',
       model: 'TD-17KVX',
       condition: 'EXCELLENT',
@@ -609,7 +575,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Violonchelo 4/4',
       description: 'Violonchelo profesional en excelente estado. Incluye arco y estuche rígido.',
-      categoryId: violinCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Stentor',
       model: 'Cello',
       condition: 'GOOD',
@@ -641,7 +607,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Guitarra Clásica Alhambra',
       description: 'Guitarra clásica de cuerdas de nylon. Perfecta para música clásica y flamenco. Excelente estado.',
-      categoryId: guitarCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Alhambra',
       model: '5P',
       condition: 'EXCELLENT',
@@ -674,7 +640,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Piano Digital Yamaha P-125',
       description: 'Piano digital portátil de 88 teclas. Perfecto para músicos que necesitan flexibilidad horaria.',
-      categoryId: pianoCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Yamaha',
       model: 'P-125',
       condition: 'EXCELLENT',
@@ -715,7 +681,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Batería Electrónica Alesis Nitro',
       description: 'Batería electrónica compacta. Perfecta para apartamentos. Solo disponible en horarios nocturnos específicos.',
-      categoryId: drumsCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Alesis',
       model: 'Nitro Mesh',
       condition: 'GOOD',
@@ -753,7 +719,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Violín Profesional Stradivarius Réplica',
       description: 'Violín de alta calidad, réplica de Stradivarius. Disponible en cualquier momento.',
-      categoryId: violinCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Yamaha',
       model: 'SV-250',
       condition: 'EXCELLENT',
@@ -790,6 +756,435 @@ async function main() {
     },
   });
 
+  // Categoría Amplificadores
+  const amp1 = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Amplificador Fender Twin Reverb',
+      description: 'Amplificador de guitarra válvulas, sonido clásico y limpio. Ideal para estudio y conciertos. En excelente estado.',
+      categoryId: amplificadoresCategory.id,
+      brand: 'Fender',
+      model: 'Twin Reverb',
+      condition: 'EXCELLENT',
+      extras: 'Fundas, manual',
+      photos: {
+        create: [
+          { url: placeholderImages[0], order: 0 },
+          { url: placeholderImages[1], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Buenos Aires',
+            areaText: 'Palermo',
+            lat: -34.5819,
+            lng: -58.4054,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  // Categoría Altavoces
+  const speaker1 = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Caja amplificada JBL EON 612',
+      description: 'Altavoz activo profesional. Potencia y claridad para voces e instrumentos. Perfecto para ensayos y eventos pequeños.',
+      categoryId: altavocesCategory.id,
+      brand: 'JBL',
+      model: 'EON 612',
+      condition: 'GOOD',
+      extras: 'Cable XLR incluido',
+      photos: {
+        create: [
+          { url: placeholderImages[2], order: 0 },
+          { url: placeholderImages[3], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Córdoba',
+            areaText: 'Nueva Córdoba',
+            lat: -31.4189,
+            lng: -64.1878,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  // Categoría Accesorios
+  const accesorio1 = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Pedalera multiefectos Boss GT-1000',
+      description: 'Procesador de efectos profesional. Múltiples simulaciones de amplificador y efectos. Ideal para guitarra y bajo.',
+      categoryId: accesoriosCategory.id,
+      brand: 'Boss',
+      model: 'GT-1000',
+      condition: 'EXCELLENT',
+      extras: 'Fuente, manual, bolso',
+      photos: {
+        create: [
+          { url: placeholderImages[4], order: 0 },
+          { url: placeholderImages[5], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Rosario',
+            areaText: 'Centro',
+            lat: -32.9466,
+            lng: -60.6393,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  // Categoría Otro
+  const otro1 = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Metrónomo digital Korg MA-2',
+      description: 'Metrónomo compacto con salida de auriculares. Tempo ajustable y ritmos. Indispensable para estudio y práctica.',
+      categoryId: otroCategory.id,
+      brand: 'Korg',
+      model: 'MA-2',
+      condition: 'EXCELLENT',
+      extras: 'Pila incluida',
+      photos: {
+        create: [
+          { url: placeholderImages[6], order: 0 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Mendoza',
+            areaText: 'Centro',
+            lat: -32.8895,
+            lng: -68.8458,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  // ——— Ejemplos internacionales: Roma, Londres, Arabia Saudita (varios idiomas) ———
+
+  // Roma (italiano)
+  const romaGuitar = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Chitarra classica Ramirez',
+      description: 'Chitarra classica a corde di nylon. Perfetta per musica classica e flamenco. Ottime condizioni.',
+      categoryId: instrumentosCategory.id,
+      brand: 'Ramirez',
+      model: '1a',
+      condition: 'EXCELLENT',
+      extras: 'Custodia rigida, corde nuove',
+      photos: {
+        create: [
+          { url: placeholderImages[0], order: 0 },
+          { url: placeholderImages[1], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Roma',
+            areaText: 'Trastevere',
+            lat: 41.8897,
+            lng: 12.4696,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  const romaPiano = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Pianoforte digitale Yamaha P-45',
+      description: 'Pianoforte digitale portatile, 88 tasti. Ideale per musicisti in viaggio. Include pedale e supporto.',
+      categoryId: instrumentosCategory.id,
+      brand: 'Yamaha',
+      model: 'P-45',
+      condition: 'GOOD',
+      extras: 'Pedale, supporto pieghevole',
+      photos: {
+        create: [
+          { url: placeholderImages[4], order: 0 },
+          { url: placeholderImages[5], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Roma',
+            areaText: 'Centro Storico',
+            lat: 41.9028,
+            lng: 12.4964,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  const romaAmp = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Amplificatore valvolare Fender Deluxe',
+      description: 'Amplificatore per chitarra, suono vintage. Perfetto per studio e concerti. Eccellente stato.',
+      categoryId: amplificadoresCategory.id,
+      brand: 'Fender',
+      model: 'Deluxe Reverb',
+      condition: 'EXCELLENT',
+      extras: 'Manuale, copertura',
+      photos: {
+        create: [
+          { url: placeholderImages[0], order: 0 },
+          { url: placeholderImages[1], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Roma',
+            areaText: 'Testaccio',
+            lat: 41.8762,
+            lng: 12.4766,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  // Londres (inglés)
+  const londonGuitar = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Acoustic Guitar Martin D-28',
+      description: 'Vintage-style acoustic guitar. Perfect for fingerpicking and folk. Excellent condition, hard case included.',
+      categoryId: instrumentosCategory.id,
+      brand: 'Martin',
+      model: 'D-28',
+      condition: 'EXCELLENT',
+      extras: 'Hard case, spare strings, capo',
+      photos: {
+        create: [
+          { url: placeholderImages[1], order: 0 },
+          { url: placeholderImages[2], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'London',
+            areaText: 'Shoreditch',
+            lat: 51.5255,
+            lng: -0.0754,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  const londonDrums = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Drum kit Ludwig Classic Maple',
+      description: 'Full acoustic drum set. Cymbals and hardware included. Great for rehearsals and small gigs.',
+      categoryId: instrumentosCategory.id,
+      brand: 'Ludwig',
+      model: 'Classic Maple',
+      condition: 'GOOD',
+      extras: 'Cymbals, sticks, throne',
+      photos: {
+        create: [
+          { url: placeholderImages[7], order: 0 },
+          { url: placeholderImages[8], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'London',
+            areaText: 'Camden',
+            lat: 51.5390,
+            lng: -0.1426,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  const londonSpeaker = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'PA Speaker QSC K12',
+      description: 'Active powered speaker. Clear sound for vocals and instruments. Ideal for small venues.',
+      categoryId: altavocesCategory.id,
+      brand: 'QSC',
+      model: 'K12',
+      condition: 'EXCELLENT',
+      extras: 'XLR cable, cover',
+      photos: {
+        create: [
+          { url: placeholderImages[2], order: 0 },
+          { url: placeholderImages[3], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'London',
+            areaText: 'Soho',
+            lat: 51.5115,
+            lng: -0.1344,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  // Arabia Saudita — Riad (inglés)
+  const riyadhGuitar = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Electric Guitar Gibson Les Paul',
+      description: 'Les Paul Standard in great condition. Perfect for rock and blues. Comes with case and cable.',
+      categoryId: instrumentosCategory.id,
+      brand: 'Gibson',
+      model: 'Les Paul Standard',
+      condition: 'EXCELLENT',
+      extras: 'Case, cable, picks',
+      photos: {
+        create: [
+          { url: placeholderImages[2], order: 0 },
+          { url: placeholderImages[3], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Riyadh',
+            areaText: 'Al Olaya',
+            lat: 24.6877,
+            lng: 46.7219,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  const riyadhKeyboard = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Keyboard Roland Juno-DS',
+      description: '61-key synthesizer. Multiple sounds and rhythms. Ideal for bands and solo performers.',
+      categoryId: instrumentosCategory.id,
+      brand: 'Roland',
+      model: 'Juno-DS61',
+      condition: 'GOOD',
+      extras: 'Power adapter, manual',
+      photos: {
+        create: [
+          { url: placeholderImages[4], order: 0 },
+          { url: placeholderImages[5], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Riyadh',
+            areaText: 'Al Malaz',
+            lat: 24.6533,
+            lng: 46.7222,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  // Arabia Saudita — Jeddah (árabe en título/descripción para variedad)
+  const jeddahOud = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'عود تقليدي - Traditional Oud',
+      description: 'Traditional Arabic oud in excellent condition. Rich sound, perfect for classical and folk. Case and picks included.',
+      categoryId: instrumentosCategory.id,
+      brand: 'Unknown',
+      model: 'Traditional',
+      condition: 'EXCELLENT',
+      extras: 'Case, risha (pick), tuner',
+      photos: {
+        create: [
+          { url: placeholderImages[0], order: 0 },
+          { url: placeholderImages[1], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Jeddah',
+            areaText: 'Al Hamra',
+            lat: 21.5433,
+            lng: 39.1728,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
+  const jeddahAmp = await prisma.instrument.create({
+    data: {
+      ownerId: demoUser.id,
+      title: 'Bass Amplifier Ampeg BA-210',
+      description: 'Combo bass amp. 2x10 speakers, 450W. Great for rehearsals and small gigs. Good condition.',
+      categoryId: amplificadoresCategory.id,
+      brand: 'Ampeg',
+      model: 'BA-210',
+      condition: 'GOOD',
+      extras: 'Cover, manual',
+      photos: {
+        create: [
+          { url: placeholderImages[0], order: 0 },
+          { url: placeholderImages[1], order: 1 },
+        ],
+      },
+      locations: {
+        create: [
+          {
+            city: 'Jeddah',
+            areaText: 'Al Rawdah',
+            lat: 21.4885,
+            lng: 39.2312,
+            isPrimary: true,
+          },
+        ],
+      },
+    },
+  });
+
   console.log('✅ Instruments created');
 
   // Limpiar posts existentes del demo user antes de crear nuevos
@@ -813,6 +1208,7 @@ async function main() {
       instrumentId: guitar1.id,
       ownerId: demoUser.id,
       city: 'Buenos Aires',
+      country: 'Argentina',
       areaText: 'Palermo',
       status: 'PENDING_APPROVAL',
       expiresAt,
@@ -824,6 +1220,7 @@ async function main() {
       instrumentId: piano1.id,
       ownerId: demoUser.id,
       city: 'Córdoba',
+      country: 'Argentina',
       areaText: 'Centro',
       status: 'PENDING_APPROVAL',
       expiresAt,
@@ -835,6 +1232,7 @@ async function main() {
       instrumentId: drums1.id,
       ownerId: demoUser.id,
       city: 'Rosario',
+      country: 'Argentina',
       areaText: 'Centro',
       status: 'PENDING_APPROVAL',
       expiresAt,
@@ -846,6 +1244,7 @@ async function main() {
       instrumentId: sax1.id,
       ownerId: demoUser.id,
       city: 'Buenos Aires',
+      country: 'Argentina',
       areaText: 'Villa Crespo',
       status: 'PENDING_APPROVAL',
       expiresAt,
@@ -857,6 +1256,7 @@ async function main() {
       instrumentId: guitar3.id,
       ownerId: demoUser.id,
       city: 'La Plata',
+      country: 'Argentina',
       areaText: 'Centro',
       status: 'PENDING_APPROVAL',
       expiresAt,
@@ -869,6 +1269,7 @@ async function main() {
       instrumentId: violin1.id,
       ownerId: demoUser.id,
       city: 'Mendoza',
+      country: 'Argentina',
       areaText: 'Centro',
       status: 'APPROVED',
       expiresAt,
@@ -880,6 +1281,7 @@ async function main() {
       instrumentId: piano3.id,
       ownerId: demoUser.id,
       city: 'Córdoba',
+      country: 'Argentina',
       areaText: 'Güemes',
       status: 'APPROVED',
       expiresAt,
@@ -891,6 +1293,7 @@ async function main() {
       instrumentId: drums3.id,
       ownerId: demoUser.id,
       city: 'Buenos Aires',
+      country: 'Argentina',
       areaText: 'Belgrano',
       status: 'APPROVED',
       expiresAt,
@@ -902,6 +1305,7 @@ async function main() {
       instrumentId: violin2.id,
       ownerId: demoUser.id,
       city: 'Mar del Plata',
+      country: 'Argentina',
       areaText: 'Centro',
       status: 'APPROVED',
       expiresAt,
@@ -913,7 +1317,166 @@ async function main() {
       instrumentId: sax2.id,
       ownerId: demoUser.id,
       city: 'Rosario',
+      country: 'Argentina',
       areaText: 'Pichincha',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+
+  // Posts APPROVED para otras categorías (Amplificadores, Altavoces, Accesorios, Otro)
+  await prisma.post.create({
+    data: {
+      instrumentId: amp1.id,
+      ownerId: demoUser.id,
+      city: 'Buenos Aires',
+      country: 'Argentina',
+      areaText: 'Palermo',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+  await prisma.post.create({
+    data: {
+      instrumentId: speaker1.id,
+      ownerId: demoUser.id,
+      city: 'Córdoba',
+      country: 'Argentina',
+      areaText: 'Nueva Córdoba',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+  await prisma.post.create({
+    data: {
+      instrumentId: accesorio1.id,
+      ownerId: demoUser.id,
+      city: 'Rosario',
+      country: 'Argentina',
+      areaText: 'Centro',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+  await prisma.post.create({
+    data: {
+      instrumentId: otro1.id,
+      ownerId: demoUser.id,
+      city: 'Mendoza',
+      country: 'Argentina',
+      areaText: 'Centro',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+
+  // Posts APPROVED — Roma, Londres, Arabia Saudita (internacional)
+  await prisma.post.create({
+    data: {
+      instrumentId: romaGuitar.id,
+      ownerId: demoUser.id,
+      city: 'Roma',
+      country: 'Italy',
+      areaText: 'Trastevere',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+  await prisma.post.create({
+    data: {
+      instrumentId: romaPiano.id,
+      ownerId: demoUser.id,
+      city: 'Roma',
+      country: 'Italy',
+      areaText: 'Centro Storico',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+  await prisma.post.create({
+    data: {
+      instrumentId: romaAmp.id,
+      ownerId: demoUser.id,
+      city: 'Roma',
+      country: 'Italy',
+      areaText: 'Testaccio',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+  await prisma.post.create({
+    data: {
+      instrumentId: londonGuitar.id,
+      ownerId: demoUser.id,
+      city: 'London',
+      country: 'United Kingdom',
+      areaText: 'Shoreditch',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+  await prisma.post.create({
+    data: {
+      instrumentId: londonDrums.id,
+      ownerId: demoUser.id,
+      city: 'London',
+      country: 'United Kingdom',
+      areaText: 'Camden',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+  await prisma.post.create({
+    data: {
+      instrumentId: londonSpeaker.id,
+      ownerId: demoUser.id,
+      city: 'London',
+      country: 'United Kingdom',
+      areaText: 'Soho',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+  await prisma.post.create({
+    data: {
+      instrumentId: riyadhGuitar.id,
+      ownerId: demoUser.id,
+      city: 'Riyadh',
+      country: 'Saudi Arabia',
+      areaText: 'Al Olaya',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+  await prisma.post.create({
+    data: {
+      instrumentId: riyadhKeyboard.id,
+      ownerId: demoUser.id,
+      city: 'Riyadh',
+      country: 'Saudi Arabia',
+      areaText: 'Al Malaz',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+  await prisma.post.create({
+    data: {
+      instrumentId: jeddahOud.id,
+      ownerId: demoUser.id,
+      city: 'Jeddah',
+      country: 'Saudi Arabia',
+      areaText: 'Al Hamra',
+      status: 'APPROVED',
+      expiresAt,
+    },
+  });
+  await prisma.post.create({
+    data: {
+      instrumentId: jeddahAmp.id,
+      ownerId: demoUser.id,
+      city: 'Jeddah',
+      country: 'Saudi Arabia',
+      areaText: 'Al Rawdah',
       status: 'APPROVED',
       expiresAt,
     },
@@ -926,7 +1489,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Guitarra Eléctrica Fender Stratocaster',
       description: 'Guitarra eléctrica en buen estado. Ideal para conciertos y grabaciones.',
-      categoryId: guitarCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Fender',
       model: 'Stratocaster',
       condition: 'GOOD',
@@ -957,7 +1520,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Piano Acústico Yamaha',
       description: 'Piano acústico de cola en excelente estado. Perfecto para estudios profesionales.',
-      categoryId: pianoCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Yamaha',
       model: 'C3',
       condition: 'EXCELLENT',
@@ -988,7 +1551,7 @@ async function main() {
       ownerId: demoUser.id,
       title: 'Batería Acústica Tama',
       description: 'Batería completa con todos los platillos. En muy buen estado.',
-      categoryId: drumsCategory.id,
+      categoryId: instrumentosCategory.id,
       brand: 'Tama',
       model: 'Superstar',
       condition: 'GOOD',
@@ -1019,6 +1582,7 @@ async function main() {
       instrumentId: guitar2.id,
       ownerId: demoUser.id,
       city: 'Buenos Aires',
+      country: 'Argentina',
       areaText: 'San Telmo',
       status: 'REJECTED',
       expiresAt,
@@ -1030,6 +1594,7 @@ async function main() {
       instrumentId: guitar4.id,
       ownerId: demoUser.id,
       city: 'Tucumán',
+      country: 'Argentina',
       areaText: 'Centro',
       status: 'REJECTED',
       expiresAt,
@@ -1042,6 +1607,7 @@ async function main() {
       instrumentId: piano2.id,
       ownerId: demoUser.id,
       city: 'Córdoba',
+      country: 'Argentina',
       areaText: 'Nueva Córdoba',
       status: 'BANNED',
       expiresAt,
@@ -1053,6 +1619,7 @@ async function main() {
       instrumentId: piano4.id,
       ownerId: demoUser.id,
       city: 'Córdoba',
+      country: 'Argentina',
       areaText: 'Villa Allende',
       status: 'BANNED',
       expiresAt,
@@ -1065,6 +1632,7 @@ async function main() {
       instrumentId: drums2.id,
       ownerId: demoUser.id,
       city: 'Rosario',
+      country: 'Argentina',
       areaText: 'Norte',
       status: 'EXPIRED',
       expiresAt: expiredAt,
@@ -1076,6 +1644,7 @@ async function main() {
       instrumentId: drums4.id,
       ownerId: demoUser.id,
       city: 'Buenos Aires',
+      country: 'Argentina',
       areaText: 'Recoleta',
       status: 'EXPIRED',
       expiresAt: expiredAt,
@@ -1087,6 +1656,7 @@ async function main() {
       instrumentId: violin3.id,
       ownerId: demoUser.id,
       city: 'Buenos Aires',
+      country: 'Argentina',
       areaText: 'San Telmo',
       status: 'EXPIRED',
       expiresAt: expiredAt,
@@ -1098,6 +1668,7 @@ async function main() {
       instrumentId: guitar5.id,
       ownerId: demoUser.id,
       city: 'Salta',
+      country: 'Argentina',
       areaText: 'Centro',
       status: 'EXPIRED',
       expiresAt: expiredAt,
@@ -1120,7 +1691,8 @@ async function main() {
       password: clientPassword,
       phone: '+54 9 11 9876-5432',
       whatsappUrl: 'https://wa.me/5491198765432',
-      addressText: 'Av. Libertador 5678',
+      city: 'Buenos Aires',
+      country: 'Argentina',
       locationText: 'Belgrano',
       lat: -34.5639,
       lng: -58.4558,
@@ -1222,7 +1794,7 @@ async function main() {
   console.log('   - 1 demo user (OWNER + CLIENT)');
   console.log('   - 1 client user (CLIENT)');
   console.log('   - 1 admin user (ADMIN)');
-  console.log('   - 18 instruments with photos and locations');
+  console.log('   - 28 instruments with photos and locations (incl. Roma, London, Riyadh, Jeddah)');
   console.log('   - Disponibilidad configurada:');
   console.log('     • SIN disponibilidad: guitar1, guitar5 (permite cualquier fecha/hora)');
   console.log('     • Todos los días 09:00-18:00: piano1');
@@ -1232,9 +1804,9 @@ async function main() {
   console.log('     • Lun-Vie 08:00-19:00: piano5');
   console.log('     • Solo Mar-Jue 18:00-22:00: drums5');
   console.log('     • Todos los días 00:00-23:59: violin4');
-  console.log('   - 20 posts:');
+  console.log('   - 30 posts:');
   console.log('     • 5 PENDING_APPROVAL');
-  console.log('     • 5 APPROVED');
+  console.log('     • 15 APPROVED (incl. Roma, London, Riyadh, Jeddah)');
   console.log('     • 2 REJECTED');
   console.log('     • 2 BANNED');
   console.log('     • 4 EXPIRED');

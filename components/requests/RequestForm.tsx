@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,7 +30,10 @@ interface RequestFormProps {
 
 export function RequestForm({ postId, instrumentId, availability = [], onSuccess }: RequestFormProps) {
   const router = useRouter();
+  const t = useTranslations('requests');
+  const tInstruments = useTranslations('instruments');
   const [loading, setLoading] = useState(false);
+  const [availabilityValidationEnabled, setAvailabilityValidationEnabled] = useState<boolean>(true); // por defecto activo hasta cargar flags
   const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
   const [fromTime, setFromTime] = useState<string>('09:00');
   const [toDate, setToDate] = useState<Date | undefined>(undefined);
@@ -44,44 +48,53 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
     message?: string;
   }>({});
 
+  // Cargar feature flag de validación por disponibilidad
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/feature-flags')
+      .then((res) => res.ok ? res.json() : [])
+      .then((flags: { key: string; enabled: boolean }[]) => {
+        if (cancelled) return;
+        const flag = flags.find((f) => f.key === 'AVAILABILITY_VALIDATION');
+        setAvailabilityValidationEnabled(flag?.enabled ?? false);
+      })
+      .catch(() => {
+        if (!cancelled) setAvailabilityValidationEnabled(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
   // Función para verificar si una fecha está disponible según la disponibilidad configurada
   const isDateAvailable = (date: Date): boolean => {
-    if (availability.length === 0) {
-      // Si no hay disponibilidad configurada, permitir cualquier fecha
+    if (!availabilityValidationEnabled || availability.length === 0) {
       return true;
     }
-
-    const dayOfWeek = date.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+    const dayOfWeek = date.getDay();
     const dayAvailability = availability.find(a => a.dayOfWeek === dayOfWeek && a.isAvailable);
-    
     return !!dayAvailability;
   };
 
   // Función para obtener los días disponibles para el calendario
   const getAvailableDays = (): Date[] | undefined => {
-    if (availability.length === 0) {
-      return undefined; // Permitir todos los días
+    if (!availabilityValidationEnabled || availability.length === 0) {
+      return undefined;
     }
-
-    // Retornar undefined para permitir todos los días, pero usaremos disabled para filtrar
     return undefined;
   };
 
-  // Función para deshabilitar días no disponibles
+  // Función para deshabilitar días no disponibles (solo si el feature flag está activo)
   const isDayDisabled = (date: Date): boolean => {
-    if (availability.length === 0) {
-      return false; // Si no hay disponibilidad, no deshabilitar días
+    if (!availabilityValidationEnabled || availability.length === 0) {
+      return false;
     }
-
     const dayOfWeek = date.getDay();
     const dayAvailability = availability.find(a => a.dayOfWeek === dayOfWeek && a.isAvailable);
-    
     return !dayAvailability;
   };
 
   // Función para obtener la disponibilidad de un día específico
   const getDayAvailability = (date: Date): Availability | undefined => {
-    if (availability.length === 0) {
+    if (!availabilityValidationEnabled || availability.length === 0) {
       return undefined;
     }
     const dayOfWeek = date.getDay();
@@ -90,11 +103,12 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
 
   // Función para obtener el texto de disponibilidad formateado
   const getAvailabilitySummary = (): string => {
-    if (availability.length === 0) {
-      return 'Disponible en cualquier fecha y hora';
+    if (!availabilityValidationEnabled || availability.length === 0) {
+      return t('availableAnyTime');
     }
 
-    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const dayKeys = ['daySun', 'dayMon', 'dayTue', 'dayWed', 'dayThu', 'dayFri', 'daySat'] as const;
+    const days = dayKeys.map((k) => tInstruments(k));
     const grouped: Record<string, string[]> = {};
 
     availability.forEach(avail => {
@@ -108,7 +122,7 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
     const summaries = Object.entries(grouped).map(([timeRange, dayNames]) => {
       const [start, end] = timeRange.split('-');
       if (dayNames.length === 7) {
-        return `Todos los días: ${start} - ${end}`;
+        return `${t('allDays')}: ${start} - ${end}`;
       } else if (dayNames.length === 1) {
         return `${dayNames[0]}: ${start} - ${end}`;
       } else {
@@ -119,17 +133,17 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
     return summaries.join(' | ');
   };
 
-  // Validar que la hora esté dentro del rango disponible
+  // Validar que la hora esté dentro del rango disponible (solo si el feature flag está activo)
   const validateTime = (date: Date | undefined, time: string, field: 'fromDate' | 'toDate'): string | undefined => {
-    if (!date || availability.length === 0) {
-      return undefined; // Si no hay disponibilidad configurada, no validar
+    if (!date || !availabilityValidationEnabled || availability.length === 0) {
+      return undefined;
     }
 
     const dayOfWeek = date.getDay();
     const dayAvailability = availability.find(a => a.dayOfWeek === dayOfWeek && a.isAvailable);
     
     if (!dayAvailability) {
-      return 'Este día no está disponible';
+      return t('errorDayNotAvailable');
     }
 
     const [hour, minute] = time.split(':').map(Number);
@@ -140,7 +154,7 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
     const endMinutes = endHour * 60 + endMin;
 
     if (timeMinutes < startMinutes || timeMinutes > endMinutes) {
-      return `La hora debe estar entre ${dayAvailability.startTime} y ${dayAvailability.endTime}`;
+      return t('errorTimeBetween', { start: dayAvailability.startTime, end: dayAvailability.endTime });
     }
 
     return undefined;
@@ -150,82 +164,79 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
     e.preventDefault();
     setErrors({});
 
-    // Validaciones
-    if (!fromDate) {
-      setErrors(prev => ({ ...prev, fromDate: 'Debes seleccionar una fecha de inicio' }));
-      return;
-    }
-
-    if (!toDate) {
-      setErrors(prev => ({ ...prev, toDate: 'Debes seleccionar una fecha de fin' }));
-      return;
-    }
-
-    // Validar que toDate > fromDate
-    if (toDate < fromDate) {
-      setErrors(prev => ({ ...prev, toDate: 'La fecha de fin debe ser posterior a la fecha de inicio' }));
-      return;
-    }
-
-    // Validar horas
-    const fromTimeError = validateTime(fromDate, fromTime, 'fromDate');
-    if (fromTimeError) {
-      setErrors(prev => ({ ...prev, fromDate: fromTimeError }));
-      return;
-    }
-
-    const toTimeError = validateTime(toDate, toTime, 'toDate');
-    if (toTimeError) {
-      setErrors(prev => ({ ...prev, toDate: toTimeError }));
-      return;
-    }
-
-    // Validar mensaje
+    // Validar mensaje siempre
     if (formData.message.trim().length < 10) {
-      setErrors(prev => ({ ...prev, message: 'El mensaje debe tener al menos 10 caracteres' }));
+      setErrors(prev => ({ ...prev, message: t('errorMessageMinChars') }));
       return;
     }
 
-    // Construir fechas completas usando el constructor Date(year, month, day, hour, minute)
-    // Esto crea la fecha en la zona horaria local, evitando problemas de conversión UTC
-    const [fromHour, fromMin] = fromTime.split(':').map(Number);
-    const [toHour, toMin] = toTime.split(':').map(Number);
-    
-    // Extraer año, mes y día de las fechas seleccionadas
-    const fromYear = fromDate.getFullYear();
-    const fromMonth = fromDate.getMonth();
-    const fromDay = fromDate.getDate();
-    
-    const toYear = toDate.getFullYear();
-    const toMonth = toDate.getMonth();
-    const toDay = toDate.getDate();
-    
-    // Crear fechas en zona horaria local
-    const fromDateTime = new Date(fromYear, fromMonth, fromDay, fromHour, fromMin, 0, 0);
-    const toDateTime = new Date(toYear, toMonth, toDay, toHour, toMin, 0, 0);
+    let fromDateStr: string;
+    let toDateStr: string;
 
-    if (toDateTime <= fromDateTime) {
-      setErrors(prev => ({ ...prev, toDate: 'La fecha y hora de fin debe ser posterior a la de inicio' }));
-      return;
+    if (availabilityValidationEnabled) {
+      // Validaciones de fecha/hora cuando el feature está activo
+      if (!fromDate) {
+        setErrors(prev => ({ ...prev, fromDate: t('errorSelectStartDate') }));
+        return;
+      }
+      if (!toDate) {
+        setErrors(prev => ({ ...prev, toDate: t('errorSelectEndDate') }));
+        return;
+      }
+      if (toDate < fromDate) {
+        setErrors(prev => ({ ...prev, toDate: t('errorEndAfterStart') }));
+        return;
+      }
+      const fromTimeError = validateTime(fromDate, fromTime, 'fromDate');
+      if (fromTimeError) {
+        setErrors(prev => ({ ...prev, fromDate: fromTimeError }));
+        return;
+      }
+      const toTimeError = validateTime(toDate, toTime, 'toDate');
+      if (toTimeError) {
+        setErrors(prev => ({ ...prev, toDate: toTimeError }));
+        return;
+      }
+      const [fromHour, fromMin] = fromTime.split(':').map(Number);
+      const [toHour, toMin] = toTime.split(':').map(Number);
+      const fromYear = fromDate.getFullYear();
+      const fromMonth = fromDate.getMonth();
+      const fromDay = fromDate.getDate();
+      const toYear = toDate.getFullYear();
+      const toMonth = toDate.getMonth();
+      const toDay = toDate.getDate();
+      const fromDateTime = new Date(fromYear, fromMonth, fromDay, fromHour, fromMin, 0, 0);
+      const toDateTime = new Date(toYear, toMonth, toDay, toHour, toMin, 0, 0);
+      if (toDateTime <= fromDateTime) {
+        setErrors(prev => ({ ...prev, toDate: t('errorEndAfterStartTime') }));
+        return;
+      }
+      fromDateStr = `${fromYear}-${String(fromMonth + 1).padStart(2, '0')}-${String(fromDay).padStart(2, '0')}`;
+      toDateStr = `${toYear}-${String(toMonth + 1).padStart(2, '0')}-${String(toDay).padStart(2, '0')}`;
+      const fromTimeStr = `${String(fromHour).padStart(2, '0')}:${String(fromMin).padStart(2, '0')}`;
+      const toTimeStr = `${String(toHour).padStart(2, '0')}:${String(toMin).padStart(2, '0')}`;
+      fromDateStr = `${fromDateStr}T${fromTimeStr}:00`;
+      toDateStr = `${toDateStr}T${toTimeStr}:00`;
+    } else {
+      // Con el feature desactivado: usar fechas por defecto (hoy 09:00 - hoy 18:00)
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      fromDateStr = `${y}-${m}-${d}T09:00:00`;
+      toDateStr = `${y}-${m}-${d}T18:00:00`;
     }
 
     setLoading(true);
 
     try {
-      // Enviar fecha y hora por separado para evitar problemas de zona horaria
-      // Formato: YYYY-MM-DD para fecha, HH:mm para hora
-      const fromDateStr = `${fromYear}-${String(fromMonth + 1).padStart(2, '0')}-${String(fromDay).padStart(2, '0')}`;
-      const toDateStr = `${toYear}-${String(toMonth + 1).padStart(2, '0')}-${String(toDay).padStart(2, '0')}`;
-      const fromTimeStr = `${String(fromHour).padStart(2, '0')}:${String(fromMin).padStart(2, '0')}`;
-      const toTimeStr = `${String(toHour).padStart(2, '0')}:${String(toMin).padStart(2, '0')}`;
-      
       const res = await fetch('/api/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           postId,
-          fromDate: `${fromDateStr}T${fromTimeStr}:00`,
-          toDate: `${toDateStr}T${toTimeStr}:00`,
+          fromDate: fromDateStr,
+          toDate: toDateStr,
           message: formData.message.trim(),
           accessories: formData.accessories.trim() || undefined,
         }),
@@ -235,17 +246,17 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
 
       if (!res.ok) {
         if (data.error && data.error.includes('Ya existe una solicitud activa')) {
-          alert('Ya has enviado una solicitud para este instrumento. Por favor, espera la respuesta del propietario.');
+          alert(t('errorDuplicateRequest'));
           if (onSuccess) {
             onSuccess();
           }
           return;
         }
-        alert(data.error || 'Error al enviar la solicitud');
+        alert(data.error || t('errorSendingRequest'));
         return;
       }
 
-      alert('Solicitud enviada correctamente');
+      alert(t('successSent'));
       if (onSuccess) {
         onSuccess();
       } else {
@@ -253,7 +264,7 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
       }
     } catch (error) {
       console.error('Error creating request:', error);
-      alert('Error al enviar la solicitud');
+      alert(t('errorSendingRequest'));
     } finally {
       setLoading(false);
     }
@@ -262,13 +273,14 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Enviar Solicitud</CardTitle>
+        <CardTitle>{t('formTitle')}</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {availabilityValidationEnabled && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Fecha de inicio</Label>
+              <Label>{t('startDate')}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -300,7 +312,7 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
                     }}
                     modifiers={{
                       available: (date) => {
-                        if (availability.length === 0) return true;
+                        if (!availabilityValidationEnabled || availability.length === 0) return true;
                         return !isDayDisabled(date);
                       }
                     }}
@@ -317,7 +329,7 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
                     value={fromTime}
                     onChange={setFromTime}
                     disabled={loading}
-                    label="Hora de inicio"
+                    label={t('startTime')}
                   />
                 </div>
               )}
@@ -327,7 +339,7 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
             </div>
 
             <div className="space-y-2">
-              <Label>Fecha de fin</Label>
+              <Label>{t('endDate')}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -361,7 +373,7 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
                     }}
                     modifiers={{
                       available: (date) => {
-                        if (availability.length === 0) return true;
+                        if (!availabilityValidationEnabled || availability.length === 0) return true;
                         return !isDayDisabled(date);
                       }
                     }}
@@ -378,7 +390,7 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
                     value={toTime}
                     onChange={setToTime}
                     disabled={loading}
-                    label="Hora de fin"
+                    label={t('endTime')}
                   />
                 </div>
               )}
@@ -387,14 +399,16 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
               )}
             </div>
           </div>
+          )}
 
-          {availability.length > 0 && (
+          {availabilityValidationEnabled && availability.length > 0 && (
             <div className="space-y-2">
               <div className="p-3 bg-primary/5 border border-primary/20 rounded-md">
-                <p className="text-sm font-medium mb-2">📅 Disponibilidad del instrumento:</p>
+                <p className="text-sm font-medium mb-2">📅 {t('availabilityTitle')}</p>
                 <div className="space-y-1">
                   {(() => {
-                    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                    const dayKeys = ['daySun', 'dayMon', 'dayTue', 'dayWed', 'dayThu', 'dayFri', 'daySat'] as const;
+                    const days = dayKeys.map((k) => tInstruments(k));
                     const grouped: Record<string, { days: string[], startTime: string, endTime: string }> = {};
 
                     availability.forEach(avail => {
@@ -409,7 +423,7 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
                       <div key={idx} className="flex items-center gap-2 text-sm">
                         <span className="font-medium min-w-[120px]">
                           {group.days.length === 7 
-                            ? 'Todos los días' 
+                            ? t('allDays') 
                             : group.days.length === 1
                             ? group.days[0]
                             : group.days.join(', ')}:
@@ -422,26 +436,26 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
                   })()}
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  💡 Los días disponibles aparecen resaltados en el calendario. Deberás coordinar la gestión directamente con el propietario.
+                  💡 {t('availabilityCalendarHint')}
                 </p>
               </div>
             </div>
           )}
 
           <div>
-            <Label htmlFor="message">Mensaje *</Label>
+            <Label htmlFor="message">{t('messageRequired')}</Label>
             <Textarea
               id="message"
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              placeholder="Explica tu solicitud y cuándo necesitas el instrumento..."
+              placeholder={t('messagePlaceholder')}
               rows={4}
               required
               disabled={loading}
               className={errors.message ? "border-destructive" : ""}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Mínimo 10 caracteres
+              {t('minChars')}
             </p>
             {errors.message && (
               <p className="text-sm text-destructive mt-1">{errors.message}</p>
@@ -449,19 +463,19 @@ export function RequestForm({ postId, instrumentId, availability = [], onSuccess
           </div>
 
           <div>
-            <Label htmlFor="accessories">Accesorios adicionales (opcional)</Label>
+            <Label htmlFor="accessories">{t('accessoriesOptional')}</Label>
             <Textarea
               id="accessories"
               value={formData.accessories}
               onChange={(e) => setFormData({ ...formData, accessories: e.target.value })}
-              placeholder="Especifica si necesitas accesorios adicionales..."
+              placeholder={t('accessoriesPlaceholder')}
               rows={2}
               disabled={loading}
             />
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Enviando...' : 'Enviar Solicitud'}
+            {loading ? t('sending') : t('formTitle')}
           </Button>
         </form>
       </CardContent>

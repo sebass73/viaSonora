@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, type ChangeEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,7 +27,8 @@ interface User {
   image: string | null;
   phone: string | null;
   whatsappUrl: string | null;
-  addressText: string | null;
+  city: string | null;
+  country: string | null;
   locationText: string | null;
   lat: number | null;
   lng: number | null;
@@ -35,6 +37,7 @@ interface User {
 }
 
 export function ProfileForm() {
+  const t = useTranslations('profile');
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,7 +51,8 @@ export function ProfileForm() {
     image: '',
     phone: '',
     whatsappUrl: '',
-    addressText: '',
+    city: '',
+    country: '',
     locationText: '',
     lat: null as number | null,
     lng: null as number | null,
@@ -72,7 +76,8 @@ export function ProfileForm() {
           image: data.image || '',
           phone: data.phone || '',
           whatsappUrl: data.whatsappUrl || '',
-          addressText: data.addressText || '',
+          city: data.city || '',
+          country: data.country || '',
           locationText: data.locationText || '',
           lat: data.lat || null,
           lng: data.lng || null,
@@ -93,14 +98,14 @@ export function ProfileForm() {
     // Validar tipo de archivo
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      alert('Tipo de archivo no válido. Solo se permiten JPEG, PNG y WebP.');
+      alert(t('invalidFileType'));
       return;
     }
 
     // Validar tamaño (max 5MB)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      alert('El archivo es demasiado grande. Tamaño máximo: 5MB.');
+      alert(t('fileTooBig'));
       return;
     }
 
@@ -123,7 +128,7 @@ export function ProfileForm() {
       setFormData({ ...formData, image: data.url });
     } catch (error) {
       console.error('Error uploading image:', error);
-      alert('Error al subir la imagen');
+      alert(t('errorUploadImage'));
     } finally {
       setUploadingImage(false);
       if (fileInputRef.current) {
@@ -143,6 +148,8 @@ export function ProfileForm() {
         body: JSON.stringify({
           ...formData,
           image: formData.image || undefined,
+          city: formData.city || undefined,
+          country: formData.country || undefined,
           lat: formData.lat || undefined,
           lng: formData.lng || undefined,
           termsAccepted: formData.termsAccepted ? true : undefined,
@@ -150,31 +157,30 @@ export function ProfileForm() {
       });
 
       if (res.ok) {
-        // Recargar datos del usuario
         await fetchUser();
-        alert('Perfil actualizado correctamente');
+        alert(t('successUpdate'));
       } else {
         const error = await res.json();
-        alert(`Error: ${error.error || 'No se pudo actualizar el perfil'}`);
+        alert(`${t('errorUpdate')}: ${error.error || t('errorUpdateMessage')}`);
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Error al actualizar el perfil');
+      alert(t('errorUpdate'));
     } finally {
       setSaving(false);
     }
   };
 
   if (!mounted || loading) {
-    return <div className="container py-8">Cargando...</div>;
+    return <div className="container py-8">{t('loading')}</div>;
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mi Perfil</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
         <CardDescription>
-          Completa tu información y acepta los términos y condiciones
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -184,7 +190,7 @@ export function ProfileForm() {
             <div className="md:col-span-2 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="name">Nombre</Label>
+                  <Label htmlFor="name">{t('name')}</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -192,7 +198,7 @@ export function ProfileForm() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="lastName">Apellido</Label>
+                  <Label htmlFor="lastName">{t('lastName')}</Label>
                   <Input
                     id="lastName"
                     value={formData.lastName}
@@ -202,7 +208,7 @@ export function ProfileForm() {
               </div>
 
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input id="email" value={user?.email || ''} disabled />
               </div>
             </div>
@@ -214,7 +220,7 @@ export function ProfileForm() {
                   {formData.image ? (
                     <Image
                       src={formData.image}
-                      alt="Foto de perfil"
+                      alt={t('profilePhotoAlt')}
                       fill
                       className="object-cover"
                     />
@@ -242,7 +248,7 @@ export function ProfileForm() {
                 />
                 {uploadingImage && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
-                    <span className="text-white text-sm">Subiendo...</span>
+                    <span className="text-white text-sm">{t('uploading')}</span>
                   </div>
                 )}
               </div>
@@ -250,73 +256,78 @@ export function ProfileForm() {
           </div>
 
           <div>
-            <Label htmlFor="phone">Teléfono</Label>
+            <Label htmlFor="phone">{t('phone')}</Label>
             <Input
               id="phone"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="+54 9 11 1234-5678"
+              placeholder={t('phonePlaceholder')}
             />
           </div>
 
           <div>
-            <Label htmlFor="whatsappUrl">URL de WhatsApp</Label>
+            <Label htmlFor="whatsappUrl">{t('whatsappUrl')}</Label>
             <Input
               id="whatsappUrl"
               value={formData.whatsappUrl}
               onChange={(e) => setFormData({ ...formData, whatsappUrl: e.target.value })}
-              placeholder="https://wa.me/5491112345678"
+              placeholder={t('whatsappPlaceholder')}
             />
           </div>
 
-          <div>
-            <Label htmlFor="addressText">Tu ubicación de contacto</Label>
-            <p className="text-sm text-muted-foreground mb-2">
-              ¿Dónde estás? Esta ubicación se usará para que otros usuarios puedan contactarte cuando aceptes una solicitud.
-            </p>
-            <CityAutocomplete
-              value={formData.addressText}
-              onChange={(address) => setFormData({ ...formData, addressText: address })}
-              onSelect={(city, lat, lng, fullAddress) => {
-                // Extraer información de la dirección completa
-                // fullAddress puede ser: "Santa Fe 2160, Mar del Plata, Buenos Aires, Argentina"
-                const parts = fullAddress.split(',').map(p => p.trim());
-                
-                // Si tiene más de 2 partes, la segunda suele ser la ciudad/zona
-                // Si tiene 2 partes, la segunda es la ciudad
-                let locationText = '';
-                if (parts.length >= 2) {
-                  // Tomar la ciudad (segunda parte) o zona si está disponible
-                  locationText = parts[1] || parts[0];
-                }
-                
-                setFormData({
-                  ...formData,
-                  addressText: fullAddress, // Usar la dirección completa
-                  locationText: locationText || formData.locationText, // Actualizar si se encontró
-                  lat,
-                  lng,
-                });
-              }}
-              placeholder="Buscar tu ubicación..."
-            />
-            {formData.lat && formData.lng && (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-sm font-medium mb-1">{t('contactLocation')}</h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                {t('contactLocationHint')}
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="city">{t('cityLabel')}</Label>
+              <CityAutocomplete
+                value={formData.city}
+                onChange={(value) => setFormData({ ...formData, city: value })}
+                onSelect={(city, lat, lng, _fullAddress, _state, country) => {
+                  setFormData({
+                    ...formData,
+                    city: city || '',
+                    country: country || '',
+                    lat,
+                    lng,
+                  });
+                }}
+                placeholder={t('citySearchPlaceholder')}
+              />
               <p className="text-xs text-muted-foreground mt-1">
-                Coordenadas guardadas: {formData.lat.toFixed(6)}, {formData.lng.toFixed(6)}
+                {t('citySearchHint')}
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="country">{t('countryLabel')}</Label>
+              <Input
+                id="country"
+                value={formData.country}
+                onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                placeholder={t('countryPlaceholder')}
+              />
+            </div>
+            {formData.lat != null && formData.lng != null && (
+              <p className="text-xs text-muted-foreground">
+                {t('savedCoordinates')}: {formData.lat.toFixed(6)}, {formData.lng.toFixed(6)}
               </p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="locationText">Zona/Barrio (opcional)</Label>
+            <Label htmlFor="locationText">{t('zoneLabel')}</Label>
             <Input
               id="locationText"
               value={formData.locationText}
               onChange={(e) => setFormData({ ...formData, locationText: e.target.value })}
-              placeholder="Ej: Palermo, San Telmo"
+              placeholder={t('zonePlaceholder')}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Puedes especificar una zona o barrio adicional si lo deseas
+              {t('zoneHint')}
             </p>
           </div>
 
@@ -329,7 +340,7 @@ export function ProfileForm() {
               className="h-4 w-4"
             />
             <Label htmlFor="termsAccepted" className="cursor-pointer">
-              Acepto los{' '}
+              {t('termsAccept')}{' '}
               <button
                 type="button"
                 onClick={(e) => {
@@ -338,7 +349,7 @@ export function ProfileForm() {
                 }}
                 className="text-primary underline hover:text-primary/80"
               >
-                términos y condiciones
+                {t('termsLink')}
               </button>
             </Label>
           </div>
@@ -346,9 +357,9 @@ export function ProfileForm() {
           <Dialog open={termsOpen} onOpenChange={setTermsOpen}>
             <DialogContent className="max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Términos y Condiciones de ViaSonora</DialogTitle>
+                <DialogTitle>{t('termsDialogTitle')}</DialogTitle>
                 <DialogDescription>
-                  Por favor, lee cuidadosamente los siguientes términos y condiciones antes de utilizar nuestra plataforma.
+                  {t('termsDialogDescription')}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 text-sm">
@@ -451,7 +462,7 @@ export function ProfileForm() {
           </Dialog>
 
           <Button type="submit" disabled={saving}>
-            {saving ? 'Guardando...' : 'Guardar'}
+            {saving ? t('saving') : t('save')}
           </Button>
         </form>
       </CardContent>

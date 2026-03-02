@@ -70,9 +70,11 @@ model User {
   phone         String?
   whatsappUrl   String?
 
-  addressText  String?
-  locationText String? // zona/barrio
-  lat          Float?
+  // Ubicación: ciudad y país (sin dirección puntual)
+  city         String?
+  country      String?
+  locationText String? // zona/barrio (opcional)
+  lat          Float?  // para mapa, geocoding de city+country
   lng          Float?
 
   roles     UserRole[] @default([])
@@ -139,12 +141,9 @@ model VerificationToken {
 }
 
 model Category {
-  id          String  @id @default(cuid())
-  name        String  @unique
-  nameEs      String
-  nameIt      String
-  nameEn      String
-  slug        String  @unique
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
   description String?
   icon        String?
 
@@ -199,11 +198,12 @@ model InstrumentLocation {
   id                 String  @id @default(cuid())
   instrumentId       String
   city               String
-  areaText           String? // zona/barrio
-  lat                Float
+  country            String?
+  areaText           String? // zona/barrio (opcional)
+  lat                Float   // para mapa, geocoding de city+country
   lng                Float
   isPrimary          Boolean @default(false)
-  useProfileLocation Boolean @default(false) // Si true, esta ubicación se sincroniza con la del perfil del usuario
+  useProfileLocation Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -219,7 +219,8 @@ model Post {
   instrumentId String
   ownerId      String
   city         String
-  areaText     String? // zona/barrio para búsqueda
+  country      String?
+  areaText     String?    // zona/barrio (opcional)
   status       PostStatus @default(PENDING_APPROVAL)
   expiresAt    DateTime
 
@@ -302,4 +303,16 @@ model PostReport {
   @@index([postId])
   @@index([status])
   @@index([reporterId])
+}
+
+// Feature Flags: activar/desactivar funcionalidades desde el panel de admin
+model FeatureFlag {
+  id          String   @id @default(cuid())
+  key         String   @unique // ej: PAYMENTS, NOTIFICATIONS, EXPIRE_AUTOMATIC
+  enabled     Boolean  @default(false)
+  description String?  @db.Text // descripción para el admin
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
 }

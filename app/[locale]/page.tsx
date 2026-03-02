@@ -10,17 +10,21 @@ import { useRouter, Link } from '@/i18n/routing';
 import { useSession } from 'next-auth/react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Search, PlusCircle, Lock, MapPin, Info, ShieldCheck, Globe, Users, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, PlusCircle, Lock, MapPin, Info, ShieldCheck, Globe, Users, FileText, Filter, HelpCircle } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { TrustBlock } from '@/components/TrustBlock';
+import { CategoryName } from '@/components/CategoryName';
 import { CategoryChips } from '@/components/CategoryChips';
 import { InstrumentAutocomplete } from '@/components/InstrumentAutocomplete';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // Dynamic import para evitar problemas de SSR con Leaflet
 const MapViewDynamic = dynamic(() => import('@/components/map/MapView').then(mod => ({ default: mod.MapView })), {
   ssr: false,
   loading: () => <div className="w-full h-full bg-gray-200 animate-pulse" />
 });
+
+const DEFAULT_MAP_CENTER: [number, number] = [-34.6037, -58.3816]; // Buenos Aires
 
 interface Post {
   id: string;
@@ -32,7 +36,7 @@ interface Post {
     photos: Array<{ url: string }>;
     category: {
       id: string;
-      nameEs: string;
+      slug: string;
     };
     locations: Array<{
       lat: number;
@@ -43,7 +47,7 @@ interface Post {
 
 interface Category {
   id: string;
-  nameEs: string;
+  slug: string;
 }
 
 export default function HomePage() {
@@ -57,10 +61,33 @@ export default function HomePage() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [homeCardsEnabled, setHomeCardsEnabled] = useState(true);
+  const [mapFilterOpen, setMapFilterOpen] = useState(false);
+  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
+  const [searchPanelOpen, setSearchPanelOpen] = useState(false);
+  const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_MAP_CENTER);
+  const searchPanelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchCategories();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/feature-flags')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((flags: { key: string; enabled: boolean }[]) => {
+        if (cancelled) return;
+        const flag = flags.find((f) => f.key === 'HOME_CARDS');
+        setHomeCardsEnabled(flag?.enabled ?? true);
+      })
+      .catch(() => {
+        if (!cancelled) setHomeCardsEnabled(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const fetchCategories = async () => {
@@ -107,6 +134,18 @@ export default function HomePage() {
   useEffect(() => {
     fetchPosts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Centro del mapa siempre por IP (backend). Sin permisos ni localStorage.
+  useEffect(() => {
+    fetch('/api/geo')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { lat?: number; lng?: number } | null) => {
+        if (data && Number.isFinite(data.lat) && Number.isFinite(data.lng)) {
+          setMapCenter([data.lat!, data.lng!]);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -166,32 +205,95 @@ export default function HomePage() {
     }
   };
 
-  // Calcular centro del mapa basado en posts
-  const mapCenter: [number, number] = posts.length > 0 && posts[0].instrument.locations?.[0]
-    ? [posts[0].instrument.locations[0].lat, posts[0].instrument.locations[0].lng]
-    : [-34.6037, -58.3816]; // Buenos Aires por defecto
-
   return (
     <div className="flex flex-col h-full min-h-0 overflow-hidden">
       {/* Sección de búsqueda */}
       <div className="bg-background border-b flex-shrink-0">
         <div className="container py-2 space-y-3">
-          <form onSubmit={handleSearch} className="flex gap-2 flex-wrap">
-            <div className="relative flex-1 min-w-[150px] md:min-w-[200px]">
+          <form onSubmit={handleSearch} className="flex gap-2 flex-wrap items-center">
+            <div ref={searchPanelRef} className="relative flex-1 min-w-[150px] md:min-w-[200px]">
               <Input
                 ref={searchInputRef}
                 placeholder={t('searchByTitle')}
                 value={searchTitle}
                 onChange={(e) => setSearchTitle(e.target.value)}
+                onFocus={() => setSearchPanelOpen(true)}
+                onBlur={(e) => {
+                  const next = e.relatedTarget as Node | null;
+                  if (searchPanelRef.current?.contains(next)) return;
+                  setTimeout(() => setSearchPanelOpen(false), 200);
+                }}
                 className="w-full pr-12"
               />
               <InstrumentAutocomplete
                 searchQuery={searchTitle}
                 onSelect={(postId) => {
                   router.push(`/posts/${postId}`);
-                  setSearchTitle(''); // Limpiar búsqueda después de seleccionar
+                  setSearchTitle('');
+                  setSearchPanelOpen(false);
                 }}
               />
+
+              {/* Panel al enfocar: chips + sugerencias de instrumentos (cuando no hay texto o es corto) */}
+              {searchPanelOpen && searchTitle.length < 2 && (
+                <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border bg-background shadow-lg overflow-hidden">
+                  <div className="p-3 space-y-3 max-h-[70vh] overflow-y-auto">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">{t('filterByCategory')}</p>
+                      <CategoryChips
+                        categories={categories}
+                        selectedCategoryId={selectedCategoryId}
+                        onCategoryChange={setSelectedCategoryId}
+                        locale={locale}
+                      />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-2">{t('explore')}</p>
+                      {loading ? (
+                        <p className="text-xs text-muted-foreground py-4">{t('loading')}</p>
+                      ) : posts.length === 0 ? (
+                        <p className="text-xs text-muted-foreground py-4">{t('noInstrumentsFound')}</p>
+                      ) : (
+                        <div className="grid gap-1.5">
+                          {posts.slice(0, 6).map((post) => {
+                            const cityOnly = post.city.split(',')[0].trim();
+                            return (
+                              <Card
+                                key={post.id}
+                                className="cursor-pointer hover:bg-accent/50 transition-colors"
+                                onClick={() => {
+                                  router.push(`/posts/${post.id}`);
+                                  setSearchPanelOpen(false);
+                                }}
+                              >
+                                <CardContent className="p-2 flex gap-2">
+                                  {post.instrument.photos[0] && (
+                                    <div className="relative w-12 h-12 flex-shrink-0 rounded overflow-hidden">
+                                      <Image
+                                        src={post.instrument.photos[0].url}
+                                        alt={post.instrument.title}
+                                        fill
+                                        className="object-cover"
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium line-clamp-1">{post.instrument.title}</p>
+                                    <p className="text-xs text-muted-foreground line-clamp-1">
+                                      <CategoryName category={post.instrument.category} /> • {cityOnly}
+                                      {post.areaText ? `, ${post.areaText}` : ''}
+                                    </p>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <button
                 type="submit"
@@ -202,24 +304,34 @@ export default function HomePage() {
                 <Search className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               </button>
             </div>
-
+            {/* En mobile: botón "Cómo funciona" separado, a la derecha de la barra de búsqueda */}
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="md:hidden h-9 w-9 flex-shrink-0 text-primary border-primary/30 hover:bg-primary/10"
+              onClick={() => setHowItWorksOpen(true)}
+              aria-label={t('bannerHowItWorks')}
+            >
+              <HelpCircle className="h-5 w-5" />
+            </Button>
           </form>
-          
-          {/* Chips de categorías */}
-          <CategoryChips
-            categories={categories}
-            selectedCategoryId={selectedCategoryId}
-            onCategoryChange={setSelectedCategoryId}
-            locale={locale}
-          />
 
-
+          {homeCardsEnabled && !loading && (
+            <CategoryChips
+              categories={categories}
+              selectedCategoryId={selectedCategoryId}
+              onCategoryChange={setSelectedCategoryId}
+              locale={locale}
+            />
+          )}
         </div>
       </div>
 
       {/* Contenedor principal: Cards + Mapa */}
       <div className="flex-1 min-h-0 flex flex-col">
-        {/* Sección de cards de instrumentos - espacio mínimo necesario */}
+        {homeCardsEnabled && !loading && (
+        /* Sección de cards de instrumentos - solo visible cuando ya hay respuesta de la API */
         <div className="flex-shrink-0 overflow-hidden relative" style={{ minHeight: '180px', maxHeight: '220px' }}> 
           <div className="container py-3 h-full flex items-center px-4 md:px-6">
             {posts.length > 0 && (
@@ -232,29 +344,14 @@ export default function HomePage() {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
             )}
-            {loading ? (
-              <div className="w-full flex gap-2 overflow-hidden">
-                {[...Array(4)].map((_, i) => (
-                  <Card key={i} className="animate-pulse flex-shrink-0 w-[180px] md:w-[200px]">
-                    <div className="w-full h-20 bg-gray-200 rounded-t-lg" />
-                    <CardHeader className="p-2">
-                      <div className="h-3 bg-gray-200 rounded w-3/4 mb-1" />
-                      <div className="h-2 bg-gray-200 rounded w-1/2" />
-                    </CardHeader>
-                    <CardContent className="p-2 pt-0">
-                      <div className="h-6 bg-gray-200 rounded w-full" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : posts.length === 0 ? (
+            {posts.length === 0 ? (
               <Card className="w-full">
                 <CardContent className="py-6 text-center">
                   <p className="text-muted-foreground text-sm">{t('noInstrumentsFound')}</p>
                 </CardContent>
               </Card>
             ) : (
-              <div 
+              <div
                 ref={carouselRef}
                 className="flex gap-2 overflow-x-auto overflow-y-hidden scroll-smooth scrollbar-hide snap-x snap-mandatory w-full"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
@@ -281,7 +378,7 @@ export default function HomePage() {
                           {cityOnly}
                         </CardDescription>
                         <CardDescription className="text-xs leading-tight">
-                          {post.instrument.category.nameEs}
+                          {<CategoryName category={post.instrument.category} />}
                         </CardDescription>
                       </CardHeader>
                     <CardContent className="p-2 pt-0">
@@ -310,9 +407,10 @@ export default function HomePage() {
             )}
           </div>
         </div>
+        )}
 
-        {/* Banner entre cards y mapa */}
-        <div className="container mb-2">
+        {/* Banner entre cards y mapa (en mobile solo se muestra el icono "Cómo funciona" en la barra de búsqueda) */}
+        <div className="container mt-4 mb-2 hidden md:block">
           <div className="bg-background/5 border border-border rounded-md py-1 px-2">
             <div className="flex items-center justify-between gap-2 flex-nowrap">
               {/* Hidden on mobile: show only on md+ */}
@@ -331,17 +429,24 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Always visible: on mobile center, on desktop align right */}
-              <div className="flex items-center w-full md:w-auto justify-center md:justify-end text-xs">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <button className="flex items-center gap-2 text-xs font-medium text-primary whitespace-nowrap">
-                      <span>{t('bannerHowItWorks')}</span>
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </DialogTrigger>
+              {/* En desktop: enlace "Cómo funciona". En mobile se usa el icono en la barra de búsqueda */}
+              <div className="hidden md:flex items-center w-full md:w-auto justify-end text-xs">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-primary font-medium"
+                  onClick={() => setHowItWorksOpen(true)}
+                >
+                  <span>{t('bannerHowItWorks')}</span>
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
 
-                  <DialogContent>
+        <Dialog open={howItWorksOpen} onOpenChange={setHowItWorksOpen}>
+          <DialogContent>
                     <DialogTitle>{t('howTitle') || t('bannerHowItWorks')}</DialogTitle>
                     <DialogDescription className="mb-2">{t('howDescription') || ''}</DialogDescription>
 
@@ -382,15 +487,55 @@ export default function HomePage() {
                       </DialogClose>
                     </div>
 
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Mapa en la parte inferior - ocupa el resto del espacio */}
         <div className="flex-1 min-h-0 border-t overflow-hidden p-1 relative">
+          {/* Botón flotante de filtros por categoría */}
+          <Popover open={mapFilterOpen} onOpenChange={setMapFilterOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute top-3 right-3 z-40 h-10 w-10 rounded-full shadow-lg bg-background/95 backdrop-blur-sm border hover:bg-background"
+                aria-label={t('filterByCategory')}
+              >
+                <Filter className="h-5 w-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="z-40 w-56 p-2" align="end" side="bottom" sideOffset={8}>
+              <p className="text-xs font-medium text-muted-foreground px-2 py-1.5">{t('filterByCategory')}</p>
+              <div className="flex flex-col gap-0.5">
+                <Button
+                  variant={selectedCategoryId === null ? 'default' : 'ghost'}
+                  size="sm"
+                  className="justify-start"
+                  onClick={() => {
+                    setSelectedCategoryId(null);
+                    setMapFilterOpen(false);
+                  }}
+                >
+                  {t('all')}
+                </Button>
+                {categories.map((cat) => (
+                  <Button
+                    key={cat.id}
+                    variant={selectedCategoryId === cat.id ? 'default' : 'ghost'}
+                    size="sm"
+                    className="justify-start"
+                    onClick={() => {
+                      setSelectedCategoryId(cat.id);
+                      setMapFilterOpen(false);
+                    }}
+                  >
+                    <CategoryName category={cat} />
+                  </Button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+
           {!loading && (
             <>
               <MapViewDynamic
@@ -401,7 +546,7 @@ export default function HomePage() {
               />
               {/* Card de resumen del post seleccionado */}
               {selectedPost && (
-                <div className="absolute bottom-4 left-4 z-[1000] max-w-[300px] md:max-w-[350px]">
+                <div className="absolute bottom-4 left-4 z-40 max-w-[300px] md:max-w-[350px]">
                   <Card className="shadow-lg border-2">
                     <CardHeader className="p-3 pb-2">
                       {selectedPost.instrument.photos[0] && (
@@ -416,7 +561,7 @@ export default function HomePage() {
                       )}
                       <CardTitle className="text-base line-clamp-1">{selectedPost.instrument.title}</CardTitle>
                       <CardDescription className="text-xs">
-                        {selectedPost.instrument.category.nameEs} • {(() => {
+                        <CategoryName category={selectedPost.instrument.category} /> • {(() => {
                           // Extraer solo la ciudad de la dirección completa (antes de la primera coma o el primer número)
                           const cityOnly = selectedPost.city.split(',')[0].trim();
                           return cityOnly;

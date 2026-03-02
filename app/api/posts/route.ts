@@ -208,7 +208,8 @@ export async function POST(request: NextRequest) {
     // Usar la ubicación primaria si no se especifica ciudad
     const location = instrument.locations[0];
     const postCity = validated.city || location.city;
-    const postAreaText = validated.areaText || location.areaText;
+    const postCountry = validated.country ?? (location as any).country ?? null;
+    const postAreaText = validated.areaText ?? location.areaText;
 
     // Calcular fecha de expiración (30 días)
     const expiresAt = new Date();
@@ -219,6 +220,7 @@ export async function POST(request: NextRequest) {
         instrumentId: validated.instrumentId,
         ownerId: session.user.id,
         city: postCity,
+        country: postCountry,
         areaText: postAreaText,
         status: 'PENDING_APPROVAL',
         expiresAt,

@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useTranslations } from 'next-intl'
 import { Label } from '@/components/ui/label'
 import { TimePicker } from '@/components/ui/time-picker'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Availability {
@@ -21,18 +21,12 @@ interface AvailabilityFormProps {
   disabled?: boolean
 }
 
-const DAYS_OF_WEEK = [
-  { value: 0, label: 'Domingo', short: 'Dom' },
-  { value: 1, label: 'Lunes', short: 'Lun' },
-  { value: 2, label: 'Martes', short: 'Mar' },
-  { value: 3, label: 'Miércoles', short: 'Mié' },
-  { value: 4, label: 'Jueves', short: 'Jue' },
-  { value: 5, label: 'Viernes', short: 'Vie' },
-  { value: 6, label: 'Sábado', short: 'Sáb' },
-]
+const DAY_KEYS = ['shortSun', 'shortMon', 'shortTue', 'shortWed', 'shortThu', 'shortFri', 'shortSat'] as const
 
 export function AvailabilityForm({ value = [], onChange, disabled }: AvailabilityFormProps) {
+  const t = useTranslations('availability')
   const [availability, setAvailability] = useState<Availability[]>(value)
+  const daysOfWeek = useMemo(() => DAY_KEYS.map((key, i) => ({ value: i, short: t(key) })), [t])
 
   useEffect(() => {
     setAvailability(value)
@@ -83,14 +77,14 @@ export function AvailabilityForm({ value = [], onChange, disabled }: Availabilit
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Disponibilidad</CardTitle>
+        <CardTitle>{t('title')}</CardTitle>
         <CardDescription>
-          Configura los días y horarios en que el instrumento está disponible. Si no configuras disponibilidad, se permitirá cualquier fecha/hora.
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-          {DAYS_OF_WEEK.map((day) => {
+          {daysOfWeek.map((day) => {
             const isSelected = isDaySelected(day.value)
             const dayAvailability = getDayAvailability(day.value)
             
@@ -112,7 +106,7 @@ export function AvailabilityForm({ value = [], onChange, disabled }: Availabilit
                 {isSelected && dayAvailability && (
                   <div className="space-y-2.5 p-3 border rounded-md bg-muted/50">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Desde</Label>
+                      <Label className="text-xs font-medium">{t('from')}</Label>
                       <TimePicker
                         value={dayAvailability.startTime}
                         onChange={(time) => handleTimeChange(day.value, 'startTime', time)}
@@ -121,7 +115,7 @@ export function AvailabilityForm({ value = [], onChange, disabled }: Availabilit
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Hasta</Label>
+                      <Label className="text-xs font-medium">{t('to')}</Label>
                       <TimePicker
                         value={dayAvailability.endTime}
                         onChange={(time) => handleTimeChange(day.value, 'endTime', time)}
@@ -139,7 +133,7 @@ export function AvailabilityForm({ value = [], onChange, disabled }: Availabilit
         {availability.length > 0 && (
           <div className="mt-4 p-3 bg-muted/50 rounded-md">
             <p className="text-sm text-muted-foreground">
-              <strong>Nota:</strong> Los usuarios deberán coordinar la gestión del instrumento directamente contigo al momento de la solicitud.
+              {t('note')}
             </p>
           </div>
         )}

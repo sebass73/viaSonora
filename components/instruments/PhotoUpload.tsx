@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, type ChangeEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import Image from 'next/image';
@@ -12,6 +13,7 @@ interface PhotoUploadProps {
 }
 
 export function PhotoUpload({ photos, onChange, maxPhotos = 10 }: PhotoUploadProps) {
+  const t = useTranslations('instruments');
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -20,7 +22,7 @@ export function PhotoUpload({ photos, onChange, maxPhotos = 10 }: PhotoUploadPro
     if (!files || files.length === 0) return;
 
     if (photos.length + files.length > maxPhotos) {
-      alert(`Máximo ${maxPhotos} fotos permitidas`);
+      alert(t('maxPhotosAllowed', { max: maxPhotos }));
       return;
     }
 
@@ -48,7 +50,7 @@ export function PhotoUpload({ photos, onChange, maxPhotos = 10 }: PhotoUploadPro
       onChange([...photos, ...newUrls]);
     } catch (error) {
       console.error('Error uploading photos:', error);
-      alert('Error al subir las fotos');
+      alert(t('errorUploading'));
     } finally {
       setUploading(false);
       // Reset input
@@ -146,7 +148,7 @@ export function PhotoUpload({ photos, onChange, maxPhotos = 10 }: PhotoUploadPro
             disabled={uploading}
             onClick={() => fileInputRef.current?.click()}
           >
-            {uploading ? 'Subiendo...' : 'Agregar fotos'}
+            {uploading ? t('uploading') : t('uploadPhotos')}
           </Button>
         </div>
       )}

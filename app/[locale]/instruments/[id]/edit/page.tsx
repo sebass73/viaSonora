@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { InstrumentForm } from '@/components/instruments/InstrumentForm';
 
 export default function EditInstrumentPage() {
+  const t = useTranslations('common');
+  const tInstruments = useTranslations('instruments');
   const params = useParams();
   const [instrument, setInstrument] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,11 +34,11 @@ export default function EditInstrumentPage() {
   };
 
   if (loading) {
-    return <div className="container py-8">Cargando...</div>;
+    return <div className="container py-8">{t('loading')}</div>;
   }
 
   if (!instrument) {
-    return <div className="container py-8">Instrumento no encontrado</div>;
+    return <div className="container py-8">{tInstruments('instrumentNotFound')}</div>;
   }
 
   return (

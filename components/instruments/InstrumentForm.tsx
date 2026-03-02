@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,10 +13,11 @@ import { PhotoUpload } from './PhotoUpload';
 import { CityAutocomplete } from '@/components/ui/city-autocomplete';
 import { EmojiPickerButton } from '@/components/ui/emoji-picker-button';
 import { AvailabilityForm } from './AvailabilityForm';
+import { CategoryName } from '@/components/CategoryName';
 
 interface Category {
   id: string;
-  nameEs: string;
+  slug: string;
 }
 
 interface Instrument {
@@ -30,6 +32,7 @@ interface Instrument {
   photos: Array<{ url: string }>;
   locations: Array<{
     city: string;
+    country?: string | null;
     areaText: string | null;
     lat: number;
     lng: number;
@@ -49,6 +52,7 @@ interface InstrumentFormProps {
 }
 
 export function InstrumentForm({ instrument }: InstrumentFormProps) {
+  const t = useTranslations('instruments');
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -64,6 +68,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
   const [photos, setPhotos] = useState<string[]>([]);
   const [locations, setLocations] = useState<Array<{
     city: string;
+    country: string;
     areaText: string;
     lat: number;
     lng: number;
@@ -71,7 +76,8 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     useProfileLocation: boolean;
   }>>([]);
   const [userProfileLocation, setUserProfileLocation] = useState<{
-    addressText: string | null;
+    city: string | null;
+    country: string | null;
     locationText: string | null;
     lat: number | null;
     lng: number | null;
@@ -82,8 +88,24 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     endTime: string;
     isAvailable: boolean;
   }>>([]);
+  const [availabilityValidationEnabled, setAvailabilityValidationEnabled] = useState(false);
   const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
   const extrasTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/feature-flags')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((flags: { key: string; enabled: boolean }[]) => {
+        if (cancelled) return;
+        const flag = flags.find((f) => f.key === 'AVAILABILITY_VALIDATION');
+        setAvailabilityValidationEnabled(flag?.enabled ?? false);
+      })
+      .catch(() => {
+        if (!cancelled) setAvailabilityValidationEnabled(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     fetchCategories();
@@ -101,6 +123,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
       setPhotos(instrument.photos.map(p => p.url));
       setLocations(instrument.locations.map(loc => ({
         city: loc.city,
+        country: (loc as any).country || '',
         areaText: loc.areaText || '',
         lat: loc.lat,
         lng: loc.lng,
@@ -130,10 +153,11 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
       const res = await fetch('/api/me');
       if (res.ok) {
         const data = await res.json();
-        // Solo establecer si tiene al menos addressText y coordenadas
-        if (data.addressText && data.lat && data.lng) {
+        // Solo establecer si tiene al menos ciudad y coordenadas
+        if ((data.city || data.addressText) && data.lat && data.lng) {
           setUserProfileLocation({
-            addressText: data.addressText,
+            city: data.city || data.addressText,
+            country: data.country ?? null,
             locationText: data.locationText,
             lat: data.lat,
             lng: data.lng,
@@ -149,19 +173,19 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     e.preventDefault();
     
     if (photos.length < 3) {
-      alert('Debes subir al menos 3 fotos');
+      alert(t('minPhotosRequired'));
       return;
     }
 
     if (locations.length === 0) {
-      alert('Debes agregar al menos una ubicación');
+      alert(t('addLocationRequired'));
       return;
     }
 
     // Validar que todas las ubicaciones tengan coordenadas válidas
     const invalidLocations = locations.filter(loc => loc.lat === 0 || loc.lng === 0 || !loc.city.trim());
     if (invalidLocations.length > 0) {
-      alert('Todas las ubicaciones deben tener una ciudad válida seleccionada. Por favor, selecciona una ciudad de las sugerencias.');
+      alert(t('invalidLocationsAlert'));
       return;
     }
 
@@ -177,6 +201,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
         photos,
         locations: locations.map(loc => ({
           city: loc.city,
+          country: loc.country || null,
           areaText: loc.areaText || null,
           lat: loc.lat,
           lng: loc.lng,
@@ -185,17 +210,15 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
         })),
       };
 
-      // Manejar disponibilidad:
-      // - Si hay disponibilidad, enviarla
-      // - Si no hay disponibilidad pero estamos editando, enviar [] para eliminar la existente
-      // - Si no hay disponibilidad y es nuevo, no enviar (undefined)
-      if (availability.length > 0) {
-        submitData.availability = availability;
-      } else if (instrument) {
-        // En modo edición, si se deseleccionan todos los días, enviar [] para eliminar disponibilidad existente
-        submitData.availability = [];
+      // Manejar disponibilidad solo si el flag de validación está activo
+      if (availabilityValidationEnabled) {
+        if (availability.length > 0) {
+          submitData.availability = availability;
+        } else if (instrument) {
+          submitData.availability = [];
+        }
       }
-      // Si es nuevo instrumento sin disponibilidad, no incluir availability (undefined)
+      // Si el flag está inactivo, no enviar availability (se permite cualquier fecha/hora)
 
       // En modo edición, no incluir categoryId si está vacío (mantener el existente)
       if (instrument && !submitData.categoryId) {
@@ -212,25 +235,25 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
         router.push('/instruments');
       } else {
         const error = await res.json();
-        alert(`Error: ${error.error || 'No se pudo guardar el instrumento'}`);
+        alert(`${t('errorSaving')}: ${error.error || t('errorSavingMessage')}`);
       }
     } catch (error) {
       console.error('Error saving instrument:', error);
-      alert('Error al guardar el instrumento');
+      alert(t('errorSaving'));
     } finally {
       setLoading(false);
     }
   };
 
   const addLocation = () => {
-    // Siempre sugerir la ubicación del perfil si está disponible
-    const shouldUseProfile = userProfileLocation && 
-      userProfileLocation.addressText && 
-      userProfileLocation.lat && 
+    const shouldUseProfile = userProfileLocation &&
+      (userProfileLocation.city || userProfileLocation.country) &&
+      userProfileLocation.lat &&
       userProfileLocation.lng;
 
     setLocations([...locations, {
-      city: shouldUseProfile ? (userProfileLocation.addressText || '') : '',
+      city: shouldUseProfile ? (userProfileLocation.city || '') : '',
+      country: shouldUseProfile ? (userProfileLocation.country || '') : '',
       areaText: shouldUseProfile ? (userProfileLocation.locationText || '') : '',
       lat: shouldUseProfile ? (userProfileLocation.lat || 0) : 0,
       lng: shouldUseProfile ? (userProfileLocation.lng || 0) : 0,
@@ -253,55 +276,51 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     setLocations(newLocations);
   };
 
-  const handleCitySelect = (index: number, city: string, lat: number, lng: number, fullAddress: string) => {
+  const handleCitySelect = (index: number, city: string, lat: number, lng: number, _fullAddress: string, state?: string, country?: string) => {
     const newLocations = [...locations];
     newLocations[index] = {
       ...newLocations[index],
       city,
+      country: country || '',
       lat,
       lng,
-      areaText: newLocations[index].areaText || '', // Mantener areaText si existe
-      useProfileLocation: false, // Si se selecciona manualmente, desactivar sync con perfil
+      areaText: newLocations[index].areaText || '',
+      useProfileLocation: false,
     };
     setLocations(newLocations);
   };
 
   const handleUseProfileLocationToggle = (index: number, checked: boolean) => {
     const newLocations = [...locations];
-    
-    if (checked && userProfileLocation && userProfileLocation.addressText && userProfileLocation.lat && userProfileLocation.lng) {
-      // Sincronizar con ubicación de perfil
+    const hasProfile = userProfileLocation && (userProfileLocation.city || userProfileLocation.country) && userProfileLocation.lat && userProfileLocation.lng;
+    if (checked && hasProfile && userProfileLocation) {
       newLocations[index] = {
         ...newLocations[index],
-        city: userProfileLocation.addressText,
+        city: userProfileLocation.city || '',
+        country: userProfileLocation.country || '',
         areaText: userProfileLocation.locationText || '',
-        lat: userProfileLocation.lat,
-        lng: userProfileLocation.lng,
+        lat: userProfileLocation.lat ?? 0,
+        lng: userProfileLocation.lng ?? 0,
         useProfileLocation: true,
       };
     } else {
-      // Desactivar sincronización
-      newLocations[index] = {
-        ...newLocations[index],
-        useProfileLocation: false,
-      };
+      newLocations[index] = { ...newLocations[index], useProfileLocation: false };
     }
-    
     setLocations(newLocations);
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{instrument ? 'Editar Instrumento' : 'Nuevo Instrumento'}</CardTitle>
+        <CardTitle>{instrument ? t('formTitleEdit') : t('formTitleNew')}</CardTitle>
         <CardDescription>
-          Completa la información de tu instrumento
+          {t('formDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label htmlFor="title">Título *</Label>
+            <Label htmlFor="title">{t('titleLabel')} *</Label>
             <Input
               id="title"
               value={formData.title}
@@ -311,19 +330,19 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="categoryId">Categoría *</Label>
+            <Label htmlFor="categoryId">{t('categoryLabel')} *</Label>
             <Select
               value={formData.categoryId}
               onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
               required
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecciona una categoría" />
+                <SelectValue placeholder={t('selectCategory')} />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
-                    {cat.nameEs}
+                    <CategoryName category={cat} />
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -332,7 +351,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="description">Descripción *</Label>
+              <Label htmlFor="description">{t('descriptionLabel')} *</Label>
               <EmojiPickerButton
                 onEmojiClick={(emoji) => {
                   const textarea = descriptionTextareaRef.current;
@@ -367,7 +386,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="brand">Marca</Label>
+              <Label htmlFor="brand">{t('brandLabel')}</Label>
               <Input
                 id="brand"
                 value={formData.brand}
@@ -375,7 +394,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
               />
             </div>
             <div>
-              <Label htmlFor="model">Modelo</Label>
+              <Label htmlFor="model">{t('modelLabel')}</Label>
               <Input
                 id="model"
                 value={formData.model}
@@ -385,7 +404,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="condition">Condición *</Label>
+            <Label htmlFor="condition">{t('conditionLabel')} *</Label>
             <Select
               value={formData.condition}
               onValueChange={(value: any) => setFormData({ ...formData, condition: value })}
@@ -395,17 +414,17 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="EXCELLENT">Excelente</SelectItem>
-                <SelectItem value="GOOD">Bueno</SelectItem>
-                <SelectItem value="FAIR">Regular</SelectItem>
-                <SelectItem value="POOR">Malo</SelectItem>
+                <SelectItem value="EXCELLENT">{t('conditionExcellent')}</SelectItem>
+                <SelectItem value="GOOD">{t('conditionGood')}</SelectItem>
+                <SelectItem value="FAIR">{t('conditionFair')}</SelectItem>
+                <SelectItem value="POOR">{t('conditionPoor')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <Label htmlFor="extras">Extras / Accesorios</Label>
+              <Label htmlFor="extras">{t('extrasLabel')}</Label>
               <EmojiPickerButton
                 onEmojiClick={(emoji) => {
                   const textarea = extrasTextareaRef.current;
@@ -433,7 +452,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
               id="extras"
               value={formData.extras}
               onChange={(e) => setFormData({ ...formData, extras: e.target.value })}
-              placeholder="Especifica accesorios adicionales..."
+              placeholder={t('extrasPlaceholder')}
               rows={3}
             />
           </div>
@@ -443,29 +462,29 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
           <div>
             <div className="flex justify-between items-start mb-2">
               <div>
-                <Label>¿Dónde está disponible este instrumento? *</Label>
+                <Label>{t('whereAvailable')} *</Label>
                 <p className="text-sm text-muted-foreground">
-                  Agrega las ubicaciones donde este instrumento está disponible para otros músicos.
+                  {t('whereAvailableHint')}
                 </p>
               </div>
               <Button type="button" variant="outline" size="sm" onClick={addLocation}>
-                + Agregar ubicación
+                + {t('addLocation')}
               </Button>
             </div>
             {locations.map((loc, index) => (
               <div key={index} className="border p-4 rounded-lg mb-2 space-y-2">
                 <div className="flex justify-between">
-                  <Label>Ubicación {index + 1}</Label>
+                  <Label>{t('location')} {index + 1}</Label>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => removeLocation(index)}
                   >
-                    Eliminar
+                    {t('remove')}
                   </Button>
                 </div>
-                {userProfileLocation && userProfileLocation.addressText && userProfileLocation.lat && userProfileLocation.lng && !loc.useProfileLocation && (
+                {userProfileLocation && (userProfileLocation.city || userProfileLocation.country) && userProfileLocation.lat && userProfileLocation.lng && !loc.useProfileLocation && (
                   <div className="mb-2">
                     <Button
                       type="button"
@@ -474,29 +493,26 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
                       onClick={() => handleUseProfileLocationToggle(index, true)}
                       className="w-full"
                     >
-                      📍 Usar mi ubicación de perfil: {userProfileLocation.addressText}
+                      📍 {t('useProfileLocation')}: {[userProfileLocation.city, userProfileLocation.country].filter(Boolean).join(', ')}
                     </Button>
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <CityAutocomplete
-                      value={loc.city}
-                      onChange={(city) => {
-                        updateLocation(index, 'city', city);
-                        // Si se edita manualmente, desactivar sync con perfil
-                        if (loc.useProfileLocation) {
-                          updateLocation(index, 'useProfileLocation', false);
-                        }
+                      value={[loc.city, loc.country].filter(Boolean).join(', ') || loc.city}
+                      onChange={(value) => {
+                        updateLocation(index, 'city', value);
+                        if (loc.useProfileLocation) updateLocation(index, 'useProfileLocation', false);
                       }}
-                      onSelect={(city, lat, lng, fullAddress) => handleCitySelect(index, city, lat, lng, fullAddress)}
-                      placeholder="Buscar ciudad *"
+                      onSelect={(city, lat, lng, _fa, state, country) => handleCitySelect(index, city, lat, lng, '', state, country)}
+                      placeholder={t('searchCityPlaceholder')}
                       required
                       disabled={loc.useProfileLocation}
                     />
                   </div>
                   <Input
-                    placeholder="Zona/Barrio (opcional)"
+                    placeholder={t('areaPlaceholder')}
                     value={loc.areaText}
                     onChange={(e) => {
                       updateLocation(index, 'areaText', e.target.value);
@@ -509,7 +525,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  {userProfileLocation && userProfileLocation.addressText && userProfileLocation.lat && userProfileLocation.lng && (
+                  {userProfileLocation && (userProfileLocation.city || userProfileLocation.country) && userProfileLocation.lat && userProfileLocation.lng && (
                     <div className="flex items-center">
                       <input
                         type="checkbox"
@@ -519,7 +535,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
                         className="mr-2"
                       />
                       <Label htmlFor={`useProfile-${index}`} className="text-sm cursor-pointer">
-                        Usar mi ubicación de perfil ({userProfileLocation.addressText})
+                        {t('useProfileLocation')} ({[userProfileLocation.city, userProfileLocation.country].filter(Boolean).join(', ')})
                       </Label>
                     </div>
                   )}
@@ -537,30 +553,32 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
                       }}
                       className="mr-2"
                     />
-                    <Label htmlFor={`primary-${index}`} className="text-sm cursor-pointer">Principal</Label>
+                    <Label htmlFor={`primary-${index}`} className="text-sm cursor-pointer">{t('primary')}</Label>
                   </div>
                 </div>
               </div>
             ))}
             {locations.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                Agrega al menos una ubicación donde está disponible el instrumento
+                {t('addOneLocation')}
               </p>
             )}
           </div>
 
-          <AvailabilityForm
-            value={availability}
-            onChange={setAvailability}
-            disabled={loading}
-          />
+          {availabilityValidationEnabled && (
+            <AvailabilityForm
+              value={availability}
+              onChange={setAvailability}
+              disabled={loading}
+            />
+          )}
 
           <div className="flex gap-2">
             <Button type="submit" disabled={loading}>
-              {loading ? 'Guardando...' : 'Guardar'}
+              {loading ? t('saving') : t('save')}
             </Button>
             <Button type="button" variant="outline" onClick={() => router.back()}>
-              Cancelar
+              {t('cancel')}
             </Button>
           </div>
         </form>

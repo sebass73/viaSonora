@@ -1,0 +1,50 @@
+-usarian la app? la app resulta muy util, sobretodo para quien toca instrumentos grandes que no viajan en avion. vamos a ver muy pocos anuncios de violines, muchos de contrabajos o baterías.
+-cuanto pagarian? como utilizadores de instrumentos de otros, el limite de precios seria el costo de transporte en avion. como dueños, pagarian para aparecer en el mapa un precio que sea menos de lo que ganarian alquilando una vez el articulo. 
+
+
+-creacción anuncio: 
+con un perfil recién creado, hay un error al subir las fotos del instrumento. al final del proceso aparece “validation error”. desde el perfil “user” subì “peavey guitar amplifier” en Paola, pero no me aparece ni en la búsqueda ni en la pantalla del perfil del Admin.
+
+ Es muy apreciado el sistema de aprobación de anuncios
+
+-nombre: via sonora suena a una concepción interior de ‘via’ como camino spiritual a través del sonido. gogig pega más como nombre, resulta más simple para cualquier persona del mundo, y suena a algo “smart” y listo, rapido. la idea del logo de gogig es linda pero puede tener un mejor font. lo malo es que existe una plataforma de freelancing que se llama gogig.com. 
+
+
+aspecto visual: los colores blanco, verde o celeste dan una sensación más de tranquilidad y confianza en el proceso.X
+
+
+
+lo de dias y horarios resulta de segundaria importancia. X
+-busqueda: 
+cambiar las categorias en instrumentos, amplificadores, altavoces, accesorios, otro. X
+enfocarse principalmente en la ciudad, luego en el articulo que se necesita y la categoria. 
+asegurarse que las busquedas funcionen en varios idiomas, que si un usuario busca “drums” aparezcan los anuncion “bateria” o “redoblante”
+ también dar más espacio al mapa se ve bonito. nuestro rival gearsurfing.xyz lo hizo muy bien X
+
+
+
+focalizar la busqueda por lugar. X
+
+
+poder editar my posts X
+
+Nunca brindar la direccion en ningun lado. capaz hasta ni intercambiarla o ver que onda eos. ACA
+ 
+resolver el multilenguaje de busqueda ej londra londres london 
+
+mismo con categorias. como traducirlas X
+
+
+testeado:
+crear instrumento
+crear post
+aprobar post
+edit post
+
+solicitudes:
+enviar solicitud
+aceptar solicitud
+recibir datos de contacto
+marcar solicitud como completada
+
+

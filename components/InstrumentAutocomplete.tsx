@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useRouter } from '@/i18n/routing';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { CategoryName } from '@/components/CategoryName';
 
 interface InstrumentSuggestion {
   id: string;
@@ -15,7 +16,7 @@ interface InstrumentSuggestion {
     title: string;
     description: string;
     category: {
-      nameEs: string;
+      slug: string;
     };
     photos: Array<{ url: string }>;
   };
@@ -137,7 +138,7 @@ export function InstrumentAutocomplete({ searchQuery, onSelect }: InstrumentAuto
                       </CardDescription>
                     )}
                     <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs text-muted-foreground">
-                      <span className="truncate">{suggestion.instrument.category.nameEs}</span>
+                      <span className="truncate"><CategoryName category={suggestion.instrument.category} /></span>
                       <span>•</span>
                       <span className="line-clamp-1 truncate">
                         {suggestion.city.split(',')[0].trim()}

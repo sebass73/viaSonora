@@ -55,7 +55,7 @@ export async function PUT(
                 title: true,
                 category: {
                   select: {
-                    nameEs: true,
+                    slug: true,
                   },
                 },
               },

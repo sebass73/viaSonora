@@ -145,9 +145,9 @@ export function Navigation() {
               <LanguageSwitcher />
               <ThemeSwitcher />
               <Button 
-                variant="ghost" 
+                variant="default" 
                 size="sm" 
-                className="w-full"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={() => setAboutDialogOpen(true)}
               >
                 {t('about')}
@@ -252,9 +252,9 @@ export function Navigation() {
                   <LanguageSwitcher />
                   <ThemeSwitcher />
                   <Button 
-                    variant="ghost" 
+                    variant="default" 
                     size="sm" 
-                    className="w-full mt-2"
+                    className="w-full mt-2 bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={handleAboutClick}
                   >
                     {t('about')}

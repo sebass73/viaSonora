@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
                 title: true,
                 category: {
                   select: {
-                    nameEs: true,
+                    slug: true,
                   },
                 },
               },

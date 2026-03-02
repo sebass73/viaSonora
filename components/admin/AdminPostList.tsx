@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { AdminPostCard } from './AdminPostCard';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,7 +18,7 @@ interface Post {
     title: string;
     photos: Array<{ url: string }>;
     category: {
-      nameEs: string;
+      slug: string;
     };
     owner: {
       id: string;
@@ -35,6 +36,7 @@ interface Post {
 }
 
 export function AdminPostList() {
+  const t = useTranslations('common');
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('PENDING_APPROVAL');
@@ -89,7 +91,7 @@ export function AdminPostList() {
   };
 
   if (loading) {
-    return <div className="container py-8">Cargando...</div>;
+    return <div className="container py-8">{t('loading')}</div>;
   }
 
   return (

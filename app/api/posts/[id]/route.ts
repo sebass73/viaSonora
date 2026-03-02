@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { getPublicLatLng } from '@/lib/privacy';
+import { updatePostSchema } from '@/lib/validation';
 
 // GET: Obtener post público individual
 export async function GET(
@@ -44,11 +45,12 @@ export async function GET(
             name: true,
             lastName: true,
             image: true,
+            city: true,
+            country: true,
             locationText: true,
             email: true,
             phone: true,
             whatsappUrl: true,
-            addressText: true,
             lat: true,
             lng: true,
           },
@@ -63,13 +65,19 @@ export async function GET(
       );
     }
 
+    // Tipo con relaciones incluidas (owner, instrument)
+    const postWithRelations = post as typeof post & {
+      owner: { id: string; name: string | null; lastName: string | null; image: string | null; locationText: string | null; email?: string; phone?: string; whatsappUrl?: string; city?: string | null; country?: string | null; lat?: number | null; lng?: number | null };
+      instrument: { id: string; locations: Array<{ lat: number; lng: number; [key: string]: unknown }>; [key: string]: unknown };
+    };
+
     // Verificar si el usuario es el dueño del post
     const session = await auth();
-    const isOwner = session?.user?.id === post.ownerId;
+    const isOwner = session?.user?.id === postWithRelations.ownerId;
 
     // Si no es el dueño, solo mostrar posts APPROVED y no expirados
     if (!isOwner) {
-      if (post.status !== 'APPROVED' || post.expiresAt <= now) {
+      if (postWithRelations.status !== 'APPROVED' || postWithRelations.expiresAt <= now) {
         return NextResponse.json(
           { error: 'Post not available' },
           { status: 404 }
@@ -86,7 +94,7 @@ export async function GET(
       // Buscar cualquier request del cliente para este post
       userRequest = await prisma.request.findFirst({
         where: {
-          postId: post.id,
+          postId: postWithRelations.id,
           clientId: session.user.id,
         },
         orderBy: { createdAt: 'desc' }, // La más reciente
@@ -100,41 +108,39 @@ export async function GET(
     }
 
     // Preparar datos del owner (con o sin contacto según corresponda)
-    const ownerData: any = {
-      id: post.owner.id,
-      name: post.owner.name,
-      lastName: post.owner.lastName,
-      image: post.owner.image,
-      locationText: post.owner.locationText,
+    const owner = postWithRelations.owner;
+    const ownerData: Record<string, unknown> = {
+      id: owner.id,
+      name: owner.name,
+      lastName: owner.lastName,
+      image: owner.image,
+      locationText: owner.locationText,
     };
 
-    // Si hay request aceptada o es el owner, incluir contacto
+    // Si hay request aceptada o es el owner, incluir contacto y ubicación (ciudad/provincia/país)
     if (showContact) {
-      ownerData.email = post.owner.email;
-      ownerData.phone = post.owner.phone;
-      ownerData.whatsappUrl = post.owner.whatsappUrl;
-      ownerData.addressText = post.owner.addressText;
-      // Incluir ubicación aproximada (con jitter) si existe
-      if (post.owner.lat && post.owner.lng) {
-        const jittered = getPublicLatLng(post.owner.lat, post.owner.lng);
+      ownerData.email = owner.email;
+      ownerData.phone = owner.phone;
+      ownerData.whatsappUrl = owner.whatsappUrl;
+      ownerData.city = owner.city;
+      ownerData.country = owner.country;
+      if (owner.lat != null && owner.lng != null) {
+        const jittered = getPublicLatLng(owner.lat, owner.lng);
         ownerData.lat = jittered.lat;
         ownerData.lng = jittered.lng;
       }
     }
 
     // Aplicar jitter a las coordenadas del instrumento
+    const instrument = postWithRelations.instrument;
     const postWithJitter = {
-      ...post,
-      ownerId: post.ownerId, // Incluir ownerId para compatibilidad con el frontend
+      ...postWithRelations,
+      ownerId: postWithRelations.ownerId,
       instrument: {
-        ...post.instrument,
-        locations: post.instrument.locations.map((loc) => {
+        ...instrument,
+        locations: instrument.locations.map((loc: { lat: number; lng: number }) => {
           const jittered = getPublicLatLng(loc.lat, loc.lng);
-          return {
-            ...loc,
-            lat: jittered.lat,
-            lng: jittered.lng,
-          };
+          return { ...loc, lat: jittered.lat, lng: jittered.lng };
         }),
       },
       owner: ownerData,
@@ -190,14 +196,14 @@ export async function PUT(
     }
 
     const body = await request.json();
-    // En MVP, solo permitir actualizar ciudad/areaText
-    const { city, areaText } = body;
+    const validated = updatePostSchema.parse(body);
 
     const post = await prisma.post.update({
       where: { id },
       data: {
-        ...(city && { city }),
-        ...(areaText !== undefined && { areaText }),
+        ...(validated.city && { city: validated.city }),
+        ...(validated.country !== undefined && { country: validated.country }),
+        ...(validated.areaText !== undefined && { areaText: validated.areaText }),
       },
       include: {
         instrument: {

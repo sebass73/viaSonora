@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import { RequestCard } from './RequestCard';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
@@ -23,7 +24,7 @@ interface Request {
       title: string;
       photos: Array<{ url: string }>;
       category: {
-        nameEs: string;
+        slug: string;
       };
     };
   };
@@ -32,7 +33,7 @@ interface Request {
     title: string;
     photos: Array<{ url: string }>;
     category: {
-      nameEs: string;
+      slug: string;
     };
   };
   owner: {
@@ -50,6 +51,8 @@ interface Request {
 }
 
 export function RequestList() {
+  const t = useTranslations('common');
+  const tRequests = useTranslations('requests');
   const { data: session } = useSession();
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +64,24 @@ export function RequestList() {
     pageSize: 3,
     totalPages: 0,
   });
+  const [availabilityValidationEnabled, setAvailabilityValidationEnabled] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/feature-flags')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((flags: { key: string; enabled: boolean }[]) => {
+        if (cancelled) return;
+        const flag = flags.find((f) => f.key === 'AVAILABILITY_VALIDATION');
+        setAvailabilityValidationEnabled(flag?.enabled ?? false);
+      })
+      .catch(() => {
+        if (!cancelled) setAvailabilityValidationEnabled(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (session) {
@@ -115,11 +136,11 @@ export function RequestList() {
         fetchRequests(); // Recargar requests
       } else {
         const error = await res.json();
-        alert(error.error || 'Error al actualizar el estado de la solicitud');
+        alert(error.error || tRequests('errorUpdatingStatus'));
       }
     } catch (error) {
       console.error('Error updating request status:', error);
-      alert('Error al actualizar el estado de la solicitud');
+      alert(tRequests('errorUpdatingStatus'));
     }
   };
 
@@ -129,11 +150,11 @@ export function RequestList() {
   };
 
   if (!session) {
-    return <div className="container py-4">Debes iniciar sesión para ver tus solicitudes</div>;
+    return <div className="container py-4">{t('loginToViewRequests')}</div>;
   }
 
   if (loading) {
-    return <div className="container py-4">Cargando...</div>;
+    return <div className="container py-4">{t('loading')}</div>;
   }
 
   return (
@@ -144,30 +165,30 @@ export function RequestList() {
           onClick={() => setActiveTab('all')}
           className="rounded-b-none"
         >
-          Todas ({pagination.total})
+          {tRequests('allTab')} ({pagination.total})
         </Button>
         <Button
           variant={activeTab === 'sent' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('sent')}
           className="rounded-b-none"
         >
-          Enviadas
+          {tRequests('sent')}
         </Button>
         <Button
           variant={activeTab === 'received' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('received')}
           className="rounded-b-none"
         >
-          Recibidas
+          {tRequests('received')}
         </Button>
       </div>
 
       <div className="space-y-4">
         {requests.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            {activeTab === 'sent' && 'No has enviado solicitudes'}
-            {activeTab === 'received' && 'No has recibido solicitudes'}
-            {activeTab === 'all' && 'No tienes solicitudes'}
+            {activeTab === 'sent' && tRequests('noSent')}
+            {activeTab === 'received' && tRequests('noReceived')}
+            {activeTab === 'all' && tRequests('noRequests')}
           </div>
         ) : (
           <>
@@ -177,6 +198,7 @@ export function RequestList() {
                 request={request}
                 currentUserId={session.user?.id || ''}
                 onStatusChange={handleStatusChange}
+                availabilityValidationEnabled={availabilityValidationEnabled}
               />
             ))}
             <Pagination

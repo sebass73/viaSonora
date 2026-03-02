@@ -7,7 +7,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useTranslations } from 'next-intl';
 import { Check, X, Ban, Eye } from 'lucide-react';
+import { CategoryName } from '@/components/CategoryName';
 
 interface RequestCardProps {
   request: {
@@ -27,7 +29,7 @@ interface RequestCardProps {
         title: string;
         photos: Array<{ url: string }>;
         category: {
-          nameEs: string;
+          slug: string;
         };
       };
     };
@@ -36,7 +38,7 @@ interface RequestCardProps {
       title: string;
       photos: Array<{ url: string }>;
       category: {
-        nameEs: string;
+        slug: string;
       };
     };
     owner: {
@@ -54,14 +56,15 @@ interface RequestCardProps {
   };
   currentUserId: string;
   onStatusChange?: (requestId: string, newStatus: string) => void;
+  availabilityValidationEnabled?: boolean;
 }
 
-const statusLabels: Record<string, string> = {
-  REQUESTED: 'Pendiente',
-  ACCEPTED: 'Aceptada',
-  DECLINED: 'Rechazada',
-  CANCELLED: 'Cancelada',
-  COMPLETED: 'Completada',
+const statusKeys: Record<string, string> = {
+  REQUESTED: 'statusRequested',
+  ACCEPTED: 'statusAccepted',
+  DECLINED: 'statusDeclined',
+  CANCELLED: 'statusCancelled',
+  COMPLETED: 'statusCompleted',
 };
 
 const statusColors: Record<string, string> = {
@@ -72,9 +75,13 @@ const statusColors: Record<string, string> = {
   COMPLETED: 'bg-blue-100 text-blue-800',
 };
 
-export function RequestCard({ request, currentUserId, onStatusChange }: RequestCardProps) {
+export function RequestCard({ request, currentUserId, onStatusChange, availabilityValidationEnabled = false }: RequestCardProps) {
+  const tRequests = useTranslations('requests');
   const isOwner = request.owner.id === currentUserId;
   const isClient = request.client.id === currentUserId;
+
+  const getStatusLabel = (status: string) =>
+    statusKeys[status] ? tRequests(statusKeys[status]) : status;
 
   const formattedFromDate = format(new Date(request.fromDate), 'dd/MM/yyyy, HH:mm', { locale: es });
   const formattedToDate = format(new Date(request.toDate), 'dd/MM/yyyy, HH:mm', { locale: es });
@@ -87,8 +94,8 @@ export function RequestCard({ request, currentUserId, onStatusChange }: RequestC
 
   const handleStatusChange = async (newStatus: string) => {
     if (!onStatusChange) return;
-
-    if (confirm(`¿Estás seguro de cambiar el estado a "${statusLabels[newStatus]}"?`)) {
+    const statusLabel = getStatusLabel(newStatus);
+    if (confirm(tRequests('confirmStatusChange', { status: statusLabel }))) {
       onStatusChange(request.id, newStatus);
     }
   };
@@ -112,18 +119,18 @@ export function RequestCard({ request, currentUserId, onStatusChange }: RequestC
               <div>
                 <CardTitle className="text-lg">{request.instrument.title}</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  {request.instrument.category.nameEs} • {request.post.city}
+                  <CategoryName category={request.instrument.category} /> • {request.post.city}
                   {request.post.areaText && `, ${request.post.areaText}`}
                 </p>
               </div>
               <Badge className={statusColors[request.status] || 'bg-gray-100 text-gray-800'}>
-                {statusLabels[request.status] || request.status}
+                {getStatusLabel(request.status)}
               </Badge>
             </div>
 
             <div className="mt-3 space-y-2 text-sm">
               <div>
-                <span className="font-semibold">Usuario:</span>{' '}
+                <span className="font-semibold">{tRequests('userLabel')}:</span>{' '}
                 {isOwner ? (
                   <span>
                     {request.client.name} {request.client.lastName}
@@ -134,24 +141,28 @@ export function RequestCard({ request, currentUserId, onStatusChange }: RequestC
                   </span>
                 )}
               </div>
+              {availabilityValidationEnabled && (
+                <>
+                  <div>
+                    <span className="font-semibold">{tRequests('from')}:</span> {formattedFromDate}
+                  </div>
+                  <div>
+                    <span className="font-semibold">{tRequests('to')}:</span> {formattedToDate}
+                  </div>
+                </>
+              )}
               <div>
-                <span className="font-semibold">Desde:</span> {formattedFromDate}
-              </div>
-              <div>
-                <span className="font-semibold">Hasta:</span> {formattedToDate}
-              </div>
-              <div>
-                <span className="font-semibold">Enviada:</span> {formattedCreatedAt}
+                <span className="font-semibold">{tRequests('sentAt')}:</span> {formattedCreatedAt}
               </div>
               {request.message && (
                 <div>
-                  <span className="font-semibold">Mensaje:</span>
+                  <span className="font-semibold">{tRequests('messageLabel')}:</span>
                   <p className="text-muted-foreground mt-1 line-clamp-2">{request.message}</p>
                 </div>
               )}
               {request.accessories && (
                 <div>
-                  <span className="font-semibold">Accesorios:</span>
+                  <span className="font-semibold">{tRequests('accessoriesLabel')}:</span>
                   <p className="text-muted-foreground mt-1">{request.accessories}</p>
                 </div>
               )}
@@ -166,7 +177,7 @@ export function RequestCard({ request, currentUserId, onStatusChange }: RequestC
                 onClick={() => handleStatusChange('ACCEPTED')}
                 className="bg-green-500 text-white hover:bg-green-600"
               >
-                <Check className="mr-2 h-4 w-4" /> Aceptar
+                <Check className="mr-2 h-4 w-4" /> {tRequests('accept')}
               </Button>
             )}
             {canDecline && (
@@ -176,7 +187,7 @@ export function RequestCard({ request, currentUserId, onStatusChange }: RequestC
                 onClick={() => handleStatusChange('DECLINED')}
                 className="bg-red-500 text-white hover:bg-red-600"
               >
-                <X className="mr-2 h-4 w-4" /> Rechazar
+                <X className="mr-2 h-4 w-4" /> {tRequests('decline')}
               </Button>
             )}
             {canCancel && (
@@ -186,7 +197,7 @@ export function RequestCard({ request, currentUserId, onStatusChange }: RequestC
                 onClick={() => handleStatusChange('CANCELLED')}
                 className="bg-gray-500 text-white hover:bg-gray-600"
               >
-                <Ban className="mr-2 h-4 w-4" /> Cancelar
+                <Ban className="mr-2 h-4 w-4" /> {tRequests('cancel')}
               </Button>
             )}
             {canComplete && (
@@ -196,12 +207,12 @@ export function RequestCard({ request, currentUserId, onStatusChange }: RequestC
                 onClick={() => handleStatusChange('COMPLETED')}
                 className="bg-blue-500 text-white hover:bg-blue-600"
               >
-                <Check className="mr-2 h-4 w-4" /> Marcar como Completada
+                <Check className="mr-2 h-4 w-4" /> {tRequests('markCompleted')}
               </Button>
             )}
             <Link href={`/posts/${request.post.id}`}>
               <Button variant="outline" size="sm">
-                <Eye className="mr-2 h-4 w-4" /> Ver Post
+                <Eye className="mr-2 h-4 w-4" /> {tRequests('viewPost')}
               </Button>
             </Link>
           </div>

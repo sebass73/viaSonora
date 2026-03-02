@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
+import { CategoryName } from '@/components/CategoryName';
 import { format } from 'date-fns';
 import { es, enUS, it } from 'date-fns/locale';
 
@@ -26,9 +27,9 @@ interface PostReport {
     instrument: {
       id: string;
       title: string;
-      category: {
-        nameEs: string;
-      };
+category: {
+      slug: string;
+    };
     };
     owner: {
       id: string;
@@ -174,7 +175,7 @@ export function ReportsList() {
                           {report.post.instrument.title}
                         </CardTitle>
                         <CardDescription>
-                          {report.post.instrument.category.nameEs}
+                          <CategoryName category={report.post.instrument.category} />
                         </CardDescription>
                       </div>
                       <Badge className={statusColors[report.status] || 'bg-gray-100 text-gray-800'}>

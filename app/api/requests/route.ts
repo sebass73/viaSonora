@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { createRequestSchema } from '@/lib/validation';
+import { isFeatureEnabled } from '@/lib/feature-flags';
 
 // GET: Listar requests del usuario (enviadas o recibidas)
 export async function GET(request: NextRequest) {
@@ -184,9 +185,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar disponibilidad del instrumento (si está configurada)
+    // Validar disponibilidad del instrumento solo si el feature flag está activo
+    const availabilityValidationEnabled = await isFeatureEnabled('AVAILABILITY_VALIDATION');
     const availability = post.instrument.availability || [];
-    if (availability.length > 0) {
+    if (availabilityValidationEnabled && availability.length > 0) {
       // Parsear las fechas recibidas (formato: YYYY-MM-DDTHH:mm:ss sin Z)
       // Esto preserva la fecha y hora local sin conversión UTC
       const fromDateStr = validated.fromDate;

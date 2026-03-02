@@ -129,6 +129,7 @@ export async function PUT(
       updateData.locations = {
         create: locations.map((loc: any) => ({
           city: loc.city,
+          country: loc.country ?? null,
           areaText: loc.areaText,
           lat: loc.lat,
           lng: loc.lng,
