@@ -21,6 +21,8 @@
     "myRequests": "Meine Anfragen",
     "search": "Suchen",
     "city": "Stadt",
+    "noResultsForCity": "Keine Ergebnisse gefunden",
+    "citySearchHint": "Versuche Stadt und Land (z. B. Berlin, Deutschland)",
     "instrument": "Instrument",
     "save": "Speichern",
     "back": "Zurück",

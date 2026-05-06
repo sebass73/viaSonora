@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
 
@@ -32,6 +33,7 @@ export function CityAutocomplete({
   disabled = false,
   required = false,
 }: CityAutocompleteProps) {
+  const t = useTranslations('common');
   const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -214,8 +216,9 @@ export function CityAutocomplete({
       )}
 
       {showSuggestions && !loading && value.trim().length >= 2 && suggestions.length === 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg px-4 py-2 text-sm text-muted-foreground">
-          No se encontraron resultados
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg px-4 py-3 text-sm text-muted-foreground space-y-1">
+          <div>{t('noResultsForCity')}</div>
+          <div className="text-xs">{t('citySearchHint')}</div>
         </div>
       )}
     </div>

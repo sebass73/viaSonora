@@ -10,7 +10,7 @@ Marketplace de instrumentos para músicos viajeros (MVP)
 - Tailwind CSS + shadcn/ui
 - PostgreSQL + Prisma
 - NextAuth.js (Google OAuth)
-- next-intl (ES/IT/EN)
+- next-intl (ES/EN/DE/FR/IT)
 - Vercel Blob (storage)
 - Leaflet + OpenStreetMap (mapas)
 
@@ -95,4 +95,3 @@ La app estará disponible en http://localhost:3000
 ## Licencia
 
 MIT
-

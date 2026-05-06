@@ -21,6 +21,8 @@
     "myRequests": "Le mie richieste",
     "search": "Cerca",
     "city": "Città",
+    "noResultsForCity": "Nessun risultato trovato",
+    "citySearchHint": "Prova città e paese (es. Roma, Italia)",
     "instrument": "Strumento",
     "save": "Salva",
     "back": "Indietro",

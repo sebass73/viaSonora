@@ -21,6 +21,8 @@
     "myRequests": "Mis solicitudes",
     "search": "Buscar",
     "city": "Ciudad",
+    "noResultsForCity": "No se encontraron resultados",
+    "citySearchHint": "Probá con ciudad y país (ej: Mar del Plata, Argentina)",
     "instrument": "Instrumento",
     "save": "Guardar",
     "back": "Volver",
