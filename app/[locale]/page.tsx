@@ -10,7 +10,7 @@ import { useRouter, Link } from '@/i18n/routing';
 import { useSession } from 'next-auth/react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Search, PlusCircle, Lock, MapPin, Info, ShieldCheck, Globe, Users, FileText, Filter, HelpCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search, PlusCircle, Lock, MapPin, Info, ShieldCheck, Globe, Users, FileText, Filter, HelpCircle, LocateFixed } from 'lucide-react';
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { TrustBlock } from '@/components/TrustBlock';
 import { CategoryName } from '@/components/CategoryName';
@@ -61,12 +61,40 @@ export default function HomePage() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [homeCardsEnabled, setHomeCardsEnabled] = useState(true);
+  const [homeCardsEnabled, setHomeCardsEnabled] = useState<boolean | null>(null);
   const [mapFilterOpen, setMapFilterOpen] = useState(false);
   const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_MAP_CENTER);
+  const [recenterLoading, setRecenterLoading] = useState(false);
+  const [recenterFeedback, setRecenterFeedback] = useState<string | null>(null);
   const searchPanelRef = useRef<HTMLDivElement>(null);
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showRecenterFeedback = useCallback((message: string) => {
+    setRecenterFeedback(message);
+    if (feedbackTimerRef.current) {
+      clearTimeout(feedbackTimerRef.current);
+    }
+    feedbackTimerRef.current = setTimeout(() => {
+      setRecenterFeedback(null);
+      feedbackTimerRef.current = null;
+    }, 2800);
+  }, []);
+
+  const fetchCenterFromIp = useCallback(async (): Promise<[number, number] | null> => {
+    try {
+      const res = await fetch('/api/geo');
+      if (!res.ok) return null;
+      const data = await res.json() as { lat?: number; lng?: number };
+      if (Number.isFinite(data.lat) && Number.isFinite(data.lng)) {
+        return [data.lat as number, data.lng as number];
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
     fetchCategories();
@@ -143,15 +171,9 @@ export default function HomePage() {
         setMapCenter([lat, lng]);
       }
     };
-    const fallbackToIp = () => {
-      fetch('/api/geo')
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data: { lat?: number; lng?: number } | null) => {
-          if (data && Number.isFinite(data.lat) && Number.isFinite(data.lng)) {
-            applyCenter(data.lat!, data.lng!);
-          }
-        })
-        .catch(() => {});
+    const fallbackToIp = async () => {
+      const coords = await fetchCenterFromIp();
+      if (coords) applyCenter(coords[0], coords[1]);
     };
     if (typeof navigator !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -162,7 +184,56 @@ export default function HomePage() {
     } else {
       fallbackToIp();
     }
+  }, [fetchCenterFromIp]);
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) {
+        clearTimeout(feedbackTimerRef.current);
+      }
+    };
   }, []);
+
+  const handleRecenterMap = useCallback(async () => {
+    if (recenterLoading) return;
+    setRecenterLoading(true);
+    setRecenterFeedback(null);
+
+    try {
+      const applyCenter = (lat: number, lng: number) => {
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          setMapCenter([lat, lng]);
+          return true;
+        }
+        return false;
+      };
+
+      const browserCoords = await new Promise<[number, number] | null>((resolve) => {
+        if (typeof navigator === 'undefined' || !navigator.geolocation) {
+          resolve(null);
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve([pos.coords.latitude, pos.coords.longitude]),
+          () => resolve(null),
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+        );
+      });
+
+      if (browserCoords && applyCenter(browserCoords[0], browserCoords[1])) {
+        return;
+      }
+
+      const ipCoords = await fetchCenterFromIp();
+      if (ipCoords && applyCenter(ipCoords[0], ipCoords[1])) {
+        return;
+      }
+
+      showRecenterFeedback(t('recenterLocationError'));
+    } finally {
+      setRecenterLoading(false);
+    }
+  }, [fetchCenterFromIp, recenterLoading, showRecenterFeedback, t]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -508,7 +579,19 @@ export default function HomePage() {
 
         {/* Mapa en la parte inferior - ocupa el resto del espacio */}
         <div className="flex-1 min-h-0 border-t overflow-hidden p-1 relative">
-          {/* Botón flotante de filtros por categoría */}
+          {/* Botones flotantes de filtros y recentrado */}
+          <Button
+            variant="secondary"
+            size="icon"
+            disabled={recenterLoading}
+            onClick={handleRecenterMap}
+            className="absolute top-3 right-14 z-40 h-10 w-10 rounded-full shadow-lg bg-background/95 backdrop-blur-sm border hover:bg-background disabled:opacity-70"
+            aria-label={recenterLoading ? t('recenteringLocation') : t('recenterMap')}
+            title={recenterLoading ? t('recenteringLocation') : t('recenterMap')}
+          >
+            <LocateFixed className={`h-5 w-5 ${recenterLoading ? 'animate-spin' : ''}`} />
+          </Button>
+
           <Popover open={mapFilterOpen} onOpenChange={setMapFilterOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -551,6 +634,12 @@ export default function HomePage() {
               </div>
             </PopoverContent>
           </Popover>
+
+          {recenterFeedback && (
+            <div className="absolute top-14 right-3 z-40 max-w-[220px] rounded-md border bg-background/95 px-2 py-1.5 text-xs text-muted-foreground shadow-sm">
+              {recenterFeedback}
+            </div>
+          )}
 
           {!loading && (
             <>

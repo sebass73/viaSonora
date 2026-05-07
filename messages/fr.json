@@ -55,6 +55,10 @@
     "unban": "Débannir",
     "viewPost": "Voir l'annonce",
     "filterByStatus": "Filtrer par statut",
+    "filterByCategory": "Filtrer par catégorie",
+    "recenterMap": "Centrer sur ma position",
+    "recenteringLocation": "Centrage de la carte...",
+    "recenterLocationError": "Impossible de centrer votre position. Réessayez.",
     "pending": "En attente",
     "approved": "Approuvé",
     "rejected": "Rejeté",
@@ -107,6 +111,7 @@
   },
   "instruments": {
     "title": "Mes instruments",
+    "description": "Gérez les instruments que vous publiez pour le prêt",
     "newInstrument": "Nouvel instrument",
     "newShort": "Nouveau",
     "edit": "Modifier",
@@ -177,12 +182,14 @@
   },
   "explore": {
     "title": "Explorer les instruments",
+    "subtitle": "Trouvez des instruments disponibles par ville ou nom",
     "cityPlaceholder": "Ville...",
     "searchPlaceholder": "Rechercher un instrument...",
     "loading": "Chargement..."
   },
   "posts": {
     "title": "Mes publications",
+    "description": "Gérez les publications actives de vos instruments",
     "newPost": "Nouvelle publication",
     "newShort": "Nouvelle",
     "noPosts": "Vous n'avez aucune publication",

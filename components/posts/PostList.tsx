@@ -114,9 +114,8 @@ export function PostList() {
   }
 
   return (
-    <div className="container py-4">
-      <div className="flex justify-between items-center mb-4 md:mb-6 gap-2">
-        <h1 className="text-xl md:text-3xl font-bold">{tPosts('title')}</h1>
+    <div>
+      <div className="flex justify-end items-center mb-4 md:mb-6 gap-2">
         <Button onClick={() => router.push('/posts/new')} size="sm" className="text-xs md:text-sm">
           <Plus className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
           <span className="hidden sm:inline">{tPosts('newPost')}</span>
@@ -211,4 +210,3 @@ export function PostList() {
     </div>
   );
 }
-
