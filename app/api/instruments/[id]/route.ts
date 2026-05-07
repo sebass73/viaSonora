@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { updateInstrumentSchema, updateInstrumentAvailabilitySchema } from '@/lib/validation';
+import { singleInstrumentLocationArraySchema, updateInstrumentSchema, updateInstrumentAvailabilitySchema } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -103,6 +103,8 @@ export async function PUT(
       });
     }
 
+    const validatedLocations = singleInstrumentLocationArraySchema.parse(locations);
+
     // Actualizar instrumento
     const updateData: any = { ...validated };
     
@@ -122,24 +124,20 @@ export async function PUT(
     }
 
     // Si se envían ubicaciones, reemplazar todas
-    if (locations && Array.isArray(locations)) {
-      // Eliminar ubicaciones existentes
-      await prisma.instrumentLocation.deleteMany({
-        where: { instrumentId: id },
-      });
-      // Crear nuevas ubicaciones
-      updateData.locations = {
-        create: locations.map((loc: any) => ({
-          city: loc.city,
-          country: loc.country ?? null,
-          areaText: loc.areaText,
-          lat: loc.lat,
-          lng: loc.lng,
-          isPrimary: loc.isPrimary || false,
-          useProfileLocation: Boolean(loc.useProfileLocation) || false,
-        })),
-      };
-    }
+    await prisma.instrumentLocation.deleteMany({
+      where: { instrumentId: id },
+    });
+    updateData.locations = {
+      create: validatedLocations.map((loc: any) => ({
+        city: loc.city,
+        country: loc.country ?? null,
+        areaText: loc.areaText,
+        lat: loc.lat,
+        lng: loc.lng,
+        isPrimary: true,
+        useProfileLocation: Boolean(loc.useProfileLocation) || false,
+      })),
+    };
 
     // Si se envía disponibilidad, reemplazar todas
     if (availability !== undefined) {
@@ -235,5 +233,4 @@ export async function DELETE(
     );
   }
 }
-
 

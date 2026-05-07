@@ -21,10 +21,14 @@
     "myRequests": "Mis solicitudes",
     "search": "Buscar",
     "city": "Ciudad",
+    "noResultsForCity": "No se encontraron resultados",
+    "citySearchError": "No se pudieron cargar sugerencias de ciudad. Intenta nuevamente.",
+    "citySearchHint": "Probá con ciudad y país (ej: Mar del Plata, Argentina)",
     "instrument": "Instrumento",
     "save": "Guardar",
     "back": "Volver",
     "cancel": "Cancelar",
+    "close": "Cerrar",
     "delete": "Eliminar",
     "edit": "Editar",
     "create": "Crear",
@@ -397,4 +401,3 @@
     "adminDescription": "Gestiona y modera las publicaciones y reportes de la plataforma"
   }
 }
-

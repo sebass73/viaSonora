@@ -1,10 +1,9 @@
 "use client"
 
-import { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { CategoryName } from '@/components/CategoryName';
 
 // Fix para iconos de Leaflet en Next.js
 if (typeof window !== 'undefined') {
@@ -79,34 +78,10 @@ export function MapView({ posts, center = [-34.6037, -58.3816], zoom = 13, onMar
               eventHandlers={{
                 click: () => onMarkerClick?.(post),
               }}
-            >
-              <Popup>
-                <div className="p-2">
-                  <h3 className="font-semibold text-sm">{post.instrument.title}</h3>
-                  <p className="text-xs text-muted-foreground"><CategoryName category={post.instrument.category} /></p>
-                  <p className="text-xs text-muted-foreground">
-                    {(() => {
-                      // Extraer solo la ciudad de la dirección completa (antes de la primera coma)
-                      const cityOnly = post.city.split(',')[0].trim();
-                      return cityOnly;
-                    })()}
-                    {post.areaText && `, ${post.areaText}`}
-                  </p>
-                  {onMarkerClick && (
-                    <button
-                      onClick={() => onMarkerClick(post)}
-                      className="mt-2 text-xs text-blue-600 hover:underline"
-                    >
-                      Ver detalles
-                    </button>
-                  )}
-                </div>
-              </Popup>
-            </Marker>
+            />
           );
         })}
       </MapContainer>
     </div>
   );
 }
-

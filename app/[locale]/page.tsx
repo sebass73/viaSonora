@@ -599,7 +599,7 @@ export default function HomePage() {
                           size="sm"
                           onClick={() => setSelectedPost(null)}
                         >
-                          Cerrar
+                          {t('close')}
                         </Button>
                       </div>
                     </CardContent>

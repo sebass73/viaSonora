@@ -21,10 +21,14 @@
     "myRequests": "Le mie richieste",
     "search": "Cerca",
     "city": "Città",
+    "noResultsForCity": "Nessun risultato trovato",
+    "citySearchError": "Impossibile caricare i suggerimenti della città. Riprova.",
+    "citySearchHint": "Prova città e paese (es. Roma, Italia)",
     "instrument": "Strumento",
     "save": "Salva",
     "back": "Indietro",
     "cancel": "Annulla",
+    "close": "Chiudi",
     "delete": "Elimina",
     "edit": "Modifica",
     "create": "Crea",
@@ -397,4 +401,3 @@
     "adminDescription": "Gestisci e modera le pubblicazioni e segnalazioni della piattaforma"
   }
 }
-

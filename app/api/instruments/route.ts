@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { createInstrumentSchema, updateInstrumentAvailabilitySchema } from '@/lib/validation';
+import { createInstrumentSchema, singleInstrumentLocationArraySchema, updateInstrumentAvailabilitySchema } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,6 +84,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const validatedLocations = singleInstrumentLocationArraySchema.parse(locations);
+
     // Verificar que la categoría existe
     const category = await prisma.category.findUnique({
       where: { id: validated.categoryId },
@@ -107,17 +109,17 @@ export async function POST(request: NextRequest) {
             order: index,
           })),
         } : undefined,
-        locations: locations && Array.isArray(locations) ? {
-          create: locations.map((loc: any) => ({
+        locations: {
+          create: validatedLocations.map((loc: any) => ({
             city: loc.city,
             country: loc.country ?? null,
             areaText: loc.areaText,
             lat: loc.lat,
             lng: loc.lng,
-            isPrimary: loc.isPrimary || false,
+            isPrimary: true,
             useProfileLocation: Boolean(loc.useProfileLocation) || false,
           })),
-        } : undefined,
+        },
         availability: availability && Array.isArray(availability) && availability.length > 0 ? {
           create: availability.map((avail: any) => ({
             dayOfWeek: avail.dayOfWeek,
@@ -156,5 +158,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
 
