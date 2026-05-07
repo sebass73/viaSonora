@@ -27,6 +27,7 @@
     "save": "Guardar",
     "back": "Volver",
     "cancel": "Cancelar",
+    "close": "Cerrar",
     "delete": "Eliminar",
     "edit": "Editar",
     "create": "Crear",
@@ -399,4 +400,3 @@
     "adminDescription": "Gestiona y modera las publicaciones y reportes de la plataforma"
   }
 }
-

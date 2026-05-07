@@ -27,6 +27,7 @@
     "save": "Save",
     "back": "Back",
     "cancel": "Cancel",
+    "close": "Close",
     "delete": "Delete",
     "edit": "Edit",
     "create": "Create",
@@ -399,4 +400,3 @@
     "adminDescription": "Manage and moderate platform posts and reports"
   }
 }
-

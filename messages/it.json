@@ -27,6 +27,7 @@
     "save": "Salva",
     "back": "Indietro",
     "cancel": "Annulla",
+    "close": "Chiudi",
     "delete": "Elimina",
     "edit": "Modifica",
     "create": "Crea",
@@ -399,4 +400,3 @@
     "adminDescription": "Gestisci e modera le pubblicazioni e segnalazioni della piattaforma"
   }
 }
-
