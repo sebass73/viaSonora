@@ -56,6 +56,9 @@
     "viewPost": "Ver Post",
     "filterByStatus": "Filtrar por estado",
     "filterByCategory": "Filtrar por categoría",
+    "recenterMap": "Centrar en mi ubicación",
+    "recenteringLocation": "Centrando mapa...",
+    "recenterLocationError": "No pudimos centrar tu ubicación. Intenta nuevamente.",
     "pending": "Pendientes",
     "approved": "Aprobados",
     "rejected": "Rechazados",
@@ -130,6 +133,7 @@
   },
   "instruments": {
     "title": "Mis instrumentos",
+    "description": "Gestiona los instrumentos que publicas para prestar",
     "newInstrument": "Nuevo instrumento",
     "newShort": "Nuevo",
     "edit": "Editar",
@@ -200,12 +204,14 @@
   },
   "explore": {
     "title": "Explorar instrumentos",
+    "subtitle": "Encuentra instrumentos disponibles por ciudad o nombre",
     "cityPlaceholder": "Ciudad...",
     "searchPlaceholder": "Buscar instrumento...",
     "loading": "Cargando..."
   },
   "posts": {
     "title": "Mis publicaciones",
+    "description": "Gestiona las publicaciones activas de tus instrumentos",
     "newPost": "Nueva publicación",
     "newShort": "Nueva",
     "noPosts": "No tienes publicaciones",

@@ -86,7 +86,12 @@ export default function ExplorePage() {
 
   return (
     <div className="container py-4">
-      <h1 className="text-xl md:text-3xl font-bold mb-4 md:mb-6">{t('title')}</h1>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('subtitle')}</CardDescription>
+        </CardHeader>
+      </Card>
 
       <form onSubmit={handleSearch} className="flex gap-2 mb-4 md:mb-6">
         <Input
@@ -155,4 +160,3 @@ export default function ExplorePage() {
     </div>
   );
 }
-

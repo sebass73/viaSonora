@@ -56,6 +56,9 @@
     "viewPost": "Visualizza Post",
     "filterByStatus": "Filtra per stato",
     "filterByCategory": "Filtra per categoria",
+    "recenterMap": "Centra sulla mia posizione",
+    "recenteringLocation": "Mappa in centratura...",
+    "recenterLocationError": "Impossibile centrare la tua posizione. Riprova.",
     "pending": "In attesa",
     "approved": "Approvati",
     "rejected": "Rifiutati",
@@ -130,6 +133,7 @@
   },
   "instruments": {
     "title": "I miei strumenti",
+    "description": "Gestisci gli strumenti che pubblichi per il prestito",
     "newInstrument": "Nuovo strumento",
     "newShort": "Nuovo",
     "edit": "Modifica",
@@ -200,12 +204,14 @@
   },
   "explore": {
     "title": "Esplora strumenti",
+    "subtitle": "Trova strumenti disponibili per città o nome",
     "cityPlaceholder": "Città...",
     "searchPlaceholder": "Cerca strumento...",
     "loading": "Caricamento..."
   },
   "posts": {
     "title": "Le mie pubblicazioni",
+    "description": "Gestisci le pubblicazioni attive dei tuoi strumenti",
     "newPost": "Nuova pubblicazione",
     "newShort": "Nuova",
     "noPosts": "Non hai pubblicazioni",

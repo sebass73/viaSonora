@@ -56,6 +56,9 @@
     "viewPost": "View Post",
     "filterByStatus": "Filter by status",
     "filterByCategory": "Filter by category",
+    "recenterMap": "Center on my location",
+    "recenteringLocation": "Centering map...",
+    "recenterLocationError": "We could not center your location. Please try again.",
     "pending": "Pending",
     "approved": "Approved",
     "rejected": "Rejected",
@@ -130,6 +133,7 @@
   },
   "instruments": {
     "title": "My instruments",
+    "description": "Manage the instruments you publish for lending",
     "newInstrument": "New instrument",
     "newShort": "New",
     "edit": "Edit",
@@ -200,12 +204,14 @@
   },
   "explore": {
     "title": "Explore instruments",
+    "subtitle": "Find available instruments by city or name",
     "cityPlaceholder": "City...",
     "searchPlaceholder": "Search instrument...",
     "loading": "Loading..."
   },
   "posts": {
     "title": "My posts",
+    "description": "Manage active posts for your instruments",
     "newPost": "New post",
     "newShort": "New",
     "noPosts": "You have no posts",

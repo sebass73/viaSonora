@@ -55,6 +55,10 @@
     "unban": "Entsperren",
     "viewPost": "Inserat ansehen",
     "filterByStatus": "Nach Status filtern",
+    "filterByCategory": "Nach Kategorie filtern",
+    "recenterMap": "Auf meinen Standort zentrieren",
+    "recenteringLocation": "Karte wird zentriert...",
+    "recenterLocationError": "Standort konnte nicht zentriert werden. Bitte erneut versuchen.",
     "pending": "Ausstehend",
     "approved": "Genehmigt",
     "rejected": "Abgelehnt",
@@ -107,6 +111,7 @@
   },
   "instruments": {
     "title": "Meine Instrumente",
+    "description": "Verwalte die Instrumente, die du zum Verleih veröffentlichst",
     "newInstrument": "Neues Instrument",
     "newShort": "Neu",
     "edit": "Bearbeiten",
@@ -177,12 +182,14 @@
   },
   "explore": {
     "title": "Instrumente entdecken",
+    "subtitle": "Finde verfügbare Instrumente nach Stadt oder Name",
     "cityPlaceholder": "Stadt...",
     "searchPlaceholder": "Instrument suchen...",
     "loading": "Laden..."
   },
   "posts": {
     "title": "Meine Beiträge",
+    "description": "Verwalte die aktiven Veröffentlichungen deiner Instrumente",
     "newPost": "Neuer Beitrag",
     "newShort": "Neu",
     "noPosts": "Du hast keine Beiträge",
