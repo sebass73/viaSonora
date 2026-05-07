@@ -36,6 +36,7 @@ export function CityAutocomplete({
   const t = useTranslations('common');
   const [suggestions, setSuggestions] = useState<CitySuggestion[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -67,6 +68,7 @@ export function CityAutocomplete({
     if (value.trim().length < 2) {
       setSuggestions([]);
       setShowSuggestions(false);
+      setHasError(false);
       return;
     }
 
@@ -83,14 +85,17 @@ export function CityAutocomplete({
           setSuggestions(data.results || []);
           setShowSuggestions(true);
           setSelectedIndex(-1);
+          setHasError(false);
         } else {
           setSuggestions([]);
           setShowSuggestions(false);
+          setHasError(true);
         }
       } catch (error) {
         console.error('Error searching cities:', error);
         setSuggestions([]);
         setShowSuggestions(false);
+        setHasError(true);
       } finally {
         setLoading(false);
       }
@@ -104,25 +109,13 @@ export function CityAutocomplete({
   }, [value]);
 
   const handleSelect = (suggestion: CitySuggestion) => {
-    // Si el displayName tiene más información que solo la ciudad, usarlo
-    // Esto captura direcciones específicas como "Santa Fe 2160, Mar del Plata"
-    const displayName = suggestion.displayName;
-    const cityOnly = suggestion.city || displayName.split(',')[0];
-    
-    // Usar displayName si tiene más contexto (más de una coma o contiene números/direcciones)
-    const hasDetailedAddress = displayName.includes(',') && (
-      displayName.split(',').length > 2 || 
-      /\d/.test(displayName) || // Contiene números (dirección)
-      displayName.length > cityOnly.length + 10 // Es significativamente más largo
-    );
-    
-    const selectedName = hasDetailedAddress ? displayName : cityOnly;
-    
-    onChange(selectedName);
-    onSelect(selectedName, suggestion.lat, suggestion.lng, suggestion.fullAddress, suggestion.state, suggestion.country);
+    const selectedCity = suggestion.city || suggestion.displayName.split(',')[0];
+    onChange(selectedCity);
+    onSelect(selectedCity, suggestion.lat, suggestion.lng, suggestion.fullAddress, suggestion.state, suggestion.country);
     setShowSuggestions(false);
     setSelectedIndex(-1);
     setSuggestions([]);
+    setHasError(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -173,7 +166,8 @@ export function CityAutocomplete({
           value={value}
           onChange={(e) => {
             onChange(e.target.value);
-            setShowSuggestions(true);
+            setHasError(false);
+            setShowSuggestions(e.target.value.trim().length >= 2);
           }}
           onFocus={() => {
             if (suggestions.length > 0) {
@@ -217,11 +211,16 @@ export function CityAutocomplete({
 
       {showSuggestions && !loading && value.trim().length >= 2 && suggestions.length === 0 && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg px-4 py-3 text-sm text-muted-foreground space-y-1">
-          <div>{t('noResultsForCity')}</div>
-          <div className="text-xs">{t('citySearchHint')}</div>
+          {hasError ? (
+            <div>{t('citySearchError')}</div>
+          ) : (
+            <>
+              <div>{t('noResultsForCity')}</div>
+              <div className="text-xs">{t('citySearchHint')}</div>
+            </>
+          )}
         </div>
       )}
     </div>
   );
 }
-

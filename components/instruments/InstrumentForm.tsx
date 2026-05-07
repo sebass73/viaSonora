@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -66,7 +66,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     extras: '',
   });
   const [photos, setPhotos] = useState<string[]>([]);
-  const [locations, setLocations] = useState<Array<{
+  const [location, setLocation] = useState<{
     city: string;
     country: string;
     areaText: string;
@@ -74,7 +74,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     lng: number;
     isPrimary: boolean;
     useProfileLocation: boolean;
-  }>>([]);
+  } | null>(null);
   const [userProfileLocation, setUserProfileLocation] = useState<{
     city: string | null;
     country: string | null;
@@ -121,15 +121,18 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
         extras: instrument.extras || '',
       });
       setPhotos(instrument.photos.map(p => p.url));
-      setLocations(instrument.locations.map(loc => ({
-        city: loc.city,
-        country: (loc as any).country || '',
-        areaText: loc.areaText || '',
-        lat: loc.lat,
-        lng: loc.lng,
-        isPrimary: loc.isPrimary,
-        useProfileLocation: Boolean((loc as any).useProfileLocation) || false,
-      })));
+      const primaryLocation = instrument.locations.find((loc) => loc.isPrimary) || instrument.locations[0];
+      if (primaryLocation) {
+        setLocation({
+          city: primaryLocation.city,
+          country: (primaryLocation as any).country || '',
+          areaText: primaryLocation.areaText || '',
+          lat: primaryLocation.lat,
+          lng: primaryLocation.lng,
+          isPrimary: true,
+          useProfileLocation: Boolean((primaryLocation as any).useProfileLocation) || false,
+        });
+      }
       if (instrument.availability) {
         setAvailability(instrument.availability);
       }
@@ -177,14 +180,12 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
       return;
     }
 
-    if (locations.length === 0) {
+    if (!location) {
       alert(t('addLocationRequired'));
       return;
     }
 
-    // Validar que todas las ubicaciones tengan coordenadas válidas
-    const invalidLocations = locations.filter(loc => loc.lat === 0 || loc.lng === 0 || !loc.city.trim());
-    if (invalidLocations.length > 0) {
+    if (location.lat === 0 || location.lng === 0 || !location.city.trim()) {
       alert(t('invalidLocationsAlert'));
       return;
     }
@@ -199,15 +200,15 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
       const submitData: any = {
         ...formData,
         photos,
-        locations: locations.map(loc => ({
-          city: loc.city,
-          country: loc.country || null,
-          areaText: loc.areaText || null,
-          lat: loc.lat,
-          lng: loc.lng,
-          isPrimary: loc.isPrimary,
-          useProfileLocation: Boolean(loc.useProfileLocation),
-        })),
+        locations: [{
+          city: location.city,
+          country: location.country || null,
+          areaText: location.areaText || null,
+          lat: location.lat,
+          lng: location.lng,
+          isPrimary: true,
+          useProfileLocation: Boolean(location.useProfileLocation),
+        }],
       };
 
       // Manejar disponibilidad solo si el flag de validación está activo
@@ -245,69 +246,77 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     }
   };
 
-  const addLocation = () => {
+  const createDefaultLocation = useCallback(() => {
     const shouldUseProfile = userProfileLocation &&
       (userProfileLocation.city || userProfileLocation.country) &&
       userProfileLocation.lat &&
       userProfileLocation.lng;
 
-    setLocations([...locations, {
+    setLocation({
       city: shouldUseProfile ? (userProfileLocation.city || '') : '',
       country: shouldUseProfile ? (userProfileLocation.country || '') : '',
       areaText: shouldUseProfile ? (userProfileLocation.locationText || '') : '',
       lat: shouldUseProfile ? (userProfileLocation.lat || 0) : 0,
       lng: shouldUseProfile ? (userProfileLocation.lng || 0) : 0,
-      isPrimary: locations.length === 0,
+      isPrimary: true,
       useProfileLocation: Boolean(shouldUseProfile),
-    }]);
+    });
+  }, [userProfileLocation]);
+
+  const clearLocation = () => {
+    setLocation(null);
   };
 
-  const removeLocation = (index: number) => {
-    const newLocations = locations.filter((_, i) => i !== index);
-    if (newLocations.length > 0 && !newLocations.some(l => l.isPrimary)) {
-      newLocations[0].isPrimary = true;
-    }
-    setLocations(newLocations);
+  const updateLocation = (field: string, value: any) => {
+    setLocation((current) => {
+      if (!current) return current;
+      return { ...current, [field]: value };
+    });
   };
 
-  const updateLocation = (index: number, field: string, value: any) => {
-    const newLocations = [...locations];
-    newLocations[index] = { ...newLocations[index], [field]: value };
-    setLocations(newLocations);
+  const handleCitySelect = (_cityInput: string, city: string, lat: number, lng: number, _fullAddress: string, _state?: string, country?: string) => {
+    setLocation((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        city,
+        country: country || '',
+        lat,
+        lng,
+        areaText: current.areaText || '',
+        useProfileLocation: false,
+      };
+    });
   };
 
-  const handleCitySelect = (index: number, city: string, lat: number, lng: number, _fullAddress: string, state?: string, country?: string) => {
-    const newLocations = [...locations];
-    newLocations[index] = {
-      ...newLocations[index],
-      city,
-      country: country || '',
-      lat,
-      lng,
-      areaText: newLocations[index].areaText || '',
-      useProfileLocation: false,
-    };
-    setLocations(newLocations);
-  };
-
-  const handleUseProfileLocationToggle = (index: number, checked: boolean) => {
-    const newLocations = [...locations];
+  const handleUseProfileLocationToggle = (checked: boolean) => {
     const hasProfile = userProfileLocation && (userProfileLocation.city || userProfileLocation.country) && userProfileLocation.lat && userProfileLocation.lng;
     if (checked && hasProfile && userProfileLocation) {
-      newLocations[index] = {
-        ...newLocations[index],
-        city: userProfileLocation.city || '',
-        country: userProfileLocation.country || '',
-        areaText: userProfileLocation.locationText || '',
-        lat: userProfileLocation.lat ?? 0,
-        lng: userProfileLocation.lng ?? 0,
-        useProfileLocation: true,
-      };
+      setLocation((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          city: userProfileLocation.city || '',
+          country: userProfileLocation.country || '',
+          areaText: userProfileLocation.locationText || '',
+          lat: userProfileLocation.lat ?? 0,
+          lng: userProfileLocation.lng ?? 0,
+          useProfileLocation: true,
+        };
+      });
     } else {
-      newLocations[index] = { ...newLocations[index], useProfileLocation: false };
+      setLocation((current) => {
+        if (!current) return current;
+        return { ...current, useProfileLocation: false };
+      });
     }
-    setLocations(newLocations);
   };
+
+  useEffect(() => {
+    if (!instrument && !location) {
+      createDefaultLocation();
+    }
+  }, [instrument, location, createDefaultLocation]);
 
   return (
     <Card>
@@ -467,30 +476,21 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
                   {t('whereAvailableHint')}
                 </p>
               </div>
-              <Button type="button" variant="outline" size="sm" onClick={addLocation}>
-                + {t('addLocation')}
-              </Button>
+              {location && (
+                <Button type="button" variant="ghost" size="sm" onClick={clearLocation}>
+                  {t('remove')}
+                </Button>
+              )}
             </div>
-            {locations.map((loc, index) => (
-              <div key={index} className="border p-4 rounded-lg mb-2 space-y-2">
-                <div className="flex justify-between">
-                  <Label>{t('location')} {index + 1}</Label>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeLocation(index)}
-                  >
-                    {t('remove')}
-                  </Button>
-                </div>
-                {userProfileLocation && (userProfileLocation.city || userProfileLocation.country) && userProfileLocation.lat && userProfileLocation.lng && !loc.useProfileLocation && (
+            {location ? (
+              <div className="border p-4 rounded-lg mb-2 space-y-2">
+                {userProfileLocation && (userProfileLocation.city || userProfileLocation.country) && userProfileLocation.lat && userProfileLocation.lng && !location.useProfileLocation && (
                   <div className="mb-2">
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => handleUseProfileLocationToggle(index, true)}
+                      onClick={() => handleUseProfileLocationToggle(true)}
                       className="w-full"
                     >
                       📍 {t('useProfileLocation')}: {[userProfileLocation.city, userProfileLocation.country].filter(Boolean).join(', ')}
@@ -500,28 +500,29 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <CityAutocomplete
-                      value={[loc.city, loc.country].filter(Boolean).join(', ') || loc.city}
+                      value={location.city}
                       onChange={(value) => {
-                        updateLocation(index, 'city', value);
-                        if (loc.useProfileLocation) updateLocation(index, 'useProfileLocation', false);
+                        updateLocation('city', value);
+                        if (location.useProfileLocation) updateLocation('useProfileLocation', false);
+                        updateLocation('lat', 0);
+                        updateLocation('lng', 0);
                       }}
-                      onSelect={(city, lat, lng, _fa, state, country) => handleCitySelect(index, city, lat, lng, '', state, country)}
+                      onSelect={(city, lat, lng, _fa, state, country) => handleCitySelect(location.city, city, lat, lng, '', state, country)}
                       placeholder={t('searchCityPlaceholder')}
                       required
-                      disabled={loc.useProfileLocation}
+                      disabled={location.useProfileLocation}
                     />
                   </div>
                   <Input
                     placeholder={t('areaPlaceholder')}
-                    value={loc.areaText}
+                    value={location.areaText}
                     onChange={(e) => {
-                      updateLocation(index, 'areaText', e.target.value);
-                      // Si se edita manualmente, desactivar sync con perfil
-                      if (loc.useProfileLocation) {
-                        updateLocation(index, 'useProfileLocation', false);
+                      updateLocation('areaText', e.target.value);
+                      if (location.useProfileLocation) {
+                        updateLocation('useProfileLocation', false);
                       }
                     }}
-                    disabled={loc.useProfileLocation}
+                    disabled={location.useProfileLocation}
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -529,36 +530,19 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
                     <div className="flex items-center">
                       <input
                         type="checkbox"
-                        id={`useProfile-${index}`}
-                        checked={loc.useProfileLocation}
-                        onChange={(e) => handleUseProfileLocationToggle(index, e.target.checked)}
+                        id="useProfile-location"
+                        checked={location.useProfileLocation}
+                        onChange={(e) => handleUseProfileLocationToggle(e.target.checked)}
                         className="mr-2"
                       />
-                      <Label htmlFor={`useProfile-${index}`} className="text-sm cursor-pointer">
+                      <Label htmlFor="useProfile-location" className="text-sm cursor-pointer">
                         {t('useProfileLocation')} ({[userProfileLocation.city, userProfileLocation.country].filter(Boolean).join(', ')})
                       </Label>
                     </div>
                   )}
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`primary-${index}`}
-                      checked={loc.isPrimary}
-                      onChange={(e) => {
-                        const newLocations = [...locations];
-                        newLocations.forEach((l, i) => {
-                          l.isPrimary = i === index ? e.target.checked : false;
-                        });
-                        setLocations(newLocations);
-                      }}
-                      className="mr-2"
-                    />
-                    <Label htmlFor={`primary-${index}`} className="text-sm cursor-pointer">{t('primary')}</Label>
-                  </div>
                 </div>
               </div>
-            ))}
-            {locations.length === 0 && (
+            ) : (
               <p className="text-sm text-muted-foreground">
                 {t('addOneLocation')}
               </p>
@@ -586,4 +570,3 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     </Card>
   );
 }
-

@@ -22,6 +22,7 @@
     "search": "Rechercher",
     "city": "Ville",
     "noResultsForCity": "Aucun résultat trouvé",
+    "citySearchError": "Impossible de charger les suggestions de ville. Veuillez réessayer.",
     "citySearchHint": "Essaie ville et pays (ex : Paris, France)",
     "instrument": "Instrument",
     "save": "Enregistrer",

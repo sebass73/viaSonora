@@ -22,6 +22,7 @@
     "search": "Buscar",
     "city": "Ciudad",
     "noResultsForCity": "No se encontraron resultados",
+    "citySearchError": "No se pudieron cargar sugerencias de ciudad. Intenta nuevamente.",
     "citySearchHint": "Probá con ciudad y país (ej: Mar del Plata, Argentina)",
     "instrument": "Instrumento",
     "save": "Guardar",

@@ -49,7 +49,14 @@ export const createInstrumentLocationSchema = z.object({
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
   isPrimary: z.boolean().default(false),
+  useProfileLocation: z.boolean().optional(),
+}).refine((data) => data.lat !== 0 || data.lng !== 0, {
+  message: 'Coordinates cannot be 0,0',
+  path: ['lat'],
 });
+
+export const singleInstrumentLocationArraySchema = z.array(createInstrumentLocationSchema)
+  .length(1, 'Exactly one location is required');
 
 // Instrument Availability validation
 export const createInstrumentAvailabilitySchema = z.object({
@@ -139,4 +146,3 @@ export const createReportSchema = z.object({
 export const updateReportStatusSchema = z.object({
   status: z.enum(['PENDING', 'REVIEWED', 'RESOLVED', 'DISMISSED']),
 });
-

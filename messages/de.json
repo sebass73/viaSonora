@@ -22,6 +22,7 @@
     "search": "Suchen",
     "city": "Stadt",
     "noResultsForCity": "Keine Ergebnisse gefunden",
+    "citySearchError": "Stadtvorschläge konnten nicht geladen werden. Bitte versuche es erneut.",
     "citySearchHint": "Versuche Stadt und Land (z. B. Berlin, Deutschland)",
     "instrument": "Instrument",
     "save": "Speichern",

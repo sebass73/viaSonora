@@ -22,6 +22,7 @@
     "search": "Search",
     "city": "City",
     "noResultsForCity": "No results found",
+    "citySearchError": "Could not load city suggestions. Please try again.",
     "citySearchHint": "Try city and country (e.g. Mar del Plata, Argentina)",
     "instrument": "Instrument",
     "save": "Save",

@@ -2,7 +2,7 @@
 
 **Feature Branch**: `001-instrument-location-form`  
 **Created**: 2026-05-06  
-**Status**: Draft  
+**Status**: Ready for Implementation  
 **Input**: User description: "Estandarizar ubicación validada en formulario de instrumento con una sola ubicación y error visible de geocoding"
 
 ## User Scenarios & Testing *(mandatory)*

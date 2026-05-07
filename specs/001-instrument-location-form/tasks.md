@@ -22,9 +22,9 @@ description: "Task list for instrument location form feature"
 
 **Purpose**: Preparar baseline de formulario/autocomplete para el nuevo alcance.
 
-- [ ] T001 Revisar estado actual de ubicaciones múltiples en `components/forms/InstrumentForm.tsx`
-- [ ] T002 Revisar flujo actual de error de geocoding en `components/ui/city-autocomplete.tsx`
-- [ ] T003 [P] Verificar contrato funcional en `specs/001-instrument-location-form/contracts/instrument-location-contracts.md`
+- [X] T001 Revisar estado actual de ubicaciones múltiples en `components/forms/InstrumentForm.tsx`
+- [X] T002 Revisar flujo actual de error de geocoding en `components/ui/city-autocomplete.tsx`
+- [X] T003 [P] Verificar contrato funcional en `specs/001-instrument-location-form/contracts/instrument-location-contracts.md`
 
 ---
 
@@ -32,10 +32,10 @@ description: "Task list for instrument location form feature"
 
 **Purpose**: Reglas base que bloquean todas las historias.
 
-- [ ] T004 Definir modelo de una sola ubicación en estado de formulario en `components/forms/InstrumentForm.tsx`
-- [ ] T005 Definir validación de coordenadas obligatorias (`lat/lng` válidos y no `0,0`) en `components/forms/InstrumentForm.tsx`
-- [ ] T006 [P] Verificar reglas de autenticación y 401 en rutas de instrumentos `app/api/instruments/route.ts` y `app/api/instruments/[id]/route.ts`
-- [ ] T007 Preparar mensajes base de validación y error para 5 locales en `messages/es.json`, `messages/en.json`, `messages/de.json`, `messages/fr.json`, `messages/it.json`
+- [X] T004 Definir modelo de una sola ubicación en estado de formulario en `components/forms/InstrumentForm.tsx`
+- [X] T005 Definir validación de coordenadas obligatorias (`lat/lng` válidos y no `0,0`) en `components/forms/InstrumentForm.tsx`
+- [X] T006 [P] Verificar reglas de autenticación y 401 en rutas de instrumentos `app/api/instruments/route.ts` y `app/api/instruments/[id]/route.ts`
+- [X] T007 Preparar mensajes base de validación y error para 5 locales en `messages/es.json`, `messages/en.json`, `messages/de.json`, `messages/fr.json`, `messages/it.json`
 
 **Checkpoint**: Formulario listo para soportar exactamente una ubicación válida con mensajes i18n.
 
@@ -49,10 +49,10 @@ description: "Task list for instrument location form feature"
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Simplificar formulario a una única ubicación (remover array editable) en `components/forms/InstrumentForm.tsx`
-- [ ] T009 [US1] Integrar selección de sugerencia para poblar `city/country/lat/lng` en `components/forms/InstrumentForm.tsx`
-- [ ] T010 [P] [US1] Activar autocompletado solo para input de ciudad con 2+ caracteres en `components/ui/city-autocomplete.tsx`
-- [ ] T011 [US1] Persistir ubicación única al guardar create/edit en `app/api/instruments/route.ts` y `app/api/instruments/[id]/route.ts`
+- [X] T008 [US1] Simplificar formulario a una única ubicación (remover array editable) en `components/forms/InstrumentForm.tsx`
+- [X] T009 [US1] Integrar selección de sugerencia para poblar `city/country/lat/lng` en `components/forms/InstrumentForm.tsx`
+- [X] T010 [P] [US1] Activar autocompletado solo para input de ciudad con 2+ caracteres en `components/ui/city-autocomplete.tsx`
+- [X] T011 [US1] Persistir ubicación única al guardar create/edit en `app/api/instruments/route.ts` y `app/api/instruments/[id]/route.ts`
 - [ ] T012 [US1] Validar manualmente flujo feliz de US1 en `specs/001-instrument-location-form/quickstart.md`
 
 **Checkpoint**: US1 funcional e independiente.
@@ -67,10 +67,10 @@ description: "Task list for instrument location form feature"
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] Bloquear envío cuando `lat/lng` sean inválidos o `0,0` en `components/forms/InstrumentForm.tsx`
-- [ ] T014 [US2] Mostrar mensaje de ubicación obligatoria cuando no exista ubicación en `components/forms/InstrumentForm.tsx`
-- [ ] T015 [P] [US2] Mostrar mensaje de ciudad inválida/no seleccionada en `components/forms/InstrumentForm.tsx`
-- [ ] T016 [US2] Verificar que backend rechaza payload inválido de ubicación en `app/api/instruments/route.ts` y `app/api/instruments/[id]/route.ts`
+- [X] T013 [US2] Bloquear envío cuando `lat/lng` sean inválidos o `0,0` en `components/forms/InstrumentForm.tsx`
+- [X] T014 [US2] Mostrar mensaje de ubicación obligatoria cuando no exista ubicación en `components/forms/InstrumentForm.tsx`
+- [X] T015 [P] [US2] Mostrar mensaje de ciudad inválida/no seleccionada en `components/forms/InstrumentForm.tsx`
+- [X] T016 [US2] Verificar que backend rechaza payload inválido de ubicación en `app/api/instruments/route.ts` y `app/api/instruments/[id]/route.ts`
 - [ ] T017 [US2] Validar manualmente bloqueos de US2 en `specs/001-instrument-location-form/quickstart.md`
 
 **Checkpoint**: US2 funcional e independiente.
@@ -85,10 +85,10 @@ description: "Task list for instrument location form feature"
 
 ### Implementation for User Story 3
 
-- [ ] T018 [US3] Exponer estado de error de geocoding en `components/ui/city-autocomplete.tsx`
-- [ ] T019 [US3] Renderizar mensaje de error visible en campo ciudad en `components/ui/city-autocomplete.tsx`
-- [ ] T020 [P] [US3] Mantener comportamiento de reintento al seguir escribiendo tras error en `components/ui/city-autocomplete.tsx`
-- [ ] T021 [US3] Mostrar estado “sin resultados” con hint en `components/ui/city-autocomplete.tsx`
+- [X] T018 [US3] Exponer estado de error de geocoding en `components/ui/city-autocomplete.tsx`
+- [X] T019 [US3] Renderizar mensaje de error visible en campo ciudad en `components/ui/city-autocomplete.tsx`
+- [X] T020 [P] [US3] Mantener comportamiento de reintento al seguir escribiendo tras error en `components/ui/city-autocomplete.tsx`
+- [X] T021 [US3] Mostrar estado “sin resultados” con hint en `components/ui/city-autocomplete.tsx`
 - [ ] T022 [US3] Validar manualmente estados de error/reintento de US3 en `specs/001-instrument-location-form/quickstart.md`
 
 **Checkpoint**: US3 funcional e independiente.
@@ -99,13 +99,14 @@ description: "Task list for instrument location form feature"
 
 **Purpose**: Consistencia final, i18n completo y validación integral.
 
-- [ ] T023 [P] Confirmar textos finales de formulario en `messages/es.json`
-- [ ] T024 [P] Confirmar textos finales de formulario en `messages/en.json`
-- [ ] T025 [P] Confirmar textos finales de formulario en `messages/de.json`
-- [ ] T026 [P] Confirmar textos finales de formulario en `messages/fr.json`
-- [ ] T027 [P] Confirmar textos finales de formulario en `messages/it.json`
+- [X] T023 [P] Confirmar textos finales de formulario en `messages/es.json`
+- [X] T024 [P] Confirmar textos finales de formulario en `messages/en.json`
+- [X] T025 [P] Confirmar textos finales de formulario en `messages/de.json`
+- [X] T026 [P] Confirmar textos finales de formulario en `messages/fr.json`
+- [X] T027 [P] Confirmar textos finales de formulario en `messages/it.json`
 - [ ] T028 Ejecutar recorrido completo de quickstart y registrar resultado en `specs/001-instrument-location-form/quickstart.md`
 - [ ] T029 Documentar decisiones finales y riesgos residuales en `specs/001-instrument-location-form/plan.md`
+- [X] T030 Implementar/ajustar validación Zod de ubicación en boundary de APIs en `lib/validation` y aplicarla en `app/api/instruments/route.ts` y `app/api/instruments/[id]/route.ts`
 
 ---
 
@@ -124,7 +125,7 @@ description: "Task list for instrument location form feature"
 ### Dependency Graph
 
 ```text
-T001-T003 -> T004-T007 -> T008-T012 -> T013-T017 -> T018-T022 -> T023-T029
+T001-T003 -> T004-T007 -> T008-T012 -> T013-T017 -> T018-T022 -> T023-T030
 ```
 
 ---
