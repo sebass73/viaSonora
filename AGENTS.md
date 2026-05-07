@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read:
-`specs/002-landing-first-visit/plan.md`
+`specs/001-instrument-location-form/plan.md`
 <!-- SPECKIT END -->

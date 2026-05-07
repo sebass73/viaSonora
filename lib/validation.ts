@@ -45,7 +45,7 @@ export const updateInstrumentSchema = createInstrumentSchema.partial();
 export const createInstrumentLocationSchema = z.object({
   city: z.string().min(1).max(100),
   country: z.string().max(100).optional(),
-  areaText: z.string().max(100).optional(),
+  areaText: z.string().max(100).optional().nullable(),
   lat: z.number().min(-90).max(90),
   lng: z.number().min(-180).max(180),
   isPrimary: z.boolean().default(false),
