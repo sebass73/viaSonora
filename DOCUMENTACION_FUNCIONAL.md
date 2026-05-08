@@ -1,8 +1,8 @@
 # Documentación Funcional - ViaSonora
 
-**Versión:** 1.2  
-**Última actualización:** 2025-01-02 - Etapa 3 Parcial (Sistema de Reportes completado)  
-**Estado:** MVP en desarrollo - Etapa 2 completada ✅, Etapa 3 parcial (Reportes completado ✅)
+**Versión:** 1.3  
+**Última actualización:** 2026-05-07 - Etapa 3 completada (moderación + reportes + feature flags)  
+**Estado:** MVP en desarrollo - Etapa 3 completada ✅, Etapa 4 pendiente
 
 ---
 
@@ -39,7 +39,7 @@ ViaSonora es un marketplace que conecta músicos viajeros con propietarios de in
 - ✅ Sistema de reportes de posts (usuarios pueden reportar contenido inapropiado)
 - ✅ Mapa interactivo con ubicaciones aproximadas (jitter)
 - ✅ Panel de administración para moderación y gestión de reportes
-- ✅ Multi-idioma (ES/IT/EN)
+- ✅ Multi-idioma (ES/EN/DE/FR/IT)
 
 ### 1.3 Entidades Principales
 
@@ -846,6 +846,4 @@ APPROVED  REJECTED  BANNED
 ---
 
 **Fin del Documento**
-
-
 

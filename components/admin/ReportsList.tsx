@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -88,11 +88,7 @@ export function ReportsList() {
   
   const dateLocale = locale === 'es' ? es : locale === 'it' ? it : enUS;
 
-  useEffect(() => {
-    fetchReports();
-  }, [filter]);
-
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -108,7 +104,11 @@ export function ReportsList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, t]);
+
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
 
   const updateReportStatus = async (reportId: string, status: 'REVIEWED' | 'RESOLVED' | 'DISMISSED') => {
     try {
@@ -295,4 +295,3 @@ export function ReportsList() {
     </div>
   );
 }
-

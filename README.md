@@ -89,8 +89,8 @@ La app estará disponible en http://localhost:3000
 - ✅ **Etapa 0**: Setup & Fundaciones
 - ✅ **Etapa 1**: Core "WOW" (ABM Instrumentos + Posts + Mapa)
 - ✅ **Etapa 2**: Requests + Contacto bloqueado
-- ⏳ **Etapa 3**: Admin/Operador (moderación)
-- ⏳ **Etapa 4**: Stubs monetización
+- ✅ **Etapa 3**: Admin/Operador (moderación + reportes + feature flags)
+- ⏳ **Etapa 4**: Stubs monetización/facturación
 
 ## Licencia
 

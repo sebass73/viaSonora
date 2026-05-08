@@ -2,7 +2,7 @@
 
 **Fecha de creación:** 2025-01-02  
 **Última actualización:** 2025-01-02  
-**Estado actual:** Etapas 1-2 completas ✅, Etapa 3 parcial (Sistema de Reportes completado ✅), Etapa 4 pendiente  
+**Estado actual:** Etapas 1-3 completas ✅, Etapa 4 pendiente  
 **Objetivo:** Completar funcionalidades faltantes según planificación de etapas
 
 ---
@@ -153,9 +153,9 @@ Permitir que operadores/admins aprueben usuarios antes de que puedan ser OWNERs.
 
 ## 3. Etapa 4 - Funcionalidades Faltantes
 
-### 🟡 3.1 Cron Job Automático para Expiración
+### ✅ 3.1 Cron Job Automático para Expiración
 
-**Estado:** ⚠️ Manual (calculado pero no ejecutado automáticamente)  
+**Estado:** ✅ Implementado (Vercel Cron + endpoint protegido)  
 **Prioridad:** Media  
 **Complejidad:** Media
 
@@ -171,12 +171,12 @@ Actualmente los posts tienen `expiresAt` pero no hay un proceso automático que 
 #### Tareas Técnicas
 
 **3.1.1 API Endpoint**
-- [ ] Crear `POST /api/cron/expire-posts` (protegido con secret key)
-- [ ] Lógica para buscar y actualizar posts expirados
-- [ ] Retornar cantidad de posts expirados
+- [x] Crear `POST /api/cron/expire-posts` (protegido con secret key)
+- [x] Lógica para buscar y actualizar posts expirados
+- [x] Retornar cantidad de posts expirados
 
 **3.1.2 Cron Job (Vercel)**
-- [ ] Configurar Vercel Cron Job en `vercel.json`
+- [x] Configurar Vercel Cron Job en `vercel.json`
   ```json
   {
     "crons": [{
@@ -185,12 +185,12 @@ Actualmente los posts tienen `expiresAt` pero no hay un proceso automático que 
     }]
   }
   ```
-- [ ] Agregar variable de entorno `CRON_SECRET` para proteger endpoint
-- [ ] Validar secret en el endpoint
+- [x] Agregar variable de entorno `CRON_SECRET` para proteger endpoint
+- [x] Validar secret en el endpoint
 
 **3.1.3 Alternativa: API Route manual**
-- [ ] Si no se usa Vercel Cron, crear endpoint ejecutable manualmente
-- [ ] Documentar cómo ejecutarlo periódicamente
+- [x] Si no se usa Vercel Cron, crear endpoint ejecutable manualmente
+- [x] Documentar cómo ejecutarlo periódicamente
 
 **3.1.4 Testing**
 - [ ] Crear post con expiresAt en el pasado
@@ -264,9 +264,9 @@ Crear estructura básica para pagos (sin integración real de pago). Solo stub/m
 
 ---
 
-### 🟡 3.3 Feature Flags
+### ✅ 3.3 Feature Flags
 
-**Estado:** ❌ No implementado  
+**Estado:** ✅ Implementado (database + API + panel admin)  
 **Prioridad:** Baja  
 **Complejidad:** Media
 
@@ -307,10 +307,10 @@ Sistema básico de feature flags para habilitar/deshabilitar funcionalidades sin
 - [ ] Usar flags en código donde corresponda
 - [ ] Ejemplo: `if (FEATURES.PAYMENTS) { ... }`
 
-#### Tareas Técnicas (Opción B - Database) - Más Complejo
+#### Tareas Técnicas (Opción B - Database) - Implementada
 
 **3.3.1 Schema/Base de Datos**
-- [ ] Crear modelo `FeatureFlag`
+- [x] Crear modelo `FeatureFlag`
   ```prisma
   model FeatureFlag {
     id          String   @id @default(cuid())
@@ -322,13 +322,13 @@ Sistema básico de feature flags para habilitar/deshabilitar funcionalidades sin
   ```
 
 **3.3.2 API**
-- [ ] `GET /api/feature-flags` - Listar flags (público para client-side)
-- [ ] `PUT /api/admin/feature-flags/[key]` - Actualizar flag (solo admin)
+- [x] `GET /api/feature-flags` - Listar flags (público para client-side)
+- [x] `PUT /api/admin/feature-flags/[key]` - Actualizar flag (solo admin)
 
 **3.3.3 UI - Panel de Admin**
-- [ ] Lista de feature flags
-- [ ] Toggle para habilitar/deshabilitar
-- [ ] Descripción de cada flag
+- [x] Lista de feature flags
+- [x] Toggle para habilitar/deshabilitar
+- [x] Descripción de cada flag
 
 **Recomendación:** Empezar con Opción A (env vars) y migrar a Opción B si es necesario.
 
@@ -342,19 +342,17 @@ Sistema básico de feature flags para habilitar/deshabilitar funcionalidades sin
 
 ### 🟡 Media Prioridad (Después)
 
-3. **Cron Job Expiración (3.1)** - Mejora operativa importante
-4. **Aprobar Owners (2.2)** - Evaluar si es necesario
+3. **Aprobar Owners (2.2)** - Evaluar si es necesario
 
 ### 🟢 Baja Prioridad (Puede esperar)
 
-5. **Payment Stub (3.2)** - Solo estructura, no funcionalidad real
-6. **Feature Flags (3.3)** - Nice to have, puede empezar con env vars
+4. **Payment Stub (3.2)** - Solo estructura, no funcionalidad real
 
 ---
 
 ## 5. Detalles Técnicos
 
-### 5.1 Orden Recomendado de Implementación
+### 5.1 Orden Recomendado de Implementación (Histórico)
 
 1. **Día 1 - Mañana:**
    - Disponibilidad por Instrumento (Schema + Migración)
@@ -373,9 +371,8 @@ Sistema básico de feature flags para habilitar/deshabilitar funcionalidades sin
    - Sistema de Reportes (UI - Panel Admin)
 
 5. **Día 3:**
-   - Cron Job Expiración
    - Payment Stub (Schema)
-   - Feature Flags (env vars)
+   - Ajustes operativos adicionales según priorización
 
 ### 5.2 Consideraciones Importantes
 
@@ -443,5 +440,3 @@ Según `DOCUMENTACION_FUNCIONAL.md`, estas están fuera del MVP:
 **Fin del Documento**
 
 *Última actualización: 2025-01-02*
-
-
