@@ -25,6 +25,8 @@ Thumbs.db
 .idea/
 .claude/
 .opencode/
+.specify/
+.agents/
 
 # debug
 npm-debug.log*
