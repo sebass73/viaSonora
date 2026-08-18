@@ -17,7 +17,7 @@ export function TrustBlock() {
   const t = useTranslations('common');
 
   return (
-    <div className="bg-background/5 border border-border rounded-md p-3">
+    <div className="hidden md:block bg-background/5 border border-border rounded-md p-3">
       <div className="flex items-center justify-between gap-4 flex-wrap md:flex-nowrap">
         <h3 className="text-xs font-semibold mb-0 mr-4">{t('trustTitle')}</h3>
 
