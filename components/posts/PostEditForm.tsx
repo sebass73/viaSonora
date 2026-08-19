@@ -13,6 +13,7 @@ import { CategoryName } from "@/components/CategoryName";
 interface Post {
   id: string;
   city: string;
+  state: string | null;
   areaText: string | null;
   status: string;
   instrument: {
@@ -32,7 +33,7 @@ export function PostEditForm() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({ city: "", country: "", areaText: "" });
+  const [formData, setFormData] = useState({ city: "", state: "", country: "", areaText: "" });
 
   useEffect(() => {
     if (!id) return;
@@ -47,6 +48,7 @@ export function PostEditForm() {
         setPost(data);
         setFormData({
           city: data.city ?? "",
+          state: data.state ?? "",
           country: data.country ?? "",
           areaText: data.areaText ?? "",
         });
@@ -70,6 +72,7 @@ export function PostEditForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           city: formData.city.trim() || undefined,
+          state: formData.state.trim() || undefined,
           country: formData.country.trim() || undefined,
           areaText: formData.areaText.trim() || undefined,
         }),
@@ -137,6 +140,15 @@ export function PostEditForm() {
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               required
               placeholder={tPosts("cityPlaceholder")}
+            />
+          </div>
+          <div>
+            <Label htmlFor="state">{tPosts("provinceLabel")}</Label>
+            <Input
+              id="state"
+              value={formData.state}
+              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+              placeholder={tPosts("provincePlaceholder")}
             />
           </div>
           <div>

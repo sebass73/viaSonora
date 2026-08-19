@@ -18,6 +18,7 @@ interface Instrument {
   };
   locations: Array<{
     city: string;
+    state?: string | null;
     country?: string | null;
     areaText: string | null;
   }>;
@@ -32,6 +33,7 @@ export function PostForm() {
   const [formData, setFormData] = useState({
     instrumentId: '',
     city: '',
+    state: '',
     country: '',
     areaText: '',
   });
@@ -56,6 +58,7 @@ export function PostForm() {
           setFormData({
             instrumentId: firstInstrument.id,
             city: primaryLocation?.city || '',
+            state: primaryLocation?.state || '',
             country: primaryLocation?.country || '',
             areaText: primaryLocation?.areaText || '',
           });
@@ -83,6 +86,7 @@ export function PostForm() {
         body: JSON.stringify({
           instrumentId: formData.instrumentId,
           city: formData.city || undefined,
+          state: formData.state || undefined,
           country: formData.country || undefined,
           areaText: formData.areaText || undefined,
         }),
@@ -125,6 +129,7 @@ export function PostForm() {
                 setFormData({
                   instrumentId: value,
                   city: location?.city || '',
+                  state: (location as any)?.state || '',
                   country: location?.country || '',
                   areaText: location?.areaText || '',
                 });
@@ -158,6 +163,16 @@ export function PostForm() {
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               required
               placeholder={primaryLocation?.city || tPosts('cityPlaceholder')}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="state">{tPosts('provinceLabel')}</Label>
+            <Input
+              id="state"
+              value={formData.state}
+              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+              placeholder={(primaryLocation as any)?.state || tPosts('provincePlaceholder')}
             />
           </div>
 

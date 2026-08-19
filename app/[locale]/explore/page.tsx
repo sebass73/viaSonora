@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
 import Image from 'next/image';
 import { CategoryName } from '@/components/CategoryName';
+import { formatPricePerDay } from '@/lib/format';
 
 interface Post {
   id: string;
@@ -17,6 +18,8 @@ interface Post {
   instrument: {
     id: string;
     title: string;
+    pricePerDay: number | null;
+    currency: string | null;
     photos: Array<{ url: string }>;
     category: {
       slug: string;
@@ -27,6 +30,8 @@ interface Post {
 export default function ExplorePage() {
   const t = useTranslations('explore');
   const tCommon = useTranslations('common');
+  const tPosts = useTranslations('posts');
+  const locale = useLocale();
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -146,6 +151,12 @@ export default function ExplorePage() {
                     })()}
                     {post.areaText && `, ${post.areaText}`}
                   </CardDescription>
+                  {post.instrument.pricePerDay != null && post.instrument.currency && (
+                    <p className="text-sm font-semibold text-primary">
+                      {formatPricePerDay(post.instrument.pricePerDay, post.instrument.currency, locale)}
+                      <span className="text-xs font-normal text-muted-foreground"> / {tPosts('perDay')}</span>
+                    </p>
+                  )}
                 </CardHeader>
               </Card>
             ))}

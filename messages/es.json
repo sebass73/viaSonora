@@ -179,7 +179,12 @@
     "conditionExcellent": "Excelente",
     "conditionGood": "Bueno",
     "conditionFair": "Regular",
-    "conditionPoor": "Malo"
+    "conditionPoor": "Malo",
+    "pricePerDayLabel": "Precio por día",
+    "pricePerDayPlaceholder": "Ej: 15",
+    "currencyLabel": "Moneda",
+    "selectCurrency": "Selecciona una moneda",
+    "currencyRequiredWithPrice": "Selecciona una moneda para el precio ingresado"
   },
   "availability": {
     "title": "Disponibilidad",
@@ -243,6 +248,7 @@
     "createOneFirst": "Crea uno primero",
     "cityPlaceholder": "Ej: Buenos Aires",
     "areaPlaceholder": "Ej: Palermo",
+    "perDay": "día",
     "notePending": "El post quedará en estado PENDING_APPROVAL hasta que un moderador lo apruebe. Una vez aprobado, será visible en el mapa y listados públicos.",
     "creating": "Creando...",
     "createButton": "Crear publicación",

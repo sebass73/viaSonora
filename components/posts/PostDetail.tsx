@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/routing';
 import { useSession } from 'next-auth/react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { formatPricePerDay } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
@@ -29,6 +30,8 @@ interface Post {
     model: string | null;
     condition: string;
     extras: string | null;
+    pricePerDay: number | null;
+    currency: string | null;
     photos: Array<{ url: string }>;
     category: {
       slug: string;
@@ -90,6 +93,7 @@ export function PostDetail() {
   const tRequests = useTranslations('requests');
   const tInstruments = useTranslations('instruments');
   const tProfile = useTranslations('profile');
+  const locale = useLocale();
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
@@ -174,6 +178,12 @@ export function PostDetail() {
                 })()}
                 {post.areaText && `, ${post.areaText}`}
               </CardDescription>
+              {post.instrument.pricePerDay != null && post.instrument.currency && (
+                <p className="text-lg font-semibold text-primary mt-1">
+                  {formatPricePerDay(post.instrument.pricePerDay, post.instrument.currency, locale)}
+                  <span className="text-sm font-normal text-muted-foreground"> / {tPosts('perDay')}</span>
+                </p>
+              )}
             </CardHeader>
             <CardContent>
               {post.instrument.photos.length > 0 && (

@@ -179,7 +179,12 @@
     "conditionExcellent": "Excellent",
     "conditionGood": "Good",
     "conditionFair": "Fair",
-    "conditionPoor": "Poor"
+    "conditionPoor": "Poor",
+    "pricePerDayLabel": "Price per day",
+    "pricePerDayPlaceholder": "e.g. 15",
+    "currencyLabel": "Currency",
+    "selectCurrency": "Select a currency",
+    "currencyRequiredWithPrice": "Select a currency for the price you entered"
   },
   "availability": {
     "title": "Availability",
@@ -243,6 +248,7 @@
     "createOneFirst": "Create one first",
     "cityPlaceholder": "e.g. Buenos Aires",
     "areaPlaceholder": "e.g. Palermo",
+    "perDay": "day",
     "notePending": "The post will be in PENDING_APPROVAL status until a moderator approves it. Once approved, it will be visible on the map and public listings.",
     "creating": "Creating...",
     "createButton": "Create post",

@@ -28,6 +28,7 @@ interface User {
   phone: string | null;
   whatsappUrl: string | null;
   city: string | null;
+  state: string | null;
   country: string | null;
   locationText: string | null;
   lat: number | null;
@@ -52,6 +53,7 @@ export function ProfileForm() {
     phone: '',
     whatsappUrl: '',
     city: '',
+    state: '',
     country: '',
     locationText: '',
     lat: null as number | null,
@@ -77,6 +79,7 @@ export function ProfileForm() {
           phone: data.phone || '',
           whatsappUrl: data.whatsappUrl || '',
           city: data.city || '',
+          state: data.state || '',
           country: data.country || '',
           locationText: data.locationText || '',
           lat: data.lat || null,
@@ -149,6 +152,7 @@ export function ProfileForm() {
           ...formData,
           image: formData.image || undefined,
           city: formData.city || undefined,
+          state: formData.state || undefined,
           country: formData.country || undefined,
           lat: formData.lat || undefined,
           lng: formData.lng || undefined,
@@ -287,10 +291,11 @@ export function ProfileForm() {
               <CityAutocomplete
                 value={formData.city}
                 onChange={(value) => setFormData({ ...formData, city: value })}
-                onSelect={(city, lat, lng, _fullAddress, _state, country) => {
+                onSelect={(city, lat, lng, _fullAddress, state, country) => {
                   setFormData({
                     ...formData,
                     city: city || '',
+                    state: state || '',
                     country: country || '',
                     lat,
                     lng,
@@ -301,6 +306,15 @@ export function ProfileForm() {
               <p className="text-xs text-muted-foreground mt-1">
                 {t('citySearchHint')}
               </p>
+            </div>
+            <div>
+              <Label htmlFor="state">{t('provinceLabel')}</Label>
+              <Input
+                id="state"
+                value={formData.state}
+                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                placeholder={t('provincePlaceholder')}
+              />
             </div>
             <div>
               <Label htmlFor="country">{t('countryLabel')}</Label>

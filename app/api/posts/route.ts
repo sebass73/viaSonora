@@ -91,13 +91,20 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      where.OR = [
-        { instrument: { title: { contains: search, mode: 'insensitive' } } },
-        { instrument: { description: { contains: search, mode: 'insensitive' } } },
-        { instrument: { brand: { contains: search, mode: 'insensitive' } } },
-        { city: { contains: search, mode: 'insensitive' } },
-        { areaText: { contains: search, mode: 'insensitive' } },
-      ];
+      // Buscar por cada palabra por separado para poder matchear direcciones
+      // completas (ej: "Paola Calabria Italia") repartidas entre ciudad, zona y país.
+      const searchTerms = search.trim().split(/\s+/).filter(Boolean);
+      where.AND = searchTerms.map((term) => ({
+        OR: [
+          { instrument: { title: { contains: term, mode: 'insensitive' } } },
+          { instrument: { description: { contains: term, mode: 'insensitive' } } },
+          { instrument: { brand: { contains: term, mode: 'insensitive' } } },
+          { city: { contains: term, mode: 'insensitive' } },
+          { state: { contains: term, mode: 'insensitive' } },
+          { areaText: { contains: term, mode: 'insensitive' } },
+          { country: { contains: term, mode: 'insensitive' } },
+        ],
+      }));
     }
 
     // Obtener total de registros
@@ -210,6 +217,7 @@ export async function POST(request: NextRequest) {
     // Usar la ubicación primaria si no se especifica ciudad
     const location = instrument.locations[0];
     const postCity = validated.city || location.city;
+    const postState = validated.state ?? (location as any).state ?? null;
     const postCountry = validated.country ?? (location as any).country ?? null;
     const postAreaText = validated.areaText ?? location.areaText;
 
@@ -222,6 +230,7 @@ export async function POST(request: NextRequest) {
         instrumentId: validated.instrumentId,
         ownerId: session.user.id,
         city: postCity,
+        state: postState,
         country: postCountry,
         areaText: postAreaText,
         status: 'PENDING_APPROVAL',

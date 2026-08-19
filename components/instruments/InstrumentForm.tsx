@@ -20,6 +20,8 @@ interface Category {
   slug: string;
 }
 
+const CURRENCY_OPTIONS = ['USD', 'EUR', 'ARS', 'GBP', 'MXN', 'BRL', 'CLP', 'COP', 'UYU', 'CHF'];
+
 interface Instrument {
   id: string;
   title: string;
@@ -29,9 +31,12 @@ interface Instrument {
   model: string | null;
   condition: 'EXCELLENT' | 'GOOD' | 'FAIR' | 'POOR';
   extras: string | null;
+  pricePerDay: number | null;
+  currency: string | null;
   photos: Array<{ url: string }>;
   locations: Array<{
     city: string;
+    state?: string | null;
     country?: string | null;
     areaText: string | null;
     lat: number;
@@ -64,10 +69,13 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     model: '',
     condition: 'GOOD' as 'EXCELLENT' | 'GOOD' | 'FAIR' | 'POOR',
     extras: '',
+    pricePerDay: '',
+    currency: '',
   });
   const [photos, setPhotos] = useState<string[]>([]);
   const [location, setLocation] = useState<{
     city: string;
+    state: string;
     country: string;
     areaText: string;
     lat: number;
@@ -77,6 +85,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
   } | null>(null);
   const [userProfileLocation, setUserProfileLocation] = useState<{
     city: string | null;
+    state: string | null;
     country: string | null;
     locationText: string | null;
     lat: number | null;
@@ -119,12 +128,15 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
         model: instrument.model || '',
         condition: instrument.condition,
         extras: instrument.extras || '',
+        pricePerDay: instrument.pricePerDay != null ? String(instrument.pricePerDay) : '',
+        currency: instrument.currency || '',
       });
       setPhotos(instrument.photos.map(p => p.url));
       const primaryLocation = instrument.locations.find((loc) => loc.isPrimary) || instrument.locations[0];
       if (primaryLocation) {
         setLocation({
           city: primaryLocation.city,
+          state: (primaryLocation as any).state || '',
           country: (primaryLocation as any).country || '',
           areaText: primaryLocation.areaText || '',
           lat: primaryLocation.lat,
@@ -160,6 +172,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
         if ((data.city || data.addressText) && data.lat && data.lng) {
           setUserProfileLocation({
             city: data.city || data.addressText,
+            state: data.state ?? null,
             country: data.country ?? null,
             locationText: data.locationText,
             lat: data.lat,
@@ -180,6 +193,11 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
       return;
     }
 
+    if (formData.pricePerDay.trim() !== '' && !formData.currency) {
+      alert(t('currencyRequiredWithPrice'));
+      return;
+    }
+
     if (!location) {
       alert(t('addLocationRequired'));
       return;
@@ -197,11 +215,15 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
       const method = instrument ? 'PUT' : 'POST';
 
       // Preparar datos del formulario, filtrando campos vacíos en modo edición
+      const hasPrice = formData.pricePerDay.trim() !== '';
       const submitData: any = {
         ...formData,
+        pricePerDay: hasPrice ? parseFloat(formData.pricePerDay) : null,
+        currency: hasPrice ? (formData.currency || null) : null,
         photos,
         locations: [{
           city: location.city,
+          state: location.state || null,
           country: location.country || null,
           areaText: location.areaText || null,
           lat: location.lat,
@@ -254,6 +276,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
 
     setLocation({
       city: shouldUseProfile ? (userProfileLocation.city || '') : '',
+      state: shouldUseProfile ? (userProfileLocation.state || '') : '',
       country: shouldUseProfile ? (userProfileLocation.country || '') : '',
       areaText: shouldUseProfile ? (userProfileLocation.locationText || '') : '',
       lat: shouldUseProfile ? (userProfileLocation.lat || 0) : 0,
@@ -274,12 +297,13 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
     });
   };
 
-  const handleCitySelect = (_cityInput: string, city: string, lat: number, lng: number, _fullAddress: string, _state?: string, country?: string) => {
+  const handleCitySelect = (_cityInput: string, city: string, lat: number, lng: number, _fullAddress: string, state?: string, country?: string) => {
     setLocation((current) => {
       if (!current) return current;
       return {
         ...current,
         city,
+        state: state || '',
         country: country || '',
         lat,
         lng,
@@ -297,6 +321,7 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
         return {
           ...current,
           city: userProfileLocation.city || '',
+          state: userProfileLocation.state || '',
           country: userProfileLocation.country || '',
           areaText: userProfileLocation.locationText || '',
           lat: userProfileLocation.lat ?? 0,
@@ -429,6 +454,37 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
                 <SelectItem value="POOR">{t('conditionPoor')}</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="pricePerDay">{t('pricePerDayLabel')}</Label>
+              <Input
+                id="pricePerDay"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder={t('pricePerDayPlaceholder')}
+                value={formData.pricePerDay}
+                onChange={(e) => setFormData({ ...formData, pricePerDay: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="currency">{t('currencyLabel')}</Label>
+              <Select
+                value={formData.currency}
+                onValueChange={(value) => setFormData({ ...formData, currency: value })}
+              >
+                <SelectTrigger id="currency">
+                  <SelectValue placeholder={t('selectCurrency')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCY_OPTIONS.map((code) => (
+                    <SelectItem key={code} value={code}>{code}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div>

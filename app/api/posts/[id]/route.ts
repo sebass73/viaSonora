@@ -48,6 +48,7 @@ export async function GET(
             lastName: true,
             image: true,
             city: true,
+            state: true,
             country: true,
             locationText: true,
             email: true,
@@ -69,7 +70,7 @@ export async function GET(
 
     // Tipo con relaciones incluidas (owner, instrument)
     const postWithRelations = post as typeof post & {
-      owner: { id: string; name: string | null; lastName: string | null; image: string | null; locationText: string | null; email?: string; phone?: string; whatsappUrl?: string; city?: string | null; country?: string | null; lat?: number | null; lng?: number | null };
+      owner: { id: string; name: string | null; lastName: string | null; image: string | null; locationText: string | null; email?: string; phone?: string; whatsappUrl?: string; city?: string | null; state?: string | null; country?: string | null; lat?: number | null; lng?: number | null };
       instrument: { id: string; locations: Array<{ lat: number; lng: number; [key: string]: unknown }>; [key: string]: unknown };
     };
 
@@ -125,6 +126,7 @@ export async function GET(
       ownerData.phone = owner.phone;
       ownerData.whatsappUrl = owner.whatsappUrl;
       ownerData.city = owner.city;
+      ownerData.state = owner.state;
       ownerData.country = owner.country;
       if (owner.lat != null && owner.lng != null) {
         const jittered = getPublicLatLng(owner.lat, owner.lng);
@@ -204,6 +206,7 @@ export async function PUT(
       where: { id },
       data: {
         ...(validated.city && { city: validated.city }),
+        ...(validated.state !== undefined && { state: validated.state }),
         ...(validated.country !== undefined && { country: validated.country }),
         ...(validated.areaText !== undefined && { areaText: validated.areaText }),
       },

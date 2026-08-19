@@ -157,7 +157,12 @@
     "conditionExcellent": "Excellent",
     "conditionGood": "Bon",
     "conditionFair": "Correct",
-    "conditionPoor": "Mauvais"
+    "conditionPoor": "Mauvais",
+    "pricePerDayLabel": "Prix par jour",
+    "pricePerDayPlaceholder": "Ex : 15",
+    "currencyLabel": "Devise",
+    "selectCurrency": "Sélectionne une devise",
+    "currencyRequiredWithPrice": "Sélectionne une devise pour le prix saisi"
   },
   "availability": {
     "title": "Disponibilité",
@@ -221,6 +226,7 @@
     "createOneFirst": "Créez-en un d'abord",
     "cityPlaceholder": "Ex : Buenos Aires",
     "areaPlaceholder": "Ex : Palermo",
+    "perDay": "jour",
     "notePending": "La publication restera en statut PENDING_APPROVAL jusqu'à approbation par un modérateur. Une fois approuvée, elle sera visible sur la carte et les listes publiques.",
     "creating": "Création...",
     "createButton": "Créer la publication",

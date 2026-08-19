@@ -72,6 +72,7 @@ model User {
 
   // Ubicación: ciudad y país (sin dirección puntual)
   city         String?
+  state        String? // provincia/región
   country      String?
   locationText String? // zona/barrio (opcional)
   lat          Float?  // para mapa, geocoding de city+country
@@ -165,6 +166,8 @@ model Instrument {
   model       String?
   condition   InstrumentCondition
   extras      String?             @db.Text
+  pricePerDay Float?
+  currency    String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -198,6 +201,7 @@ model InstrumentLocation {
   id                 String  @id @default(cuid())
   instrumentId       String
   city               String
+  state              String? // provincia/región
   country            String?
   areaText           String? // zona/barrio (opcional)
   lat                Float   // para mapa, geocoding de city+country
@@ -219,6 +223,7 @@ model Post {
   instrumentId String
   ownerId      String
   city         String
+  state        String?    // provincia/región
   country      String?
   areaText     String?    // zona/barrio (opcional)
   status       PostStatus @default(PENDING_APPROVAL)

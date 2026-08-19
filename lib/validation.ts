@@ -8,6 +8,7 @@ export const updateProfileSchema = z.object({
   phone: z.string().max(20).optional(),
   whatsappUrl: z.string().url().optional().or(z.literal('')),
   city: z.string().max(100).optional(),
+  state: z.string().max(100).optional(),
   country: z.string().max(100).optional(),
   locationText: z.string().max(100).optional(),
   lat: z.number().min(-90).max(90).optional(),
@@ -37,13 +38,29 @@ export const createInstrumentSchema = z.object({
   model: z.string().max(100).optional(),
   condition: z.enum(['EXCELLENT', 'GOOD', 'FAIR', 'POOR']),
   extras: z.string().max(1000).optional(),
+  pricePerDay: z.number().positive().max(1000000).optional().nullable(),
+  currency: z.string().regex(/^[A-Z]{3}$/, 'Código de moneda inválido (ISO 4217, ej: USD)').optional().nullable(),
+}).refine((data) => (data.pricePerDay == null) === (data.currency == null), {
+  message: 'El precio y la moneda deben cargarse juntos',
+  path: ['currency'],
 });
 
-export const updateInstrumentSchema = createInstrumentSchema.partial();
+export const updateInstrumentSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().min(5).max(5000).optional(),
+  categoryId: z.string().min(1).optional(),
+  brand: z.string().max(100).optional(),
+  model: z.string().max(100).optional(),
+  condition: z.enum(['EXCELLENT', 'GOOD', 'FAIR', 'POOR']).optional(),
+  extras: z.string().max(1000).optional(),
+  pricePerDay: z.number().positive().max(1000000).optional().nullable(),
+  currency: z.string().regex(/^[A-Z]{3}$/, 'Código de moneda inválido (ISO 4217, ej: USD)').optional().nullable(),
+});
 
 // Instrument Location validation
 export const createInstrumentLocationSchema = z.object({
   city: z.string().min(1).max(100),
+  state: z.string().max(100).optional().nullable(),
   country: z.string().max(100).optional(),
   areaText: z.string().max(100).optional().nullable(),
   lat: z.number().min(-90).max(90),
@@ -81,14 +98,16 @@ export const updateInstrumentAvailabilitySchema = z.array(createInstrumentAvaila
 export const createPostSchema = z.object({
   instrumentId: z.string().min(1),
   city: z.string().min(1).max(100),
+  state: z.string().max(100).optional(),
   country: z.string().max(100).optional(),
   areaText: z.string().max(200).optional(),
   // expiresAt se calcula automáticamente (30 días)
 });
 
-/** Actualizar post (solo owner): ciudad, país, zona */
+/** Actualizar post (solo owner): ciudad, provincia, país, zona */
 export const updatePostSchema = z.object({
   city: z.string().min(1).max(100).optional(),
+  state: z.string().max(100).optional(),
   country: z.string().max(100).optional(),
   areaText: z.string().max(200).optional(),
 });

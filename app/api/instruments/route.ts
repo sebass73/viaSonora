@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
         locations: {
           create: validatedLocations.map((loc: any) => ({
             city: loc.city,
+            state: loc.state ?? null,
             country: loc.country ?? null,
             areaText: loc.areaText,
             lat: loc.lat,
