@@ -24,9 +24,9 @@ export function ThemeSwitcher() {
   if (!mounted) {
     return (
       <div className="flex items-center space-x-2">
-        <Sun className="h-4 w-4 text-muted-foreground" />
+        <Sun className="h-4 w-4 text-muted-foreground flex-shrink-0" />
         <Select disabled>
-          <SelectTrigger className="w-[120px] h-8">
+          <SelectTrigger className="flex-1 h-8">
             <SelectValue />
           </SelectTrigger>
         </Select>
@@ -41,16 +41,16 @@ export function ThemeSwitcher() {
   };
 
   const themeIcons: Record<string, React.ReactNode> = {
-    light: <Sun className="h-4 w-4 text-muted-foreground" />,
-    dark: <Moon className="h-4 w-4 text-muted-foreground" />,
-    system: <Monitor className="h-4 w-4 text-muted-foreground" />,
+    light: <Sun className="h-4 w-4 text-muted-foreground flex-shrink-0" />,
+    dark: <Moon className="h-4 w-4 text-muted-foreground flex-shrink-0" />,
+    system: <Monitor className="h-4 w-4 text-muted-foreground flex-shrink-0" />,
   };
 
   return (
     <div className="flex items-center space-x-2">
       {themeIcons[theme || 'system']}
       <Select value={theme || 'system'} onValueChange={setTheme}>
-        <SelectTrigger className="w-[120px] h-8">
+        <SelectTrigger className="flex-1 h-8">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
