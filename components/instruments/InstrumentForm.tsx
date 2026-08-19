@@ -61,7 +61,17 @@ export function InstrumentForm({ instrument }: InstrumentFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => instrument ? {
+    title: instrument.title,
+    description: instrument.description,
+    categoryId: instrument.categoryId,
+    brand: instrument.brand || '',
+    model: instrument.model || '',
+    condition: instrument.condition,
+    extras: instrument.extras || '',
+    pricePerDay: instrument.pricePerDay != null ? String(instrument.pricePerDay) : '',
+    currency: instrument.currency || '',
+  } : {
     title: '',
     description: '',
     categoryId: '',
