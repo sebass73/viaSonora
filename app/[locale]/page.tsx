@@ -6,13 +6,13 @@ import { MapView } from '@/components/map/MapView';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useRouter, Link } from '@/i18n/routing';
+import { useRouter } from '@/i18n/routing';
 import { useSession } from 'next-auth/react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Search, PlusCircle, Lock, MapPin, Info, ShieldCheck, Globe, Users, FileText, Filter, HelpCircle, LocateFixed } from 'lucide-react';
-import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { ChevronLeft, ChevronRight, Search, Filter, LocateFixed } from 'lucide-react';
 import { TrustBlock } from '@/components/TrustBlock';
+import { formatPricePerDay } from '@/lib/format';
 import { CategoryName } from '@/components/CategoryName';
 import { CategoryChips } from '@/components/CategoryChips';
 import { InstrumentAutocomplete } from '@/components/InstrumentAutocomplete';
@@ -33,6 +33,8 @@ interface Post {
   instrument: {
     id: string;
     title: string;
+    pricePerDay: number | null;
+    currency: string | null;
     photos: Array<{ url: string }>;
     category: {
       id: string;
@@ -52,6 +54,7 @@ interface Category {
 
 export default function HomePage() {
   const t = useTranslations('common');
+  const tPosts = useTranslations('posts');
   const locale = useLocale();
   const router = useRouter();
   const { data: session } = useSession();
@@ -63,7 +66,6 @@ export default function HomePage() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [homeCardsEnabled, setHomeCardsEnabled] = useState<boolean | null>(null);
   const [mapFilterOpen, setMapFilterOpen] = useState(false);
-  const [howItWorksOpen, setHowItWorksOpen] = useState(false);
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number]>(DEFAULT_MAP_CENTER);
   const [recenterLoading, setRecenterLoading] = useState(false);
@@ -391,17 +393,6 @@ export default function HomePage() {
                 <Search className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               </button>
             </div>
-            {/* En mobile: botón "Cómo funciona" separado, a la derecha de la barra de búsqueda */}
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="md:hidden h-9 w-9 flex-shrink-0 text-primary border-primary/30 hover:bg-primary/10"
-              onClick={() => setHowItWorksOpen(true)}
-              aria-label={t('bannerHowItWorks')}
-            >
-              <HelpCircle className="h-5 w-5" />
-            </Button>
           </form>
 
           {homeCardsEnabled && !loading && (
@@ -467,6 +458,12 @@ export default function HomePage() {
                         <CardDescription className="text-xs leading-tight">
                           {<CategoryName category={post.instrument.category} />}
                         </CardDescription>
+                        {post.instrument.pricePerDay != null && post.instrument.currency && (
+                          <CardDescription className="text-xs font-semibold text-primary leading-tight">
+                            {formatPricePerDay(post.instrument.pricePerDay, post.instrument.currency, locale)}
+                            {' / '}{tPosts('perDay')}
+                          </CardDescription>
+                        )}
                       </CardHeader>
                     <CardContent className="p-2 pt-0">
                       <Button
@@ -495,87 +492,6 @@ export default function HomePage() {
           </div>
         </div>
         )}
-
-        {/* Banner entre cards y mapa (en mobile solo se muestra el icono "Cómo funciona" en la barra de búsqueda) */}
-        <div className="container mt-4 mb-2 hidden md:block">
-          <div className="bg-background/5 border border-border rounded-md py-1 px-2">
-            <div className="flex items-center justify-between gap-2 flex-nowrap">
-              {/* Hidden on mobile: show only on md+ */}
-              <div className="hidden md:flex items-center gap-4 text-xs text-muted-foreground flex-nowrap overflow-x-auto">
-                <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-md px-2 py-0.5 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary cursor-pointer">
-                  <PlusCircle className="h-4 w-4" />
-                  <span className="whitespace-nowrap">{t('bannerPublish')}</span>
-                </div>
-                <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-md px-2 py-0.5 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary cursor-pointer">
-                  <Lock className="h-4 w-4" />
-                  <span className="whitespace-nowrap">{t('bannerProtected')}</span>
-                </div>
-                <div role="button" tabIndex={0} className="flex items-center gap-2 rounded-md px-2 py-0.5 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:text-primary cursor-pointer">
-                  <MapPin className="h-4 w-4" />
-                  <span className="whitespace-nowrap">{t('bannerMap')}</span>
-                </div>
-              </div>
-
-              {/* En desktop: enlace "Cómo funciona". En mobile se usa el icono en la barra de búsqueda */}
-              <div className="hidden md:flex items-center w-full md:w-auto justify-end text-xs">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-primary font-medium"
-                  onClick={() => setHowItWorksOpen(true)}
-                >
-                  <span>{t('bannerHowItWorks')}</span>
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <Dialog open={howItWorksOpen} onOpenChange={setHowItWorksOpen}>
-          <DialogContent>
-                    <DialogTitle>{t('howTitle') || t('bannerHowItWorks')}</DialogTitle>
-                    <DialogDescription className="mb-2">{t('howDescription') || ''}</DialogDescription>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                      <DialogClose asChild>
-                        <Link href="/how/overview" className="w-full rounded-lg border bg-background flex items-center gap-3 p-3">
-                          <Info className="h-5 w-5 text-primary" />
-                          <span className="text-sm font-medium">{t('howOverview')}</span>
-                        </Link>
-                      </DialogClose>
-
-                      <DialogClose asChild>
-                        <Link href="/how/care" className="w-full rounded-lg border bg-background flex items-center gap-3 p-3">
-                          <ShieldCheck className="h-5 w-5 text-primary" />
-                          <span className="text-sm font-medium">{t('howCare')}</span>
-                        </Link>
-                      </DialogClose>
-
-                      <DialogClose asChild>
-                        <Link href="/how/travelers" className="w-full rounded-lg border bg-background flex items-center gap-3 p-3">
-                          <Globe className="h-5 w-5 text-primary" />
-                          <span className="text-sm font-medium">{t('howTravelers')}</span>
-                        </Link>
-                      </DialogClose>
-
-                      <DialogClose asChild>
-                        <Link href="/how/owners" className="w-full rounded-lg border bg-background flex items-center gap-3 p-3">
-                          <Users className="h-5 w-5 text-primary" />
-                          <span className="text-sm font-medium">{t('howOwners')}</span>
-                        </Link>
-                      </DialogClose>
-
-                      <DialogClose asChild>
-                        <Link href="/how/transparency" className="w-full rounded-lg border bg-background flex items-center gap-3 p-3">
-                          <FileText className="h-5 w-5 text-primary" />
-                          <span className="text-sm font-medium">{t('howTransparency')}</span>
-                        </Link>
-                      </DialogClose>
-                    </div>
-
-          </DialogContent>
-        </Dialog>
 
         {/* Mapa en la parte inferior - ocupa el resto del espacio */}
         <div className="flex-1 min-h-0 border-t overflow-hidden p-1 relative">
@@ -673,6 +589,12 @@ export default function HomePage() {
                         })()}
                         {selectedPost.areaText && `, ${selectedPost.areaText}`}
                       </CardDescription>
+                      {selectedPost.instrument.pricePerDay != null && selectedPost.instrument.currency && (
+                        <p className="text-sm font-semibold text-primary">
+                          {formatPricePerDay(selectedPost.instrument.pricePerDay, selectedPost.instrument.currency, locale)}
+                          <span className="text-xs font-normal text-muted-foreground"> / {tPosts('perDay')}</span>
+                        </p>
+                      )}
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
                       <div className="flex gap-2">
