@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, type ChangeEvent } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -190,12 +190,10 @@ export function ProfileForm() {
           </CardDescription>
         </div>
         {user && (
-          <Button type="button" variant="outline" size="sm" asChild>
-            <Link href={`/users/${user.id}`}>
-              <Star className="h-4 w-4 mr-2" />
-              {t('viewRatings')}
-            </Link>
-          </Button>
+          <Link href={`/users/${user.id}`} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+            <Star className="h-4 w-4 mr-2 text-amber-400" />
+            {t('viewRatings')}
+          </Link>
         )}
       </CardHeader>
       <CardContent>
