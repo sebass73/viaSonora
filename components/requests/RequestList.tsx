@@ -48,6 +48,9 @@ interface Request {
     lastName: string | null;
     image: string | null;
   };
+  ownerReturnConfirmedAt: string | null;
+  clientReturnConfirmedAt: string | null;
+  reviews: Array<{ id: string; authorId: string }>;
 }
 
 export function RequestList() {
@@ -144,6 +147,26 @@ export function RequestList() {
     }
   };
 
+  const handleConfirmReturn = async (requestId: string) => {
+    try {
+      const res = await fetch(`/api/requests/${requestId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'CONFIRM_RETURN' }),
+      });
+
+      if (res.ok) {
+        fetchRequests();
+      } else {
+        const error = await res.json();
+        alert(error.error || tRequests('errorConfirmingReturn'));
+      }
+    } catch (error) {
+      console.error('Error confirming return:', error);
+      alert(tRequests('errorConfirmingReturn'));
+    }
+  };
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -198,6 +221,8 @@ export function RequestList() {
                 request={request}
                 currentUserId={session.user?.id || ''}
                 onStatusChange={handleStatusChange}
+                onConfirmReturn={handleConfirmReturn}
+                onReviewSubmitted={fetchRequests}
                 availabilityValidationEnabled={availabilityValidationEnabled}
               />
             ))}

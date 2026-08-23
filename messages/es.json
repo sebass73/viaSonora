@@ -325,7 +325,15 @@
     "errorTimeBetween": "La hora debe estar entre {start} y {end}",
     "errorDuplicateRequest": "Ya has enviado una solicitud para este instrumento. Por favor, espera la respuesta del propietario.",
     "errorSendingRequest": "Error al enviar la solicitud",
-    "successSent": "Solicitud enviada correctamente"
+    "successSent": "Solicitud enviada correctamente",
+    "confirmReturnOwner": "Confirmar que recibí el instrumento",
+    "confirmReturnClient": "Confirmar que devolví el instrumento",
+    "returnConfirmedByOwner": "Devolución confirmada por el propietario",
+    "returnConfirmedByClient": "Devolución confirmada por el cliente",
+    "returnPendingOwner": "Esperando confirmación del propietario",
+    "returnPendingClient": "Esperando confirmación del cliente",
+    "rateLoan": "Calificar",
+    "errorConfirmingReturn": "Error al confirmar la devolución"
   },
   "profile": {
     "title": "Mi perfil",
@@ -365,7 +373,14 @@
     "fileTooBig": "El archivo es demasiado grande. Tamaño máximo: 5MB.",
     "phonePlaceholder": "+54 9 11 1234-5678",
     "whatsappPlaceholder": "https://wa.me/5491112345678",
-    "searchLocationPlaceholder": "Buscar tu ubicación..."
+    "searchLocationPlaceholder": "Buscar tu ubicación...",
+    "viewRatings": "Ver mis calificaciones"
+  },
+  "share": {
+    "button": "Compartir",
+    "dialogTitle": "Compartir",
+    "copy": "Copiar",
+    "copied": "¡Copiado!"
   },
   "reports": {
     "title": "Reportar Publicación",
@@ -411,5 +426,38 @@
     "dismiss": "Descartar",
     "adminTitle": "Panel de Administración",
     "adminDescription": "Gestiona y modera las publicaciones y reportes de la plataforma"
+  },
+  "reviews": {
+    "dialogTitle": "Calificar el préstamo",
+    "dialogDescription": "Tu calificación es opcional y ayuda a otros usuarios. Podés omitirla.",
+    "ratingLabel": "Calificación",
+    "ratingRequired": "Seleccioná una calificación de 1 a 5 estrellas",
+    "commentLabel": "Comentario (opcional)",
+    "commentPlaceholder": "Contanos cómo fue tu experiencia...",
+    "submit": "Enviar calificación",
+    "submitting": "Enviando...",
+    "success": "¡Gracias por tu calificación!",
+    "error": "Error al enviar la calificación",
+    "replyLabel": "Respuesta",
+    "replyPlaceholder": "Responder a esta calificación...",
+    "replySubmit": "Publicar respuesta",
+    "replySubmitting": "Publicando...",
+    "replyCancel": "Cancelar",
+    "replyAction": "Responder",
+    "replyError": "Error al publicar la respuesta"
+  },
+  "publicProfile": {
+    "overallTitle": "Calificación general",
+    "asLenderTitle": "Como propietario",
+    "asReturnerTitle": "Como cliente",
+    "noCompletedLoansOverall": "Todavía no tiene préstamos completados",
+    "noCompletedLoansLender": "Sin préstamos completados como propietario",
+    "noCompletedLoansReturner": "Sin préstamos completados como cliente",
+    "completedNoRatings": "{count} préstamos completados, sin calificaciones aún",
+  "ratedSummary": "{reviewCount} reseñas de {completedLoans} préstamos completados",
+    "reviewsTitle": "Reseñas",
+    "noReviews": "Todavía no hay reseñas",
+    "memberSince": "Miembro desde {date}",
+    "userNotFound": "Usuario no encontrado"
   }
 }

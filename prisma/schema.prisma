@@ -59,6 +59,11 @@ enum ReportStatus {
   DISMISSED
 }
 
+enum ReviewSubjectRole {
+  LENDER // rated while acting as Request.owner
+  RETURNER // rated while acting as Request.client
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -98,6 +103,8 @@ model User {
   clientRequests    Request[]    @relation("ClientRequests")
   reportsAsReporter PostReport[] @relation("Reporter")
   reportsAsReviewer PostReport[] @relation("Reviewer")
+  reviewsAuthored   Review[]     @relation("ReviewAuthor")
+  reviewsReceived   Review[]     @relation("ReviewSubject")
 
   @@index([email])
 }
@@ -262,16 +269,18 @@ model InstrumentAvailability {
 }
 
 model Request {
-  id           String        @id @default(cuid())
-  postId       String
-  instrumentId String
-  ownerId      String
-  clientId     String
-  status       RequestStatus @default(REQUESTED)
-  fromDate     DateTime
-  toDate       DateTime
-  message      String        @db.Text
-  accessories  String?       @db.Text
+  id                      String        @id @default(cuid())
+  postId                  String
+  instrumentId            String
+  ownerId                 String
+  clientId                String
+  status                  RequestStatus @default(REQUESTED)
+  fromDate                DateTime
+  toDate                  DateTime
+  message                 String        @db.Text
+  accessories             String?       @db.Text
+  ownerReturnConfirmedAt  DateTime?
+  clientReturnConfirmedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -280,6 +289,7 @@ model Request {
   instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
   owner      User       @relation("OwnerRequests", fields: [ownerId], references: [id], onDelete: Cascade)
   client     User       @relation("ClientRequests", fields: [clientId], references: [id], onDelete: Cascade)
+  reviews    Review[]
 
   @@index([postId])
   @@index([instrumentId])
@@ -308,6 +318,29 @@ model PostReport {
   @@index([postId])
   @@index([status])
   @@index([reporterId])
+}
+
+model Review {
+  id          String            @id @default(cuid())
+  requestId   String
+  authorId    String
+  subjectId   String
+  subjectRole ReviewSubjectRole
+  rating      Int
+  comment     String?           @db.Text
+  reply       String?           @db.Text // single public reply, authored only by subject
+  repliedAt   DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  request Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  author  User    @relation("ReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  subject User    @relation("ReviewSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([requestId, authorId]) // one review per author per loan
+  @@index([subjectId, subjectRole])
+  @@index([requestId])
+  @@index([authorId])
 }
 
 // Feature Flags: activar/desactivar funcionalidades desde el panel de admin

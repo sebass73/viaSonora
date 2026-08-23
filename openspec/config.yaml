@@ -1,0 +1,57 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Next.js 14 (App Router) + TypeScript, Prisma 5 + PostgreSQL
+  i18n: next-intl with [locale] routing; auth via NextAuth v5 (beta) + Prisma adapter
+  Domain: instrument lending marketplace — Instrument, Post (listing), Request
+    (loan request: REQUESTED/ACCEPTED/COMPLETED/CANCELLED/DECLINED), PostReport
+  Testing: Vitest (`npm run test`), tests/api/*.test.ts, mocks Prisma + auth via vi.mock
+  Style: Tailwind CSS + Radix UI primitives, ESLint (next/core-web-vitals)
+  Note: repo also has a separate Speckit-based flow (`.specify/`, `specs/`) predating
+    this OpenSpec setup — do not merge the two; OpenSpec owns `openspec/changes/`.
+
+strict_tdd: true
+
+testing:
+  test_runner: vitest
+  test_command: "npm run test"
+  watch_command: "npm run test:watch"
+  coverage:
+    available: false
+    command: ""
+  layers:
+    unit: true
+    integration: true
+    e2e: false
+  quality:
+    linter: "npm run lint"
+    type_checker: "npx tsc --noEmit"
+    formatter: null
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Call out any interaction with Request status transitions (REQUESTED/ACCEPTED/COMPLETED/CANCELLED/DECLINED)
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Reference the exact Prisma model/enum names from prisma/schema.prisma
+  design:
+    - Include sequence diagrams for complex flows (e.g. request lifecycle, post approval)
+    - Document architecture decisions with rationale
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    guidelines:
+      - Follow existing Next.js App Router + Prisma patterns in app/, components/, lib/
+      - Respect the [locale] routing structure under app/[locale]/
+      - Mock prisma and auth via vi.mock as done in tests/api/*.test.ts
+    tdd: true
+    test_command: "npm run test"
+  verify:
+    test_command: "npm run test"
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas

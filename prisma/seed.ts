@@ -34,18 +34,28 @@ async function main() {
     throw new Error('Categories not found');
   }
 
+  // Placeholder profile photos for demo users
+  const profileImages = {
+    juan: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=faces',
+    admin: 'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=400&h=400&fit=crop&crop=faces',
+    maria: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=faces',
+    carla: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=faces',
+  };
+
   // Create demo user (owner)
   const ownerPassword = await bcrypt.hash('owner123', 10);
   const demoUser = await prisma.user.upsert({
     where: { email: 'demo@viasonora.com' },
     update: {
       password: ownerPassword, // Update password if user already exists
+      image: profileImages.juan,
     },
     create: {
       email: 'demo@viasonora.com',
       name: 'Juan',
       lastName: 'Músico',
       password: ownerPassword,
+      image: profileImages.juan,
       phone: '+54 9 11 1234-5678',
       whatsappUrl: 'https://wa.me/5491112345678',
       city: 'Buenos Aires',
@@ -68,12 +78,14 @@ async function main() {
     where: { email: 'admin@viasonora.com' },
     update: {
       password: adminPassword, // Update password if user already exists
+      image: profileImages.admin,
     },
     create: {
       email: 'admin@viasonora.com',
       name: 'Admin',
       lastName: 'ViaSonora',
       password: adminPassword,
+      image: profileImages.admin,
       roles: ['OWNER', 'CLIENT'],
       staffRole: 'ADMIN',
       onboardingCompleted: true,
@@ -1683,12 +1695,14 @@ async function main() {
     where: { email: 'client@viasonora.com' },
     update: {
       password: clientPassword, // Update password if user already exists
+      image: profileImages.maria,
     },
     create: {
       email: 'client@viasonora.com',
       name: 'María',
       lastName: 'Viajera',
       password: clientPassword,
+      image: profileImages.maria,
       phone: '+54 9 11 9876-5432',
       whatsappUrl: 'https://wa.me/5491198765432',
       city: 'Buenos Aires',
@@ -1704,6 +1718,35 @@ async function main() {
   });
 
   console.log('✅ Client user created');
+
+  // Create a second client user (loan-return-rating demo variety)
+  const carlaPassword = await bcrypt.hash('carla123', 10);
+  const carlaUser = await prisma.user.upsert({
+    where: { email: 'carla@viasonora.com' },
+    update: {
+      password: carlaPassword, // Update password if user already exists
+      image: profileImages.carla,
+    },
+    create: {
+      email: 'carla@viasonora.com',
+      name: 'Carla',
+      lastName: 'Turista',
+      password: carlaPassword,
+      image: profileImages.carla,
+      phone: '+54 9 341 555-1234',
+      city: 'Rosario',
+      country: 'Argentina',
+      locationText: 'Centro',
+      lat: -32.9442,
+      lng: -60.6505,
+      roles: ['CLIENT'],
+      staffRole: 'NONE',
+      onboardingCompleted: true,
+      termsAcceptedAt: new Date(),
+    },
+  });
+
+  console.log('✅ Second client user created (Carla)');
 
   // Get the APPROVED post (violin1)
   const approvedPost = await prisma.post.findFirst({
@@ -1736,6 +1779,144 @@ async function main() {
     });
 
     console.log('✅ Request created (REQUESTED)');
+  }
+
+  // ——— loan-return-rating demo data: completed loans, bilateral confirmations, bidirectional reviews ———
+
+  const daysAgo = (n: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return d;
+  };
+
+  const piano3Post = await prisma.post.findFirst({ where: { instrumentId: piano3.id, status: 'APPROVED' } });
+  const drums3Post = await prisma.post.findFirst({ where: { instrumentId: drums3.id, status: 'APPROVED' } });
+  const sax2Post = await prisma.post.findFirst({ where: { instrumentId: sax2.id, status: 'APPROVED' } });
+  const violin2Post = await prisma.post.findFirst({ where: { instrumentId: violin2.id, status: 'APPROVED' } });
+  const amp1Post = await prisma.post.findFirst({ where: { instrumentId: amp1.id, status: 'APPROVED' } });
+
+  if (piano3Post) {
+    // Completed loan, rated by both sides, owner replies to the client's review
+    const request1 = await prisma.request.create({
+      data: {
+        postId: piano3Post.id,
+        instrumentId: piano3.id,
+        ownerId: demoUser.id,
+        clientId: clientUser.id,
+        fromDate: daysAgo(20),
+        toDate: daysAgo(13),
+        message: 'Necesito el piano digital para un fin de semana de ensayos.',
+        status: 'COMPLETED',
+        ownerReturnConfirmedAt: daysAgo(12),
+        clientReturnConfirmedAt: daysAgo(13),
+      },
+    });
+
+    await prisma.review.create({
+      data: {
+        requestId: request1.id,
+        authorId: clientUser.id,
+        subjectId: demoUser.id,
+        subjectRole: 'LENDER',
+        rating: 5,
+        comment: 'El piano estaba impecable y Juan fue muy atento con la entrega. ¡Totalmente recomendado!',
+        reply: '¡Gracias María! Fue un placer prestarte el piano, cuando quieras.',
+        repliedAt: daysAgo(11),
+      },
+    });
+
+    await prisma.review.create({
+      data: {
+        requestId: request1.id,
+        authorId: demoUser.id,
+        subjectId: clientUser.id,
+        subjectRole: 'RETURNER',
+        rating: 5,
+        comment: 'María devolvió el piano en perfectas condiciones, en tiempo y forma.',
+      },
+    });
+
+    console.log('✅ Completed loan with bidirectional reviews + reply created (piano3)');
+  }
+
+  if (drums3Post) {
+    // Completed loan, nobody rated it yet
+    await prisma.request.create({
+      data: {
+        postId: drums3Post.id,
+        instrumentId: drums3.id,
+        ownerId: demoUser.id,
+        clientId: clientUser.id,
+        fromDate: daysAgo(10),
+        toDate: daysAgo(5),
+        message: 'Necesito la batería para un ensayo de banda.',
+        status: 'COMPLETED',
+        ownerReturnConfirmedAt: daysAgo(5),
+        clientReturnConfirmedAt: daysAgo(5),
+      },
+    });
+
+    console.log('✅ Completed loan without reviews created (drums3)');
+  }
+
+  if (sax2Post) {
+    // Completed loan with a second client, still unrated — shows the "completed but unrated" profile state
+    await prisma.request.create({
+      data: {
+        postId: sax2Post.id,
+        instrumentId: sax2.id,
+        ownerId: demoUser.id,
+        clientId: carlaUser.id,
+        fromDate: daysAgo(15),
+        toDate: daysAgo(8),
+        message: 'Quiero el saxo para unas clases de jazz.',
+        status: 'COMPLETED',
+        ownerReturnConfirmedAt: daysAgo(7),
+        clientReturnConfirmedAt: daysAgo(8),
+      },
+    });
+
+    console.log('✅ Completed loan with second client, unrated (sax2)');
+  }
+
+  if (violin2Post) {
+    // Loan period ended, only the owner confirmed the return so far
+    await prisma.request.create({
+      data: {
+        postId: violin2Post.id,
+        instrumentId: violin2.id,
+        ownerId: demoUser.id,
+        clientId: clientUser.id,
+        fromDate: daysAgo(10),
+        toDate: daysAgo(3),
+        message: 'Necesito el violín para una presentación.',
+        status: 'ACCEPTED',
+        ownerReturnConfirmedAt: daysAgo(2),
+        clientReturnConfirmedAt: null,
+      },
+    });
+
+    console.log('✅ Accepted loan pending client return confirmation created (violin2)');
+  }
+
+  if (amp1Post) {
+    // Loan period ended, only the client confirmed the return so far
+    await prisma.request.create({
+      data: {
+        postId: amp1Post.id,
+        instrumentId: amp1.id,
+        ownerId: demoUser.id,
+        clientId: carlaUser.id,
+        fromDate: daysAgo(9),
+        toDate: daysAgo(2),
+        message: 'Necesito el amplificador para un show.',
+        status: 'ACCEPTED',
+        ownerReturnConfirmedAt: null,
+        clientReturnConfirmedAt: daysAgo(1),
+      },
+    });
+
+    console.log('✅ Accepted loan pending owner return confirmation created (amp1)');
   }
 
   // Create some reports for testing
@@ -1789,6 +1970,7 @@ async function main() {
   console.log('   Owner: demo@viasonora.com / Password: owner123');
   console.log('   Admin: admin@viasonora.com / Password: admin123');
   console.log('   Client: client@viasonora.com / Password: client123');
+  console.log('   Client 2: carla@viasonora.com / Password: carla123');
   console.log('\n📊 Created:');
   console.log(`   - ${categories.length} categories`);
   console.log('   - 1 demo user (OWNER + CLIENT)');
@@ -1810,7 +1992,8 @@ async function main() {
   console.log('     • 2 REJECTED');
   console.log('     • 2 BANNED');
   console.log('     • 4 EXPIRED');
-  console.log('   - 1 request (REQUESTED)');
+  console.log('   - 6 requests: 1 REQUESTED, 2 ACCEPTED (devolución pendiente de un solo lado), 3 COMPLETED');
+  console.log('   - 2 reviews bidireccionales (1 con respuesta pública del owner) sobre el request COMPLETED de piano3');
   console.log('   - 2 reportes (1 PENDING, 1 RESOLVED)');
   console.log('\n🗺️  Posts APPROVED will appear in the map!');
   console.log('\n🧪 Para testing:');

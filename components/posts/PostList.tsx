@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Pagination } from '@/components/ui/pagination';
+import { ShareButton } from '@/components/ui/share-button';
 import Image from 'next/image';
 import { Plus, Eye, Pencil, Trash2 } from 'lucide-react';
 import { CategoryName } from '@/components/CategoryName';
@@ -38,6 +39,7 @@ export function PostList() {
   const t = useTranslations('common');
   const tPosts = useTranslations('posts');
   const router = useRouter();
+  const locale = useLocale();
   const statusLabels: Record<string, string> = {
     PENDING_APPROVAL: tPosts('statusPendingApproval'),
     APPROVED: tPosts('statusApproved'),
@@ -188,6 +190,12 @@ export function PostList() {
                       <Eye className="mr-2 h-4 w-4" />
                       {tPosts('view')}
                     </Button>
+                    {post.status === 'APPROVED' && (
+                      <ShareButton
+                        url={`/${locale}/posts/${post.id}`}
+                        title={post.instrument.title}
+                      />
+                    )}
                     <Button
                       variant="destructive"
                       size="sm"

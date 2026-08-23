@@ -404,7 +404,7 @@ Según `DOCUMENTACION_FUNCIONAL.md`, estas están fuera del MVP:
 - Sistema de notificaciones (email/push)
 - Traducción automática de contenido
 - Sistema de mensajería entre usuarios
-- Sistema de calificaciones/reviews
+- ~~Sistema de calificaciones/reviews~~ ✅ Implementado (confirmación bilateral de devolución + calificación bidireccional + perfil público)
 - Sistema de pagos completo (solo stub en Etapa 4)
 
 ---

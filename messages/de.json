@@ -303,7 +303,15 @@
     "errorTimeBetween": "Die Uhrzeit muss zwischen {start} und {end} liegen",
     "errorDuplicateRequest": "Du hast bereits eine Anfrage für dieses Instrument gesendet. Bitte warte auf die Antwort des Eigentümers.",
     "errorSendingRequest": "Fehler beim Senden der Anfrage",
-    "successSent": "Anfrage erfolgreich gesendet"
+    "successSent": "Anfrage erfolgreich gesendet",
+    "confirmReturnOwner": "Bestätigen, dass ich das Instrument zurückerhalten habe",
+    "confirmReturnClient": "Bestätigen, dass ich das Instrument zurückgegeben habe",
+    "returnConfirmedByOwner": "Rückgabe vom Eigentümer bestätigt",
+    "returnConfirmedByClient": "Rückgabe vom Kunden bestätigt",
+    "returnPendingOwner": "Warten auf Bestätigung des Eigentümers",
+    "returnPendingClient": "Warten auf Bestätigung des Kunden",
+    "rateLoan": "Bewerten",
+    "errorConfirmingReturn": "Fehler beim Bestätigen der Rückgabe"
   },
   "profile": {
     "title": "Mein Profil",
@@ -343,6 +351,46 @@
     "fileTooBig": "Die Datei ist zu groß. Maximale Größe: 5 MB.",
     "phonePlaceholder": "+54 9 11 1234-5678",
     "whatsappPlaceholder": "https://wa.me/5491112345678",
-    "searchLocationPlaceholder": "Deinen Standort suchen..."
+    "searchLocationPlaceholder": "Deinen Standort suchen...",
+    "viewRatings": "Meine Bewertungen ansehen"
+  },
+  "share": {
+    "button": "Teilen",
+    "dialogTitle": "Teilen",
+    "copy": "Kopieren",
+    "copied": "Kopiert!"
+  },
+  "reviews": {
+    "dialogTitle": "Ausleihe bewerten",
+    "dialogDescription": "Deine Bewertung ist freiwillig und hilft anderen Nutzern. Du kannst sie überspringen.",
+    "ratingLabel": "Bewertung",
+    "ratingRequired": "Wähle eine Bewertung von 1 bis 5 Sternen",
+    "commentLabel": "Kommentar (optional)",
+    "commentPlaceholder": "Erzähl uns von deiner Erfahrung...",
+    "submit": "Bewertung senden",
+    "submitting": "Wird gesendet...",
+    "success": "Danke für deine Bewertung!",
+    "error": "Fehler beim Senden der Bewertung",
+    "replyLabel": "Antwort",
+    "replyPlaceholder": "Auf diese Bewertung antworten...",
+    "replySubmit": "Antwort veröffentlichen",
+    "replySubmitting": "Wird veröffentlicht...",
+    "replyCancel": "Abbrechen",
+    "replyAction": "Antworten",
+    "replyError": "Fehler beim Veröffentlichen der Antwort"
+  },
+  "publicProfile": {
+    "overallTitle": "Gesamtbewertung",
+    "asLenderTitle": "Als Verleiher",
+    "asReturnerTitle": "Als Rückgeber",
+    "noCompletedLoansOverall": "Noch keine abgeschlossenen Ausleihen",
+    "noCompletedLoansLender": "Noch keine abgeschlossenen Ausleihen als Verleiher",
+    "noCompletedLoansReturner": "Noch keine abgeschlossenen Ausleihen als Rückgeber",
+    "completedNoRatings": "{count} abgeschlossene Ausleihen, noch keine Bewertungen",
+  "ratedSummary": "{reviewCount} Bewertungen von {completedLoans} abgeschlossenen Ausleihen",
+    "reviewsTitle": "Bewertungen",
+    "noReviews": "Noch keine Bewertungen",
+    "memberSince": "Mitglied seit {date}",
+    "userNotFound": "Benutzer nicht gefunden"
   }
 }

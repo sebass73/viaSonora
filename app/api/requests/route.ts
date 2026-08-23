@@ -82,6 +82,12 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
+        reviews: {
+          select: {
+            id: true,
+            authorId: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
       skip,

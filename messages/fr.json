@@ -303,7 +303,15 @@
     "errorTimeBetween": "L'heure doit être entre {start} et {end}",
     "errorDuplicateRequest": "Vous avez déjà envoyé une demande pour cet instrument. Veuillez attendre la réponse du propriétaire.",
     "errorSendingRequest": "Erreur lors de l'envoi de la demande",
-    "successSent": "Demande envoyée avec succès"
+    "successSent": "Demande envoyée avec succès",
+    "confirmReturnOwner": "Confirmer que j'ai récupéré l'instrument",
+    "confirmReturnClient": "Confirmer que j'ai rendu l'instrument",
+    "returnConfirmedByOwner": "Retour confirmé par le propriétaire",
+    "returnConfirmedByClient": "Retour confirmé par le client",
+    "returnPendingOwner": "En attente de la confirmation du propriétaire",
+    "returnPendingClient": "En attente de la confirmation du client",
+    "rateLoan": "Évaluer",
+    "errorConfirmingReturn": "Erreur lors de la confirmation du retour"
   },
   "profile": {
     "title": "Mon profil",
@@ -343,6 +351,46 @@
     "fileTooBig": "Le fichier est trop volumineux. Taille maximale : 5 Mo.",
     "phonePlaceholder": "+54 9 11 1234-5678",
     "whatsappPlaceholder": "https://wa.me/5491112345678",
-    "searchLocationPlaceholder": "Rechercher votre lieu..."
+    "searchLocationPlaceholder": "Rechercher votre lieu...",
+    "viewRatings": "Voir mes évaluations"
+  },
+  "share": {
+    "button": "Partager",
+    "dialogTitle": "Partager",
+    "copy": "Copier",
+    "copied": "Copié !"
+  },
+  "reviews": {
+    "dialogTitle": "Évaluer le prêt",
+    "dialogDescription": "Votre évaluation est facultative et aide les autres utilisateurs. Vous pouvez la passer.",
+    "ratingLabel": "Évaluation",
+    "ratingRequired": "Sélectionnez une évaluation de 1 à 5 étoiles",
+    "commentLabel": "Commentaire (facultatif)",
+    "commentPlaceholder": "Racontez-nous votre expérience...",
+    "submit": "Envoyer l'évaluation",
+    "submitting": "Envoi en cours...",
+    "success": "Merci pour votre évaluation !",
+    "error": "Erreur lors de l'envoi de l'évaluation",
+    "replyLabel": "Réponse",
+    "replyPlaceholder": "Répondre à cette évaluation...",
+    "replySubmit": "Publier la réponse",
+    "replySubmitting": "Publication en cours...",
+    "replyCancel": "Annuler",
+    "replyAction": "Répondre",
+    "replyError": "Erreur lors de la publication de la réponse"
+  },
+  "publicProfile": {
+    "overallTitle": "Évaluation globale",
+    "asLenderTitle": "En tant que prêteur",
+    "asReturnerTitle": "En tant qu'emprunteur",
+    "noCompletedLoansOverall": "Aucun prêt terminé pour le moment",
+    "noCompletedLoansLender": "Aucun prêt terminé en tant que prêteur",
+    "noCompletedLoansReturner": "Aucun prêt terminé en tant qu'emprunteur",
+    "completedNoRatings": "{count} prêts terminés, aucune évaluation pour le moment",
+  "ratedSummary": "{reviewCount} avis sur {completedLoans} prêts terminés",
+    "reviewsTitle": "Avis",
+    "noReviews": "Aucun avis pour le moment",
+    "memberSince": "Membre depuis {date}",
+    "userNotFound": "Utilisateur non trouvé"
   }
 }

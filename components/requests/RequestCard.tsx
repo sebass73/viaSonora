@@ -8,8 +8,9 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTranslations } from 'next-intl';
-import { Check, X, Ban, Eye } from 'lucide-react';
+import { Check, X, Ban, Eye, Star } from 'lucide-react';
 import { CategoryName } from '@/components/CategoryName';
+import { ReviewDialog } from '@/components/reviews/ReviewDialog';
 
 interface RequestCardProps {
   request: {
@@ -20,6 +21,9 @@ interface RequestCardProps {
     message: string;
     accessories: string | null;
     createdAt: string;
+    ownerReturnConfirmedAt: string | null;
+    clientReturnConfirmedAt: string | null;
+    reviews: Array<{ id: string; authorId: string }>;
     post: {
       id: string;
       city: string;
@@ -56,6 +60,8 @@ interface RequestCardProps {
   };
   currentUserId: string;
   onStatusChange?: (requestId: string, newStatus: string) => void;
+  onConfirmReturn?: (requestId: string) => void;
+  onReviewSubmitted?: () => void;
   availabilityValidationEnabled?: boolean;
 }
 
@@ -75,10 +81,18 @@ const statusColors: Record<string, string> = {
   COMPLETED: 'bg-blue-100 text-blue-800',
 };
 
-export function RequestCard({ request, currentUserId, onStatusChange, availabilityValidationEnabled = false }: RequestCardProps) {
+export function RequestCard({
+  request,
+  currentUserId,
+  onStatusChange,
+  onConfirmReturn,
+  onReviewSubmitted,
+  availabilityValidationEnabled = false,
+}: RequestCardProps) {
   const tRequests = useTranslations('requests');
   const isOwner = request.owner.id === currentUserId;
   const isClient = request.client.id === currentUserId;
+  const otherParty = isOwner ? request.client : request.owner;
 
   const getStatusLabel = (status: string) =>
     statusKeys[status] ? tRequests(statusKeys[status]) : status;
@@ -90,7 +104,16 @@ export function RequestCard({ request, currentUserId, onStatusChange, availabili
   const canAccept = isOwner && request.status === 'REQUESTED';
   const canDecline = isOwner && request.status === 'REQUESTED';
   const canCancel = isClient && (request.status === 'REQUESTED' || request.status === 'ACCEPTED');
-  const canComplete = isOwner && request.status === 'ACCEPTED';
+
+  const ownerConfirmed = Boolean(request.ownerReturnConfirmedAt);
+  const clientConfirmed = Boolean(request.clientReturnConfirmedAt);
+
+  const canConfirmReturn =
+    request.status === 'ACCEPTED' &&
+    ((isOwner && !ownerConfirmed) || (isClient && !clientConfirmed));
+
+  const hasOwnReview = request.reviews.some((review) => review.authorId === currentUserId);
+  const canReview = request.status === 'COMPLETED' && (isOwner || isClient) && !hasOwnReview;
 
   const handleStatusChange = async (newStatus: string) => {
     if (!onStatusChange) return;
@@ -98,6 +121,10 @@ export function RequestCard({ request, currentUserId, onStatusChange, availabili
     if (confirm(tRequests('confirmStatusChange', { status: statusLabel }))) {
       onStatusChange(request.id, newStatus);
     }
+  };
+
+  const handleConfirmReturn = () => {
+    onConfirmReturn?.(request.id);
   };
 
   return (
@@ -131,16 +158,20 @@ export function RequestCard({ request, currentUserId, onStatusChange, availabili
             <div className="mt-3 space-y-2 text-sm">
               <div>
                 <span className="font-semibold">{tRequests('userLabel')}:</span>{' '}
-                {isOwner ? (
-                  <span>
-                    {request.client.name} {request.client.lastName}
-                  </span>
-                ) : (
-                  <span>
-                    {request.owner.name} {request.owner.lastName}
-                  </span>
-                )}
+                <Link href={`/users/${otherParty.id}`} className="text-primary hover:underline">
+                  {otherParty.name} {otherParty.lastName}
+                </Link>
               </div>
+              {request.status === 'ACCEPTED' && (
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant={ownerConfirmed ? 'default' : 'outline'}>
+                    {ownerConfirmed ? tRequests('returnConfirmedByOwner') : tRequests('returnPendingOwner')}
+                  </Badge>
+                  <Badge variant={clientConfirmed ? 'default' : 'outline'}>
+                    {clientConfirmed ? tRequests('returnConfirmedByClient') : tRequests('returnPendingClient')}
+                  </Badge>
+                </div>
+              )}
               {availabilityValidationEnabled && (
                 <>
                   <div>
@@ -200,15 +231,23 @@ export function RequestCard({ request, currentUserId, onStatusChange, availabili
                 <Ban className="mr-2 h-4 w-4" /> {tRequests('cancel')}
               </Button>
             )}
-            {canComplete && (
+            {canConfirmReturn && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleStatusChange('COMPLETED')}
+                onClick={handleConfirmReturn}
                 className="bg-blue-500 text-white hover:bg-blue-600"
               >
-                <Check className="mr-2 h-4 w-4" /> {tRequests('markCompleted')}
+                <Check className="mr-2 h-4 w-4" />
+                {isOwner ? tRequests('confirmReturnOwner') : tRequests('confirmReturnClient')}
               </Button>
+            )}
+            {canReview && (
+              <ReviewDialog requestId={request.id} onSubmitted={onReviewSubmitted}>
+                <Button variant="outline" size="sm" className="bg-amber-500 text-white hover:bg-amber-600">
+                  <Star className="mr-2 h-4 w-4" /> {tRequests('rateLoan')}
+                </Button>
+              </ReviewDialog>
             )}
             <Link href={`/posts/${request.post.id}`}>
               <Button variant="outline" size="sm">

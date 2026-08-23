@@ -14,6 +14,7 @@ import { ReportPostDialog } from '@/components/reports/ReportPostDialog';
 import { CategoryName } from '@/components/CategoryName';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { ShareButton } from '@/components/ui/share-button';
 
 interface Post {
   id: string;
@@ -168,21 +169,26 @@ export function PostDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle>{post.instrument.title}</CardTitle>
-              <CardDescription>
-                <CategoryName category={post.instrument.category} /> • {(() => {
-                  // Extraer solo la ciudad de la dirección completa (antes de la primera coma)
-                  const cityOnly = post.city.split(',')[0].trim();
-                  return cityOnly;
-                })()}
-                {post.areaText && `, ${post.areaText}`}
-              </CardDescription>
-              {post.instrument.pricePerDay != null && post.instrument.currency && (
-                <p className="text-lg font-semibold text-primary mt-1">
-                  {formatPricePerDay(post.instrument.pricePerDay, post.instrument.currency, locale)}
-                  <span className="text-sm font-normal text-muted-foreground"> / {tPosts('perDay')}</span>
-                </p>
+            <CardHeader className="flex flex-row items-start justify-between gap-4">
+              <div>
+                <CardTitle>{post.instrument.title}</CardTitle>
+                <CardDescription>
+                  <CategoryName category={post.instrument.category} /> • {(() => {
+                    // Extraer solo la ciudad de la dirección completa (antes de la primera coma)
+                    const cityOnly = post.city.split(',')[0].trim();
+                    return cityOnly;
+                  })()}
+                  {post.areaText && `, ${post.areaText}`}
+                </CardDescription>
+                {post.instrument.pricePerDay != null && post.instrument.currency && (
+                  <p className="text-lg font-semibold text-primary mt-1">
+                    {formatPricePerDay(post.instrument.pricePerDay, post.instrument.currency, locale)}
+                    <span className="text-sm font-normal text-muted-foreground"> / {tPosts('perDay')}</span>
+                  </p>
+                )}
+              </div>
+              {post.status === 'APPROVED' && (
+                <ShareButton url={`/${locale}/posts/${post.id}`} title={post.instrument.title} />
               )}
             </CardHeader>
             <CardContent>
@@ -267,7 +273,7 @@ export function PostDetail() {
               <CardTitle>{tPosts('owner')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-4 mb-4">
+              <Link href={`/users/${post.owner.id}`} className="flex items-center gap-4 mb-4 hover:underline">
                 {post.owner.image && (
                   <div className="relative w-16 h-16 rounded-full overflow-hidden">
                     <Image
@@ -283,7 +289,7 @@ export function PostDetail() {
                     {post.owner.name} {post.owner.lastName}
                   </p>
                 </div>
-              </div>
+              </Link>
 
               {showContact ? (
                 <div className="space-y-3">

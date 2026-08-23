@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { updateRequestStatusSchema } from '@/lib/validation';
+import { updateRequestBodySchema } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,7 +106,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const validated = updateRequestStatusSchema.parse(body);
+    const validated = updateRequestBodySchema.parse(body);
 
     // Obtener la request actual
     const existingRequest = await prisma.request.findUnique({
@@ -128,9 +128,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Validar transiciones de estado permitidas
     const currentStatus = existingRequest.status;
-    const newStatus = validated.status;
 
     if (currentStatus === 'COMPLETED' || currentStatus === 'CANCELLED' || currentStatus === 'DECLINED') {
       return NextResponse.json(
@@ -139,11 +137,83 @@ export async function PUT(
       );
     }
 
+    const requestInclude = {
+      post: {
+        include: {
+          instrument: {
+            include: {
+              category: true,
+              photos: {
+                orderBy: { order: 'asc' as const },
+                take: 1,
+              },
+            },
+          },
+        },
+      },
+      owner: {
+        select: {
+          id: true,
+          name: true,
+          lastName: true,
+          image: true,
+          email: true,
+        },
+      },
+      client: {
+        select: {
+          id: true,
+          name: true,
+          lastName: true,
+          image: true,
+          email: true,
+        },
+      },
+    };
+
+    // Bilateral return confirmation: each party confirms independently;
+    // completion is derived once both confirmations exist.
+    if ('action' in validated && validated.action === 'CONFIRM_RETURN') {
+      if (currentStatus !== 'ACCEPTED') {
+        return NextResponse.json(
+          { error: 'Solo se puede confirmar la devolución de una solicitud ACCEPTED' },
+          { status: 400 }
+        );
+      }
+
+      const myField = isOwner ? 'ownerReturnConfirmedAt' : 'clientReturnConfirmedAt';
+
+      await prisma.$transaction(async (tx) => {
+        await tx.request.updateMany({
+          where: { id, status: 'ACCEPTED', [myField]: null },
+          data: { [myField]: new Date() },
+        });
+
+        await tx.request.updateMany({
+          where: {
+            id,
+            status: 'ACCEPTED',
+            ownerReturnConfirmedAt: { not: null },
+            clientReturnConfirmedAt: { not: null },
+          },
+          data: { status: 'COMPLETED' },
+        });
+      });
+
+      const updatedRequest = await prisma.request.findUnique({
+        where: { id },
+        include: requestInclude,
+      });
+
+      return NextResponse.json(updatedRequest);
+    }
+
+    // Status transition branch (ACCEPTED/DECLINED/CANCELLED — no manual COMPLETED)
+    const newStatus = (validated as { status: 'ACCEPTED' | 'DECLINED' | 'CANCELLED' }).status;
+
     // Owner puede: ACCEPT, DECLINE
     if (isOwner) {
       if (currentStatus === 'REQUESTED' && (newStatus === 'ACCEPTED' || newStatus === 'DECLINED')) {
-        // Permitido
-      } else if (currentStatus === 'ACCEPTED' && newStatus === 'COMPLETED') {
         // Permitido
       } else {
         return NextResponse.json(
@@ -171,39 +241,7 @@ export async function PUT(
       data: {
         status: newStatus,
       },
-      include: {
-        post: {
-          include: {
-            instrument: {
-              include: {
-                category: true,
-                photos: {
-                  orderBy: { order: 'asc' },
-                  take: 1,
-                },
-              },
-            },
-          },
-        },
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            lastName: true,
-            image: true,
-            email: true,
-          },
-        },
-        client: {
-          select: {
-            id: true,
-            name: true,
-            lastName: true,
-            image: true,
-            email: true,
-          },
-        },
-      },
+      include: requestInclude,
     });
 
     return NextResponse.json(updatedRequest);

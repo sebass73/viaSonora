@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
-import { Camera } from 'lucide-react';
+import Link from 'next/link';
+import { Camera, Star } from 'lucide-react';
 import { CityAutocomplete } from '@/components/ui/city-autocomplete';
 import {
   Dialog,
@@ -181,11 +182,21 @@ export function ProfileForm() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{t('title')}</CardTitle>
-        <CardDescription>
-          {t('description')}
-        </CardDescription>
+      <CardHeader className="flex flex-row items-start justify-between gap-4">
+        <div>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>
+            {t('description')}
+          </CardDescription>
+        </div>
+        {user && (
+          <Button type="button" variant="outline" size="sm" asChild>
+            <Link href={`/users/${user.id}`}>
+              <Star className="h-4 w-4 mr-2" />
+              {t('viewRatings')}
+            </Link>
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

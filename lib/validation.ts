@@ -151,8 +151,30 @@ export const createRequestSchema = z.object({
   path: ['toDate'],
 });
 
+export const confirmReturnSchema = z.object({
+  action: z.literal('CONFIRM_RETURN'),
+});
+
+// COMPLETED removed: no manual completion path remains — completion is derived
+// from both parties' return confirmations (see confirmReturnSchema).
 export const updateRequestStatusSchema = z.object({
-  status: z.enum(['ACCEPTED', 'DECLINED', 'CANCELLED', 'COMPLETED']),
+  status: z.enum(['ACCEPTED', 'DECLINED', 'CANCELLED']),
+});
+
+export const updateRequestBodySchema = z.union([
+  confirmReturnSchema,
+  updateRequestStatusSchema,
+]);
+
+// Review validation
+export const createReviewSchema = z.object({
+  requestId: z.string().min(1),
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().max(1000).optional(),
+});
+
+export const replyReviewSchema = z.object({
+  reply: z.string().min(1).max(1000),
 });
 
 // Report validation

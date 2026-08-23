@@ -325,7 +325,15 @@
     "errorTimeBetween": "L'ora deve essere tra {start} e {end}",
     "errorDuplicateRequest": "Hai già inviato una richiesta per questo strumento. Attendi la risposta del proprietario.",
     "errorSendingRequest": "Errore nell'invio della richiesta",
-    "successSent": "Richiesta inviata correttamente"
+    "successSent": "Richiesta inviata correttamente",
+    "confirmReturnOwner": "Confermo di aver ricevuto lo strumento",
+    "confirmReturnClient": "Confermo di aver restituito lo strumento",
+    "returnConfirmedByOwner": "Restituzione confermata dal proprietario",
+    "returnConfirmedByClient": "Restituzione confermata dal cliente",
+    "returnPendingOwner": "In attesa della conferma del proprietario",
+    "returnPendingClient": "In attesa della conferma del cliente",
+    "rateLoan": "Valuta",
+    "errorConfirmingReturn": "Errore nella conferma della restituzione"
   },
   "profile": {
     "title": "Il mio profilo",
@@ -365,7 +373,14 @@
     "fileTooBig": "Il file è troppo grande. Dimensione massima: 5MB.",
     "phonePlaceholder": "+54 9 11 1234-5678",
     "whatsappPlaceholder": "https://wa.me/5491112345678",
-    "searchLocationPlaceholder": "Cerca la tua ubicazione..."
+    "searchLocationPlaceholder": "Cerca la tua ubicazione...",
+    "viewRatings": "Vedi le mie valutazioni"
+  },
+  "share": {
+    "button": "Condividi",
+    "dialogTitle": "Condividi",
+    "copy": "Copia",
+    "copied": "Copiato!"
   },
   "reports": {
     "title": "Segnala Pubblicazione",
@@ -411,5 +426,38 @@
     "dismiss": "Scarta",
     "adminTitle": "Pannello di Amministrazione",
     "adminDescription": "Gestisci e modera le pubblicazioni e segnalazioni della piattaforma"
+  },
+  "reviews": {
+    "dialogTitle": "Valuta il prestito",
+    "dialogDescription": "La tua valutazione è facoltativa e aiuta altri utenti. Puoi saltarla.",
+    "ratingLabel": "Valutazione",
+    "ratingRequired": "Seleziona una valutazione da 1 a 5 stelle",
+    "commentLabel": "Commento (opzionale)",
+    "commentPlaceholder": "Raccontaci come è andata la tua esperienza...",
+    "submit": "Invia valutazione",
+    "submitting": "Invio in corso...",
+    "success": "Grazie per la tua valutazione!",
+    "error": "Errore durante l'invio della valutazione",
+    "replyLabel": "Risposta",
+    "replyPlaceholder": "Rispondi a questa valutazione...",
+    "replySubmit": "Pubblica risposta",
+    "replySubmitting": "Pubblicazione in corso...",
+    "replyCancel": "Annulla",
+    "replyAction": "Rispondi",
+    "replyError": "Errore durante la pubblicazione della risposta"
+  },
+  "publicProfile": {
+    "overallTitle": "Valutazione complessiva",
+    "asLenderTitle": "Come proprietario",
+    "asReturnerTitle": "Come cliente",
+    "noCompletedLoansOverall": "Nessun prestito completato ancora",
+    "noCompletedLoansLender": "Nessun prestito completato come proprietario",
+    "noCompletedLoansReturner": "Nessun prestito completato come cliente",
+    "completedNoRatings": "{count} prestiti completati, ancora nessuna valutazione",
+  "ratedSummary": "{reviewCount} recensioni su {completedLoans} prestiti completati",
+    "reviewsTitle": "Recensioni",
+    "noReviews": "Ancora nessuna recensione",
+    "memberSince": "Membro da {date}",
+    "userNotFound": "Utente non trovato"
   }
 }

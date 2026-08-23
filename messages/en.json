@@ -325,7 +325,15 @@
     "errorTimeBetween": "Time must be between {start} and {end}",
     "errorDuplicateRequest": "You have already sent a request for this instrument. Please wait for the owner's response.",
     "errorSendingRequest": "Error sending request",
-    "successSent": "Request sent successfully"
+    "successSent": "Request sent successfully",
+    "confirmReturnOwner": "Confirm I received the instrument back",
+    "confirmReturnClient": "Confirm I returned the instrument",
+    "returnConfirmedByOwner": "Return confirmed by the owner",
+    "returnConfirmedByClient": "Return confirmed by the client",
+    "returnPendingOwner": "Waiting for the owner's confirmation",
+    "returnPendingClient": "Waiting for the client's confirmation",
+    "rateLoan": "Rate",
+    "errorConfirmingReturn": "Error confirming the return"
   },
   "profile": {
     "title": "My profile",
@@ -365,7 +373,14 @@
     "fileTooBig": "File is too large. Maximum size: 5MB.",
     "phonePlaceholder": "+54 9 11 1234-5678",
     "whatsappPlaceholder": "https://wa.me/5491112345678",
-    "searchLocationPlaceholder": "Search your location..."
+    "searchLocationPlaceholder": "Search your location...",
+    "viewRatings": "View my ratings"
+  },
+  "share": {
+    "button": "Share",
+    "dialogTitle": "Share",
+    "copy": "Copy",
+    "copied": "Copied!"
   },
   "reports": {
     "title": "Report Post",
@@ -411,5 +426,38 @@
     "dismiss": "Dismiss",
     "adminTitle": "Administration Panel",
     "adminDescription": "Manage and moderate platform posts and reports"
+  },
+  "reviews": {
+    "dialogTitle": "Rate the loan",
+    "dialogDescription": "Your rating is optional and helps other users. You can skip it.",
+    "ratingLabel": "Rating",
+    "ratingRequired": "Select a rating from 1 to 5 stars",
+    "commentLabel": "Comment (optional)",
+    "commentPlaceholder": "Tell us how your experience was...",
+    "submit": "Submit rating",
+    "submitting": "Submitting...",
+    "success": "Thanks for your rating!",
+    "error": "Error submitting the rating",
+    "replyLabel": "Reply",
+    "replyPlaceholder": "Reply to this rating...",
+    "replySubmit": "Post reply",
+    "replySubmitting": "Posting...",
+    "replyCancel": "Cancel",
+    "replyAction": "Reply",
+    "replyError": "Error posting the reply"
+  },
+  "publicProfile": {
+    "overallTitle": "Overall rating",
+    "asLenderTitle": "As lender",
+    "asReturnerTitle": "As returner",
+    "noCompletedLoansOverall": "No completed loans yet",
+    "noCompletedLoansLender": "No completed loans yet as a lender",
+    "noCompletedLoansReturner": "No completed loans yet as a returner",
+    "completedNoRatings": "{count} completed loans, no ratings yet",
+  "ratedSummary": "{reviewCount} reviews out of {completedLoans} completed loans",
+    "reviewsTitle": "Reviews",
+    "noReviews": "No reviews yet",
+    "memberSince": "Member since {date}",
+    "userNotFound": "User not found"
   }
 }
